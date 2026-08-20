@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Sarabun', 'TH Sarabun New', Arial, sans-serif; font-size: 13px; color: #212121; margin: 0; padding: 20px; }
+  .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 16px; margin-bottom: 20px; }
+  .header h1 { font-size: 20px; color: #1565C0; margin: 0 0 4px; }
+  .header p { color: #757575; margin: 0; }
+  .section { margin-bottom: 20px; }
+  .section h2 { font-size: 14px; font-weight: 700; color: #1565C0; border-bottom: 1px solid #E0E0E0; padding-bottom: 6px; margin-bottom: 10px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+  .info-item label { font-weight: 600; color: #616161; font-size: 11px; text-transform: uppercase; display: block; }
+  .info-item span { font-size: 13px; display: block; margin-top: 2px; }
+  .progress-bar { height: 10px; background: #E0E0E0; border-radius: 5px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; background: #1565C0; border-radius: 5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #E3F2FD; color: #1565C0; font-weight: 700; padding: 8px 10px; text-align: left; }
+  td { padding: 8px 10px; border-bottom: 1px solid #F0F0F0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-green  { background: #E8F5E9; color: #2E7D32; }
+  .badge-orange { background: #FFF3E0; color: #E65100; }
+  .badge-red    { background: #FFEBEE; color: #C62828; }
+  .badge-blue   { background: #E3F2FD; color: #1565C0; }
+  .footer { text-align: center; color: #9E9E9E; font-size: 11px; border-top: 1px solid #E0E0E0; padding-top: 12px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>{{ doc.project_name }}</h1>
+  <p>รายงานสถานะโครงการ | พิมพ์เมื่อ: {{ frappe.utils.format_datetime(frappe.utils.now()) }}</p>
+</div>
+
+<div class="section">
+  <h2>ข้อมูลทั่วไป</h2>
+  <div class="info-grid">
+    <div class="info-item"><label>สถานะ</label><span>{{ doc.status }}</span></div>
+    <div class="info-item"><label>ลูกค้า</label><span>{{ doc.client or '-' }}</span></div>
+    <div class="info-item"><label>ผู้จัดการโครงการ</label><span>{{ doc.project_manager or '-' }}</span></div>
+    <div class="info-item"><label>เฟสปัจจุบัน</label><span>{{ doc.current_phase or '-' }}</span></div>
+    <div class="info-item"><label>วันเริ่มต้น</label><span>{{ doc.start_date }}</span></div>
+    <div class="info-item"><label>วันสิ้นสุด</label><span>{{ doc.end_date or '-' }}</span></div>
+    <div class="info-item"><label>งบประมาณ</label><span>{{ frappe.utils.fmt_money(doc.budget or 0, currency='THB') }}</span></div>
+    <div class="info-item"><label>งบที่ใช้ไป</label><span>{{ frappe.utils.fmt_money(doc.budget_used or 0, currency='THB') }}</span></div>
+    <div class="info-item"><label>ระดับความเสี่ยง</label><span>{{ doc.risk_level or '-' }}</span></div>
+    <div class="info-item"><label>สถานะการเรียกเก็บเงิน</label><span>{{ doc.billing_status or '-' }}</span></div>
+  </div>
+  <div style="margin-top:12px;">
+    <label style="font-weight:600;font-size:11px;color:#616161;text-transform:uppercase;">ความคืบหน้า {{ doc.progress or 0 }}%</label>
+    <div class="progress-bar"><div class="progress-fill" style="width:{{ doc.progress or 0 }}%"></div></div>
+  </div>
+</div>
+
+{% if doc.description %}
+<div class="section">
+  <h2>รายละเอียดโครงการ</h2>
+  <p>{{ doc.description | striptags }}</p>
+</div>
+{% endif %}
+
+{% if doc.deliverables %}
+<div class="section">
+  <h2>ผลส่งมอบ (Deliverables)</h2>
+  <p style="white-space:pre-wrap;">{{ doc.deliverables }}</p>
+</div>
+{% endif %}
+
+<div class="footer">
+  Betime Solution System | {{ doc.name }} | พิมพ์โดย {{ frappe.session.user }}
+</div>
+</body>
+</html>

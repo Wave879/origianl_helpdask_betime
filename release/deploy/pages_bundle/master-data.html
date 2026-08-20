@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Master Data - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .md-shell { max-width: 1440px; margin: 0 auto; padding: 20px; }
+    .md-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 16px; }
+    .md-title { margin: 0; font-size: 24px; color: #0f172a; }
+    .md-subtitle { margin: 6px 0 0; color: #64748b; line-height: 1.6; }
+    .md-toolbar { display: grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) auto; gap: 12px; align-items: end; margin-bottom: 16px; }
+    .md-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .md-grid .full { grid-column: 1 / -1; }
+    .md-table-wrap { border: 1px solid #e6eaf1; border-radius: 12px; overflow: hidden; background: #fff; }
+    .md-table-scroll { max-height: 66vh; overflow: auto; }
+    .md-table-scroll .bt-table th { position: sticky; top: 0; z-index: 1; background: #f8fafc; white-space: nowrap; }
+    .md-row-active { background: #eef4ff !important; box-shadow: inset 4px 0 0 #123a7a; }
+    .md-json { min-height: 140px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.45; }
+    @media (max-width: 860px) {
+      .md-head, .md-toolbar, .md-grid { grid-template-columns: 1fr; display: grid; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="md-shell">
+  <div class="md-head">
+    <div>
+      <div class="admin-eyebrow">System settings</div>
+      <h1 class="md-title">Master Data</h1>
+      <p class="md-subtitle">ใช้สำหรับเพิ่ม แก้ไข ลบข้อมูลกลางของ helpdesk เช่น Project, Sub Project, Area, Priority, Case Type และ mapping ต่าง ๆ</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="bt-btn bt-btn-secondary" href="/web/admin">กลับ Admin Console</a>
+      <button class="bt-btn bt-btn-secondary" type="button" onclick="reloadMasterData()">รีเฟรช</button>
+      <button class="bt-btn bt-btn-danger" type="button" onclick="clearSelectedMasterTable()">ล้างทั้งตาราง</button>
+    </div>
+  </div>
+
+  <div class="bt-card">
+    <div class="md-toolbar">
+      <div class="bt-form-group">
+        <label class="bt-label">ตารางข้อมูล</label>
+        <select id="master-table-select" class="bt-input" onchange="switchMasterTable(this.value)"></select>
+      </div>
+      <div class="bt-alert bt-alert-info" style="margin:0">
+        เลือกตารางด้านซ้าย แล้วเพิ่ม/แก้ไข/ลบแถวจากฟอร์มด้านล่างได้ทันที
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+        <button class="bt-btn bt-btn-primary" type="button" onclick="startMasterCreate()">+ เพิ่มแถวใหม่</button>
+      </div>
+    </div>
+
+    <div class="md-grid">
+      <div class="bt-form-group">
+        <label class="bt-label">Code</label>
+        <input id="master-code" class="bt-input" type="text" placeholder="เช่น ERC, BMA-ROD, 101">
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">Name</label>
+        <input id="master-name" class="bt-input" type="text" placeholder="ชื่อที่แสดง">
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">Sort order</label>
+        <input id="master-sort-order" class="bt-input" type="number" step="1" placeholder="0">
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">สถานะ</label>
+        <select id="master-active" class="bt-input">
+          <option value="1">Active</option>
+          <option value="0">Inactive</option>
+        </select>
+      </div>
+      <div class="bt-form-group full">
+        <label class="bt-label">Extra JSON</label>
+        <textarea id="master-extra" class="bt-input md-json" placeholder='{"parent_project":"ERC","parent_project_ref":"ERC-SARABUN"}'></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 16px">
+      <button class="bt-btn bt-btn-primary" type="button" onclick="saveMasterRow()">บันทึก</button>
+      <button class="bt-btn bt-btn-secondary" type="button" onclick="resetMasterForm()">ล้างฟอร์ม</button>
+      <button class="bt-btn bt-btn-danger" type="button" onclick="deleteSelectedMasterRow()">ลบแถวนี้</button>
+      <div id="master-status" style="margin-left:auto;color:#64748b;font-size:13px;display:flex;align-items:center"></div>
+    </div>
+
+    <div class="md-table-wrap">
+      <div style="padding:14px 16px;background:#fbfdff;border-bottom:1px solid #e6eaf1;display:flex;gap:10px;justify-content:space-between;align-items:center">
+        <div>
+          <strong id="master-table-title">-</strong>
+          <div style="color:#64748b;font-size:13px" id="master-table-desc">-</div>
+        </div>
+        <div style="color:#64748b;font-size:13px" id="master-row-count">-</div>
+      </div>
+      <div class="md-table-scroll">
+        <table class="bt-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Extra</th>
+              <th>Active</th>
+              <th>Sort</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="master-table-body">
+            <tr><td colspan="6" style="text-align:center;color:#888;padding:28px">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('master-data.html', 'Master Data');
+
+  const MASTER_TABLES = [
+    { value: 'hd_projects', label: 'Project', desc: 'Project master ที่ใช้เชื่อมกับ helpdesk' },
+    { value: 'hd_sub_projects', label: 'Sub Project', desc: 'Sub Project master ของแต่ละโครงการ' },
+    { value: 'hd_teams', label: 'Team', desc: 'ทีมงานที่เกี่ยวข้องกับ helpdesk' },
+    { value: 'hd_positions', label: 'Position', desc: 'ตำแหน่งของผู้ใช้หรือทีม' },
+    { value: 'hd_projects_dev', label: 'Project Dev', desc: 'รายชื่อ dev ต่อโครงการ' },
+    { value: 'hd_project_member_roles', label: 'Project Member Roles', desc: 'บทบาทของคนในแต่ละโครงการ' },
+    { value: 'hd_flow_areas', label: 'Area', desc: 'Area ที่ใช้ช่วยวิเคราะห์และกรองปัญหา' },
+    { value: 'hd_flow_case_types', label: 'Case Type', desc: 'Case Type ที่เชื่อมกับ Priority/Problem Type' },
+    { value: 'hd_flow_products', label: 'Flow Product', desc: 'Product/Service ที่ใช้ประกอบการวิเคราะห์' },
+    { value: 'hd_criteria', label: 'Criteria', desc: 'Criteria สำหรับ helpdesk analysis' },
+    { value: 'hd_sub_criteria', label: 'Sub Criteria', desc: 'Sub criteria สำหรับการจัดหมวดปัญหา' },
+    { value: 'hd_sla', label: 'SLA', desc: 'ข้อตกลงเวลาแก้ไขตามโครงการ' },
+    { value: 'hd_main_team_project', label: 'Main Team Project', desc: 'การจับคู่ทีมหลักกับโครงการ' },
+  ];
+
+  const state = { table: 'hd_projects', rows: [], selectedId: '' };
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function authHeaders() {
+    const token = localStorage.getItem('bt_token');
+    return token ? { Authorization: 'Bearer ' + token } : {};
+  }
+
+  function metaFor(table) {
+    return MASTER_TABLES.find((item) => item.value === table) || MASTER_TABLES[0];
+  }
+
+  function setStatus(message, tone = 'muted') {
+    const el = document.getElementById('master-status');
+    if (!el) return;
+    el.textContent = message || '';
+    el.style.color = { success: '#065f46', warning: '#92400e', error: '#b91c1c', muted: '#64748b' }[tone] || '#64748b';
+  }
+
+  function renderTableOptions() {
+    const select = document.getElementById('master-table-select');
+    select.innerHTML = MASTER_TABLES.map((item) => '<option value="' + item.value + '">' + escapeHtml(item.label) + '</option>').join('');
+    select.value = state.table;
+  }
+
+  function parseExtra(raw) {
+    const text = String(raw || '').trim();
+    if (!text) return '{}';
+    const parsed = JSON.parse(text);
+    return JSON.stringify(parsed, null, 2);
+  }
+
+  function renderRows() {
+    const body = document.getElementById('master-table-body');
+    const title = document.getElementById('master-table-title');
+    const desc = document.getElementById('master-table-desc');
+    const count = document.getElementById('master-row-count');
+    const meta = metaFor(state.table);
+    title.textContent = meta.label;
+    desc.textContent = meta.desc;
+    count.textContent = state.rows.length + ' rows';
+
+    if (!state.rows.length) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:28px">ยังไม่มีข้อมูล</td></tr>';
+      return;
+    }
+
+    body.innerHTML = state.rows.map((row) => {
+      let extraText = '{}';
+      try { extraText = JSON.stringify(JSON.parse(String(row.extra || '{}'))); } catch { extraText = String(row.extra || '{}'); }
+      const selectedClass = String(state.selectedId || '') === String(row.id || '') ? 'md-row-active' : '';
+      const safeId = String(row.id || '').replace(/'/g, '&#39;');
+      return '<tr class="' + selectedClass + '">' +
+        '<td>' + escapeHtml(row.code || '-') + '</td>' +
+        '<td>' + escapeHtml(row.name || '-') + '</td>' +
+        '<td style="max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(extraText) + '</td>' +
+        '<td>' + (Number(row.active) === 0 ? '<span class="bt-badge bt-badge-danger">Inactive</span>' : '<span class="bt-badge bt-badge-success">Active</span>') + '</td>' +
+        '<td>' + escapeHtml(String(row.sort_order ?? 0)) + '</td>' +
+        '<td style="white-space:nowrap;display:flex;gap:8px;justify-content:flex-end">' +
+          '<button class="bt-btn bt-btn-secondary" type="button" onclick="editRow(\'' + safeId + '\')">แก้ไข</button>' +
+          '<button class="bt-btn bt-btn-danger" type="button" onclick="deleteRow(\'' + safeId + '\')">ลบ</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function resetMasterForm() {
+    state.selectedId = '';
+    document.getElementById('master-code').value = '';
+    document.getElementById('master-name').value = '';
+    document.getElementById('master-sort-order').value = '0';
+    document.getElementById('master-active').value = '1';
+    document.getElementById('master-extra').value = '{}';
+    renderRows();
+    setStatus('พร้อมเพิ่มแถวใหม่');
+  }
+
+  function startMasterCreate() {
+    resetMasterForm();
+    document.getElementById('master-code')?.focus();
+  }
+
+  function fillForm(row) {
+    state.selectedId = String(row.id || '');
+    document.getElementById('master-code').value = row.code || '';
+    document.getElementById('master-name').value = row.name || '';
+    document.getElementById('master-sort-order').value = String(row.sort_order ?? 0);
+    document.getElementById('master-active').value = Number(row.active) === 0 ? '0' : '1';
+    document.getElementById('master-extra').value = parseExtra(row.extra || '{}');
+    renderRows();
+    setStatus('กำลังแก้: ' + (row.name || row.code || row.id || '-'));
+  }
+
+  function editRow(id) {
+    const row = state.rows.find((item) => String(item.id) === String(id));
+    if (!row) return;
+    fillForm(row);
+  }
+
+  async function loadTable(table = state.table) {
+    state.table = table;
+    state.selectedId = '';
+    renderTableOptions();
+    setStatus('กำลังโหลด...');
+    try {
+      const res = await fetch('/api/hd-master?table=' + encodeURIComponent(state.table), { headers: authHeaders() });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'โหลดข้อมูลไม่สำเร็จ');
+      state.rows = Array.isArray(data.data) ? data.data : [];
+      renderRows();
+      resetMasterForm();
+      setStatus('โหลด ' + state.rows.length + ' รายการแล้ว', 'success');
+    } catch (e) {
+      state.rows = [];
+      renderRows();
+      setStatus(e.message || 'โหลดข้อมูลไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function reloadMasterData() {
+    return loadTable(state.table);
+  }
+
+  function switchMasterTable(table) {
+    loadTable(table);
+  }
+
+  function readForm() {
+    return {
+      code: document.getElementById('master-code').value.trim(),
+      name: document.getElementById('master-name').value.trim(),
+      sort_order: Number(document.getElementById('master-sort-order').value || 0),
+      active: Number(document.getElementById('master-active').value || 1) ? 1 : 0,
+      extra: parseExtra(document.getElementById('master-extra').value || '{}'),
+    };
+  }
+
+  async function saveMasterRow() {
+    const payload = readForm();
+    if (!payload.name) {
+      BT.notify('กรุณากรอก Name', 'warning');
+      return;
+    }
+    try {
+      const isEdit = Boolean(state.selectedId);
+      const url = isEdit ? '/api/hd-master/' + encodeURIComponent(state.selectedId) : '/api/hd-master?table=' + encodeURIComponent(state.table);
+      const res = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+      BT.notify('บันทึกเรียบร้อย', 'success');
+      await loadTable(state.table);
+    } catch (e) {
+      BT.notify('❌ ' + e.message, 'error');
+    }
+  }
+
+  async function deleteRow(id) {
+    if (!id) return;
+    const row = state.rows.find((item) => String(item.id) === String(id));
+    if (!confirm('ลบรายการ "' + (row?.name || row?.code || id) + '" ใช่ไหม')) return;
+    try {
+      const res = await fetch('/api/hd-master/' + encodeURIComponent(id), { method: 'DELETE', headers: authHeaders() });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'ลบไม่สำเร็จ');
+      BT.notify('ลบรายการเรียบร้อย', 'success');
+      await loadTable(state.table);
+    } catch (e) {
+      BT.notify('❌ ' + e.message, 'error');
+    }
+  }
+
+  async function deleteSelectedMasterRow() {
+    if (!state.selectedId) {
+      BT.notify('ยังไม่ได้เลือกแถว', 'warning');
+      return;
+    }
+    return deleteRow(state.selectedId);
+  }
+
+  async function clearSelectedMasterTable() {
+    const meta = metaFor(state.table);
+    if (!confirm('ล้างข้อมูลทั้งหมดของ ' + meta.label + ' ใช่ไหม')) return;
+    try {
+      const res = await fetch('/api/hd-master?table=' + encodeURIComponent(state.table) + '&action=clear', { method: 'DELETE', headers: authHeaders() });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'ล้างข้อมูลไม่สำเร็จ');
+      BT.notify('ล้าง ' + meta.label + ' เรียบร้อย', 'success');
+      await loadTable(state.table);
+    } catch (e) {
+      BT.notify('❌ ' + e.message, 'error');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    renderTableOptions();
+    loadTable(state.table);
+  });
+</script>
+</body>
+</html>

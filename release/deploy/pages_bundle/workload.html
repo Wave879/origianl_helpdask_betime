@@ -1,0 +1,81 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Workload View — Betime Solution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head><body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+<main class="bt-main-content">
+<div class="bt-page-header"><h2>Workload View</h2></div>
+<div class="bt-kpi-grid">
+  <div class="bt-card"><div class="bt-card-title">พนักงานทั้งหมด</div><div class="bt-card-value" id="k-total">-</div><div class="bt-card-sub">คน</div></div>
+  <div class="bt-card"><div class="bt-card-title">ภาระงานสูง</div><div class="bt-card-value" id="k-high" style="color:var(--bt-danger)">-</div><div class="bt-card-sub">คน (&gt;8 งาน)</div></div>
+  <div class="bt-card"><div class="bt-card-title">ภาระงานปกติ</div><div class="bt-card-value" id="k-normal" style="color:var(--bt-success)">-</div><div class="bt-card-sub">คน (3–7 งาน)</div></div>
+  <div class="bt-card"><div class="bt-card-title">ภาระงานต่ำ</div><div class="bt-card-value" id="k-low" style="color:var(--bt-accent)">-</div><div class="bt-card-sub">คน (&lt;3 งาน)</div></div>
+</div>
+<div class="bt-card" style="margin-bottom:20px">
+  <div class="bt-section-header"><h2>ภาระงานแต่ละคน</h2></div>
+  <div style="display:grid;gap:10px" id="wl-rows"><div style="color:var(--bt-muted);padding:12px;text-align:center">กำลังโหลด...</div></div>
+</div>
+<div class="bt-card">
+  <div class="bt-section-header"><h2>แนะนำการกระจายงาน</h2></div>
+  <div id="wl-suggest" style="display:grid;gap:10px"></div>
+</div>
+</main></div>
+<script src="/config.js"></script><script src="/shared.js"></script><script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('workload.html','Workload View');
+
+
+function renderWorkload(data){
+  const cap=10;
+  const high=data.filter(p=>p.task_count>=8).length;
+  const normal=data.filter(p=>p.task_count>=3&&p.task_count<8).length;
+  const low=data.filter(p=>p.task_count<3).length;
+  document.querySelector('#k-total').textContent=data.length;
+  document.querySelector('#k-high').textContent=high;
+  document.querySelector('#k-normal').textContent=normal;
+  document.querySelector('#k-low').textContent=low;
+  document.getElementById('wl-rows').innerHTML=data.length ? data.map(p=>{
+    const pct=Math.min(p.task_count/cap*100,100);
+    const col=p.task_count>=9?'var(--bt-danger)':p.task_count>=6?'var(--bt-warning)':'var(--bt-success)';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+      <div style="width:130px;font-size:0.85rem;font-weight:600;flex-shrink:0">${p.full_name}</div>
+      <div style="font-size:0.75rem;color:#94A3B8;width:70px;flex-shrink:0">${p.department||'-'}</div>
+      <div style="flex:1;background:#E2E8F0;border-radius:99px;height:8px">
+        <div style="width:${pct}%;background:${col};height:8px;border-radius:99px"></div>
+      </div>
+      <div style="font-size:0.82rem;font-weight:700;color:${col};width:50px;text-align:right;flex-shrink:0">${p.task_count} งาน</div>
+    </div>`;
+  }).join('') : '<div style="color:var(--bt-muted);padding:12px;text-align:center">??????????? workload</div>';
+  const overloaded = data.filter(p=>p.task_count>=8);
+  const light = data.filter(p=>p.task_count<3);
+  document.getElementById('wl-suggest').innerHTML = !data.length
+    ? '<div style="padding:14px;background:#f8fafc;border-radius:8px;border-left:3px solid var(--bt-border)"><div style="font-size:0.88rem">?????????????????????????????????????????</div></div>'
+    : overloaded.length
+    ? overloaded.map(p=>`<div style="padding:14px;background:#FEF2F2;border-radius:8px;border-left:3px solid var(--bt-danger)">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">${p.full_name} — ภาระงานสูง (${p.task_count} งาน)</div>
+        <div style="font-size:0.82rem;color:#64748B">แนะนำกระจายงานให้${light.length?light[0].full_name:'ผู้ที่มีงานน้อยกว่า'}</div>
+      </div>`).join('')
+    : '<div style="padding:14px;background:#f0fdf4;border-radius:8px;border-left:3px solid var(--bt-success)"><div style="font-size:0.88rem">ภาระงานสมดุลดี ✓</div></div>';
+}
+
+async function loadWorkload(){
+  try{
+    const token=localStorage.getItem('bt_token');
+    const res=await fetch('/api/dashboard/hr',{headers:{'Authorization':'Bearer '+token}});
+    const d=await res.json();
+    if(d.ok && d.workload && d.workload.length){
+      renderWorkload(d.workload);
+    } else {
+      renderWorkload([]);
+    }
+  }catch(e){
+    renderWorkload([]);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',loadWorkload);
+</script>
+</body></html>

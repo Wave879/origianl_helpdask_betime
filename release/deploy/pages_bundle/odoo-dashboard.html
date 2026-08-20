@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Odoo Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media(max-width:900px){ .two-col{grid-template-columns:1fr;} }
+    .oo-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--bt-border); font-size:0.88rem; }
+    .oo-row:last-child { border-bottom:none; }
+    .oo-module { display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--bt-border); border-radius:12px; background:#fff; cursor:pointer; transition:0.15s; }
+    .oo-module:hover { border-color:var(--bt-primary); box-shadow:0 4px 12px rgba(249,115,22,0.1); }
+    .oo-mod-icon { width:42px; height:42px; border-radius:10px; display:grid; place-items:center; font-size:1.2rem; flex-shrink:0; }
+    .oo-mod-name { font-weight:700; font-size:0.9rem; }
+    .oo-mod-sub  { font-size:0.76rem; color:var(--bt-muted); margin-top:2px; }
+    .oo-modules-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-boxes"></i> Odoo Dashboard</h2>
+      <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="BT.notify('ฟีเจอร์นี้กำลังพัฒนา','info')"><i class="bi bi-box-arrow-up-right"></i> เปิด Odoo</button>
+    </div>
+
+    <!-- KPI -->
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
+      <div class="bt-card"><div class="bt-card-title">Module ที่ใช้งาน</div><div class="bt-card-value" id="kpi-modules" style="color:var(--bt-primary)">—</div><div class="bt-card-sub">Installed</div></div>
+      <div class="bt-card"><div class="bt-card-title">User ทั้งหมด</div><div class="bt-card-value" id="kpi-users" style="color:var(--bt-success)">—</div><div class="bt-card-sub">Active users</div></div>
+      <div class="bt-card"><div class="bt-card-title">Task เปิดอยู่</div><div class="bt-card-value" id="kpi-tasks" style="color:var(--bt-warning)">—</div><div class="bt-card-sub">Open items</div></div>
+      <div class="bt-card"><div class="bt-card-title">Odoo Version</div><div class="bt-card-value" id="kpi-version" style="color:#7c3aed;font-size:1.2rem">17.0</div><div class="bt-card-sub">Community</div></div>
+    </div>
+
+    <!-- Modules Grid -->
+    <div class="bt-card" style="margin-bottom:20px">
+      <div class="bt-section-header"><h2><i class="bi bi-grid" style="color:var(--bt-primary)"></i> Odoo Modules</h2></div>
+      <div class="oo-modules-grid" id="modules-grid"></div>
+    </div>
+
+    <div class="two-col">
+      <!-- Recent Activities -->
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-clock-history" style="color:var(--bt-accent)"></i> กิจกรรมล่าสุด</h2></div>
+        <div id="activity-list"></div>
+      </div>
+      <!-- Customization Tasks -->
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-tools" style="color:var(--bt-success)"></i> Customization Tasks</h2></div>
+        <div id="custom-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('odoo-dashboard.html', 'Odoo');
+
+const MODULES_DATA = [];
+
+const ACTIVITIES_DATA = [];
+
+const CUSTOM_TASKS_DATA = [];
+
+const STATUS_STYLE = {
+  done:    'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0',
+  wip:     'background:#fef9c3;color:#854d0e;border:1px solid #fde68a',
+  backlog: 'background:#f8fafc;color:#475569;border:1px solid #cbd5e1',
+};
+const STATUS_LABEL = { done:'Done', wip:'In Progress', backlog:'Backlog' };
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('kpi-modules').textContent = MODULES_DATA.length;
+  document.getElementById('kpi-users').textContent   = 24;
+  document.getElementById('kpi-tasks').textContent   = CUSTOM_TASKS_DATA.filter(x => x.status === 'wip').length;
+
+  document.getElementById('modules-grid').innerHTML = MODULES_DATA.map(m => `
+    <div class="oo-module" onclick="BT.notify('เปิด Module ${m.name}','info')">
+      <div class="oo-mod-icon" style="background:${m.color}">${m.icon}</div>
+      <div><div class="oo-mod-name">${m.name}</div><div class="oo-mod-sub">${m.sub}</div></div>
+    </div>`).join('');
+
+  document.getElementById('activity-list').innerHTML = ACTIVITIES_DATA.map(a => `
+    <div class="oo-row">
+      <i class="bi bi-check-circle" style="color:var(--bt-success);flex-shrink:0"></i>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.88rem">${a.text}</div>
+        <div style="font-size:0.76rem;color:var(--bt-muted)">${a.user} · ${a.time}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('custom-list').innerHTML = CUSTOM_TASKS_DATA.map(c => `
+    <div class="oo-row">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.88rem">${c.name}</div>
+        <div style="font-size:0.76rem;color:var(--bt-muted)">${c.assignee}</div>
+      </div>
+      <span style="display:inline-flex;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;${STATUS_STYLE[c.status]}">${STATUS_LABEL[c.status]}</span>
+    </div>`).join('');
+});
+</script>
+</body>
+</html>

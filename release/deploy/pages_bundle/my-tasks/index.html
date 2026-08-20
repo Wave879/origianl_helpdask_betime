@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tracking TOR - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    body.betime-portal {
+      background: linear-gradient(135deg, #f8fbff 0%, #f4f7fb 56%, #fff8f0 100%);
+      font-family: 'Sarabun', sans-serif;
+    }
+    .tor-page {
+      width: min(100%, 1160px);
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+    .tor-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+    .tor-kicker {
+      color: #ea580c;
+      font-weight: 900;
+      font-size: .76rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .tor-title {
+      margin: 4px 0 0;
+      color: #07162f;
+      font-size: clamp(1.45rem, 2.2vw, 1.95rem);
+      line-height: 1.15;
+      font-weight: 900;
+    }
+    .tor-subtitle {
+      margin: 6px 0 0;
+      color: #64748b;
+      font-size: .92rem;
+      line-height: 1.45;
+    }
+    .tor-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 100%;
+    }
+    .tor-card {
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid #d8e2ef;
+      border-radius: 18px;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, .07);
+      min-width: 0;
+    }
+    .tor-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, .88fr) minmax(420px, 1.12fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .tor-panel { padding: 18px; min-width: 0; }
+    .tor-panel-title {
+      margin: 0 0 14px;
+      color: #0f172a;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+    .tor-form { display: grid; gap: 11px; }
+    .tor-field label {
+      display: block;
+      margin-bottom: 5px;
+      color: #334155;
+      font-weight: 800;
+      font-size: .86rem;
+    }
+    .tor-input, .tor-select, .tor-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cbd8e8;
+      border-radius: 12px;
+      background: #fff;
+      color: #0f172a;
+      font: inherit;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .tor-input, .tor-select { height: 44px; padding: 0 12px; }
+    .tor-textarea { min-height: 92px; resize: vertical; padding: 12px; }
+    .tor-input:focus, .tor-select:focus, .tor-textarea:focus {
+      border-color: #0f3f8c;
+      box-shadow: 0 0 0 4px rgba(15, 63, 140, .1);
+    }
+    .tor-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 11px; }
+    .tor-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(88px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .tor-stat {
+      padding: 12px;
+      border-radius: 15px;
+      border: 1px solid #dbe6f4;
+      background: #fff;
+      min-width: 0;
+    }
+    .tor-stat span {
+      display: block;
+      color: #64748b;
+      font-size: .76rem;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .tor-stat b {
+      display: block;
+      color: #07162f;
+      font-size: 1.45rem;
+      line-height: 1;
+      margin-top: 7px;
+    }
+    .tor-list { display: grid; gap: 10px; min-width: 0; }
+    .tor-item {
+      border: 1px solid #dbe6f4;
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      min-width: 0;
+    }
+    .tor-name { color: #0f172a; font-weight: 900; font-size: 1rem; overflow-wrap: anywhere; }
+    .tor-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; color: #64748b; font-size: .84rem; }
+    .tor-desc { margin-top: 9px; color: #475569; font-size: .88rem; overflow-wrap: anywhere; }
+    .tor-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: .76rem;
+      white-space: nowrap;
+    }
+    .is-open { background: #dbeafe; color: #1d4ed8; }
+    .is-progress { background: #ffedd5; color: #c2410c; }
+    .is-done { background: #dcfce7; color: #15803d; }
+    .priority-critical { background: #fee2e2; color: #b91c1c; }
+    .priority-high { background: #ffedd5; color: #c2410c; }
+    .priority-medium { background: #e0f2fe; color: #0369a1; }
+    .priority-low { background: #f1f5f9; color: #475569; }
+    .tor-item-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 7px;
+      flex-wrap: wrap;
+      max-width: 240px;
+    }
+    .tor-empty {
+      padding: 28px 14px;
+      text-align: center;
+      border: 1px dashed #cbd8e8;
+      border-radius: 16px;
+      color: #64748b;
+      background: #f8fbff;
+    }
+    .tor-alert { display: none; padding: 12px 14px; border-radius: 14px; margin-bottom: 12px; font-weight: 700; }
+    .tor-alert.show { display: block; }
+    .tor-alert.error { color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; }
+    .tor-alert.info { color: #174173; background: #dbeafe; border: 1px solid #bfdbfe; }
+    .tor-loading { opacity: .68; pointer-events: none; }
+    .bt-btn-sm { min-height: 32px; padding: 0 11px; font-size: .8rem; border-radius: 999px; }
+    @media (max-width: 1280px) {
+      .tor-page { width: 100%; padding-inline: 14px; }
+      .tor-grid { grid-template-columns: minmax(300px, .86fr) minmax(380px, 1.14fr); }
+    }
+    @media (max-width: 1120px) {
+      .tor-head { grid-template-columns: 1fr; align-items: start; }
+      .tor-actions { justify-content: flex-start; }
+      .tor-grid { grid-template-columns: 1fr; }
+      .tor-item { grid-template-columns: 1fr; }
+      .tor-item-actions { max-width: none; justify-content: flex-start; }
+    }
+    @media (max-width: 720px) {
+      .tor-row, .tor-stats { grid-template-columns: 1fr; }
+      .tor-page { padding: 14px 10px 30px; }
+      .tor-panel { padding: 14px; }
+      .tor-actions .bt-btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="tor-page" id="tor-page">
+      <header class="tor-head">
+        <div>
+          <div class="tor-kicker">Project CO.</div>
+          <h1 class="tor-title">Tracking TOR</h1>
+          <p class="tor-subtitle">ติดตามงาน TOR ของตัวเอง เพิ่มงานใหม่ เปลี่ยนสถานะ และเช็คงานเกินกำหนดได้ในหน้าเดียว</p>
+        </div>
+        <div class="tor-actions">
+          <button class="bt-btn bt-btn-outline" type="button" id="btn-refresh"><i class="bi bi-arrow-clockwise"></i> รีเฟรช</button>
+          <button class="bt-btn bt-btn-primary" type="button" id="btn-demo"><i class="bi bi-plus-circle"></i> เพิ่มงานตัวอย่าง</button>
+        </div>
+      </header>
+
+      <div class="tor-alert" id="tor-alert"></div>
+
+      <section class="tor-grid">
+        <div class="tor-card tor-panel">
+          <h2 class="tor-panel-title">เพิ่มงาน TOR</h2>
+          <form class="tor-form" id="task-form">
+            <div class="tor-field">
+              <label for="task-name">ชื่องาน</label>
+              <input class="tor-input" id="task-name" required placeholder="เช่น ตรวจ TOR รอบแรก">
+            </div>
+            <div class="tor-field">
+              <label for="task-project">โครงการ / แผนก</label>
+              <input class="tor-input" id="task-project" placeholder="เช่น Project CO. / PM / HR">
+            </div>
+            <div class="tor-row">
+              <div class="tor-field">
+                <label for="task-priority">Priority</label>
+                <select class="tor-select" id="task-priority">
+                  <option value="Critical">Critical</option>
+                  <option value="High">High</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+              <div class="tor-field">
+                <label for="task-deadline">กำหนดส่ง</label>
+                <input class="tor-input" id="task-deadline" type="date">
+              </div>
+            </div>
+            <div class="tor-field">
+              <label for="task-description">รายละเอียด</label>
+              <textarea class="tor-textarea" id="task-description" placeholder="ใส่รายละเอียด / เงื่อนไข / สิ่งที่ต้องตามต่อ"></textarea>
+            </div>
+            <button class="bt-btn bt-btn-success" type="submit"><i class="bi bi-save2"></i> บันทึกงาน</button>
+          </form>
+        </div>
+
+        <div class="tor-card tor-panel">
+          <h2 class="tor-panel-title">งานของฉัน</h2>
+          <div class="tor-stats">
+            <div class="tor-stat"><span>ทั้งหมด</span><b id="stat-total">0</b></div>
+            <div class="tor-stat"><span>กำลังทำ</span><b id="stat-active">0</b></div>
+            <div class="tor-stat"><span>เกินกำหนด</span><b id="stat-overdue">0</b></div>
+            <div class="tor-stat"><span>เสร็จแล้ว</span><b id="stat-done">0</b></div>
+          </div>
+          <div class="tor-list" id="task-list">
+            <div class="tor-empty">กำลังโหลดงาน...</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('my-tasks', 'Tracking TOR');
+
+let tasks = [];
+const page = document.getElementById('tor-page');
+const alertBox = document.getElementById('tor-alert');
+
+function showAlert(message, type = 'info') {
+  alertBox.textContent = message;
+  alertBox.className = 'tor-alert show ' + type;
+}
+
+function clearAlert() {
+  alertBox.textContent = '';
+  alertBox.className = 'tor-alert';
+}
+
+function getToken() {
+  const token = BT.getToken ? BT.getToken() : localStorage.getItem('bt_token');
+  if (!token) {
+    window.location.href = BT.url('/login') + '?next=' + encodeURIComponent(window.location.pathname);
+    throw new Error('กรุณาเข้าสู่ระบบก่อนใช้งาน');
+  }
+  return token;
+}
+
+async function api(path, options = {}) {
+  const res = await fetch('/api/' + path.replace(/^\/+/, ''), {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + getToken(),
+      ...(options.headers || {}),
+    },
+  });
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    const message = /^\s*</.test(text)
+      ? 'API ส่งหน้า HTML กลับมา แปลว่า session หมดอายุหรือ endpoint ไม่ถูกต้อง กรุณา login ใหม่แล้วลองอีกครั้ง'
+      : text.slice(0, 220);
+    throw new Error(message);
+  }
+  if (!res.ok || data.error) throw new Error(data.error || data.message || res.statusText);
+  return data;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[char]);
+}
+
+function statusClass(status) {
+  if (status === 'Completed') return 'is-done';
+  if (status === 'In Progress') return 'is-progress';
+  return 'is-open';
+}
+
+function priorityClass(priority) {
+  const value = String(priority || 'Medium').toLowerCase();
+  if (value === 'critical') return 'priority-critical';
+  if (value === 'high') return 'priority-high';
+  if (value === 'low') return 'priority-low';
+  return 'priority-medium';
+}
+
+function isOverdue(task) {
+  if (!task.deadline || task.status === 'Completed') return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(task.deadline) < today;
+}
+
+function displayDate(value) {
+  if (!value) return 'ไม่ระบุวัน';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = tasks.length;
+  document.getElementById('stat-active').textContent = tasks.filter((task) => task.status !== 'Completed').length;
+  document.getElementById('stat-overdue').textContent = tasks.filter(isOverdue).length;
+  document.getElementById('stat-done').textContent = tasks.filter((task) => task.status === 'Completed').length;
+}
+
+function renderTasks() {
+  updateStats();
+  const list = document.getElementById('task-list');
+  if (!tasks.length) {
+    list.innerHTML = '<div class="tor-empty">ยังไม่มีงาน TOR ของคุณ กดเพิ่มงานตัวอย่างหรือสร้างงานใหม่ได้เลย</div>';
+    return;
+  }
+
+  list.innerHTML = tasks.map((task) => `
+    <article class="tor-item">
+      <div>
+        <div class="tor-name">${escapeHtml(task.task_name || '-')}</div>
+        <div class="tor-meta">
+          <span><i class="bi bi-building"></i> ${escapeHtml(task.project || 'ไม่ระบุโครงการ')}</span>
+          <span><i class="bi bi-calendar-event"></i> ${escapeHtml(displayDate(task.deadline))}</span>
+          ${isOverdue(task) ? '<span style="color:#b91c1c;font-weight:900"><i class="bi bi-exclamation-triangle"></i> เกินกำหนด</span>' : ''}
+        </div>
+        ${task.description ? `<div class="tor-desc">${escapeHtml(task.description)}</div>` : ''}
+      </div>
+      <div class="tor-item-actions">
+        <span class="tor-badge ${priorityClass(task.priority)}">${escapeHtml(task.priority || 'Medium')}</span>
+        <span class="tor-badge ${statusClass(task.status)}">${escapeHtml(task.status || 'Open')}</span>
+        <button class="bt-btn bt-btn-outline bt-btn-sm" type="button" onclick="setStatus('${escapeHtml(task.id)}', 'In Progress')">กำลังทำ</button>
+        <button class="bt-btn bt-btn-success bt-btn-sm" type="button" onclick="setStatus('${escapeHtml(task.id)}', 'Completed')">เสร็จ</button>
+        <button class="bt-btn bt-btn-outline bt-btn-sm" type="button" onclick="removeTask('${escapeHtml(task.id)}')">ลบ</button>
+      </div>
+    </article>
+  `).join('');
+}
+
+async function loadTasks() {
+  page.classList.add('tor-loading');
+  clearAlert();
+  try {
+    const data = await api('tasks?mine=1');
+    tasks = Array.isArray(data.data) ? data.data : [];
+    renderTasks();
+  } catch (error) {
+    tasks = [];
+    renderTasks();
+    showAlert(error.message, 'error');
+  } finally {
+    page.classList.remove('tor-loading');
+  }
+}
+
+async function createTask(payload) {
+  page.classList.add('tor-loading');
+  try {
+    await api('tasks', { method: 'POST', body: JSON.stringify(payload) });
+    showAlert('บันทึกงานเรียบร้อย', 'info');
+    await loadTasks();
+  } catch (error) {
+    showAlert(error.message, 'error');
+  } finally {
+    page.classList.remove('tor-loading');
+  }
+}
+
+async function setStatus(id, status) {
+  const task = tasks.find((item) => item.id === id);
+  if (!task) return;
+  try {
+    await api('tasks/' + encodeURIComponent(id), {
+      method: 'PUT',
+      body: JSON.stringify({
+        task_name: task.task_name || '-',
+        status,
+        priority: task.priority || 'Medium',
+        deadline: task.deadline || null,
+        description: task.description || '',
+        assigned_to: task.assigned_to || '',
+      }),
+    });
+    await loadTasks();
+  } catch (error) {
+    showAlert(error.message, 'error');
+  }
+}
+
+async function removeTask(id) {
+  if (!confirm('ลบงาน TOR นี้ใช่ไหม?')) return;
+  try {
+    await api('tasks/' + encodeURIComponent(id), { method: 'DELETE', body: '{}' });
+    await loadTasks();
+  } catch (error) {
+    showAlert(error.message, 'error');
+  }
+}
+
+document.getElementById('task-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const taskName = document.getElementById('task-name').value.trim();
+  if (!taskName) return;
+  await createTask({
+    task_name: taskName,
+    project: document.getElementById('task-project').value.trim(),
+    priority: document.getElementById('task-priority').value,
+    deadline: document.getElementById('task-deadline').value || null,
+    status: 'Open',
+    description: document.getElementById('task-description').value.trim(),
+  });
+  event.currentTarget.reset();
+});
+
+document.getElementById('btn-refresh').addEventListener('click', loadTasks);
+document.getElementById('btn-demo').addEventListener('click', async () => {
+  const soon = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+  await createTask({
+    task_name: 'ตรวจ TOR และสรุปประเด็นที่ต้องติดตาม',
+    project: 'Project CO.',
+    priority: 'High',
+    deadline: soon,
+    status: 'Open',
+    description: 'งานตัวอย่างสำหรับทดสอบหน้า Tracking TOR',
+  });
+});
+
+window.setStatus = setStatus;
+window.removeTask = removeTask;
+document.addEventListener('DOMContentLoaded', loadTasks);
+</script>
+</body>
+</html>

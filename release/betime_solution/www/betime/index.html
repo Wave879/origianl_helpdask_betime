@@ -1,0 +1,161 @@
+{% extends "templates/web.html" %}
+{% block title %}Betime Solution Portal{% endblock %}
+{% block head_include %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+{% endblock %}
+
+{% block page_content %}
+<div class="betime-portal bt-shell-body">
+  <header class="bt-appbar">
+    <a class="bt-appbar-brand" href="/betime">
+      <span class="bt-brand-mark">BT</span>
+      <span>
+        <strong>Betime Solution</strong>
+        <small>Enterprise Admin</small>
+      </span>
+    </a>
+
+    <nav class="bt-top-menu" aria-label="Main navigation">
+      <a href="/betime" class="active">หน้าแรก</a>
+      <a href="#announcements">ประกาศ</a>
+      <a href="#how-to">วิธีใช้</a>
+    </nav>
+
+    <div class="bt-appbar-actions">
+      <button class="bt-icon-button" aria-label="Notifications"><i data-lucide="bell"></i></button>
+      <a class="bt-icon-button" aria-label="Settings" href="/app"><i data-lucide="settings"></i></a>
+      <div class="bt-user-chip"><span>{{ user_name }}</span></div>
+    </div>
+  </header>
+
+  <div class="bt-admin-shell">
+    <aside class="bt-sidebar">
+      <div class="bt-admin-card">
+        <div class="bt-admin-avatar"><i data-lucide="shield-check"></i></div>
+        <strong>{{ user_name }}</strong>
+        <span>ADMIN PANEL</span>
+      </div>
+
+      <nav class="bt-side-nav" aria-label="Admin navigation">
+        <a href="/app/project-master" class="bt-side-link">
+          <i data-lucide="folder-kanban"></i>
+          <span>Project Management</span>
+        </a>
+        <a href="/betime" class="bt-side-link active">
+          <i data-lucide="users"></i>
+          <span>สรุปการพัฒนาแต่ละบุคคล</span>
+        </a>
+        <a href="/betime/my-tasks" class="bt-side-link">
+          <i data-lucide="list-checks"></i>
+          <span>งานของฉัน</span>
+        </a>
+        <a href="/betime/help-desk" class="bt-side-link">
+          <i data-lucide="bot"></i>
+          <span>Help Desk AI</span>
+        </a>
+        {% if is_ceo %}
+        <a href="/betime/ceo-dashboard" class="bt-side-link">
+          <i data-lucide="bar-chart-3"></i>
+          <span>แดชบอร์ดผู้บริหาร</span>
+        </a>
+        {% endif %}
+        <a href="/betime/submit-ot" class="bt-side-link">
+          <i data-lucide="clock-3"></i>
+          <span>ยื่น OT</span>
+        </a>
+        {% if is_admin %}
+        <a href="/app/user" class="bt-side-link">
+          <i data-lucide="settings"></i>
+          <span>ตั้งค่าระบบ</span>
+        </a>
+        {% endif %}
+      </nav>
+
+      <button class="bt-refresh-button" onclick="window.location.reload()">
+        <i data-lucide="refresh-cw"></i>
+        รีเฟรชข้อมูล
+      </button>
+    </aside>
+
+    <main class="bt-workspace">
+      <section class="bt-page-heading">
+        <div>
+          <h1><i data-lucide="users"></i> สรุปการพัฒนาแต่ละบุคคล</h1>
+          <p>เลือกเมนูด้านซ้ายเพื่อเข้าสู่โมดูลหลักของระบบ Betime</p>
+        </div>
+        <a class="bt-soft-button" href="/app">
+          <i data-lucide="external-link"></i>
+          เปิด Desk
+        </a>
+      </section>
+
+      <section class="bt-overview-panel">
+        <div class="bt-person-select">
+          <label><i data-lucide="user-round"></i> เลือกบุคลากร</label>
+          <select>
+            <option>{{ user_name }}</option>
+            <option>Project Manager</option>
+            <option>Finance Officer</option>
+          </select>
+        </div>
+        <div class="bt-metric-card lavender">
+          <strong>3</strong>
+          <span>ชั่วโมงรวม</span>
+        </div>
+        <div class="bt-metric-card cyan">
+          <strong>1</strong>
+          <span>รายการทั้งหมด</span>
+        </div>
+      </section>
+
+      <section class="bt-data-panel">
+        <div class="bt-panel-title">
+          <i data-lucide="clipboard-list"></i>
+          <h2>รายการพัฒนาตนเอง - {{ user_name }}</h2>
+        </div>
+        <div class="bt-table-wrap">
+          <table class="bt-admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>วันที่อบรม</th>
+                <th>หัวข้อการอบรม</th>
+                <th>หน่วยงานที่จัด</th>
+                <th>ชั่วโมง</th>
+                <th>เกียรติบัตร</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><span class="bt-date-pill"><i data-lucide="calendar-days"></i> 25/04/2026</span></td>
+                <td><strong>อบรมโครงการเสริมทักษะดิจิทัล สร้างสรรค์สื่อการสอนยุคใหม่ด้วย Canva</strong></td>
+                <td>สพฐ. และ Canva</td>
+                <td><strong class="bt-hours">3</strong></td>
+                <td><div class="bt-certificate-thumb"></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bt-info-grid">
+        <div class="bt-info-panel" id="announcements">
+          <h2><i data-lucide="megaphone"></i> ประกาศ</h2>
+          <p>ระบบ Betime Portal ปรับโครงสร้างเป็นเมนูด้านบนและตัวเลือกด้านข้าง เพื่อให้เข้าถึงโมดูลหลักได้เร็วขึ้น</p>
+        </div>
+        <div class="bt-info-panel" id="how-to">
+          <h2><i data-lucide="circle-help"></i> วิธีใช้</h2>
+          <p>ใช้แถบด้านบนเพื่อกลับหน้าแรก ดูประกาศ หรืออ่านวิธีใช้ และใช้เมนูด้านซ้ายเพื่อเข้าสู่ Workspace, Help Desk, Dashboard และงานต่าง ๆ</p>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>lucide.createIcons();</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Management Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-folder"></i> Project Management Dashboard</h2></div>
+    <div class="bt-kpi-grid">
+      <div class="bt-card"><div class="bt-card-title">โครงการ Active</div><div class="bt-card-value" id="pm-active">—</div><div class="bt-card-sub">โครงการ</div></div>
+      <div class="bt-card"><div class="bt-card-title">งานทั้งหมด</div><div class="bt-card-value" id="pm-tasks" style="color:var(--bt-warning)">—</div><div class="bt-card-sub">รายการ</div></div>
+      <div class="bt-card"><div class="bt-card-title">งานเกินกำหนด</div><div class="bt-card-value" id="pm-overdue" style="color:var(--bt-danger)">—</div><div class="bt-card-sub">รายการ</div></div>
+      <div class="bt-card"><div class="bt-card-title">ประชุมเดือนนี้</div><div class="bt-card-value" id="pm-meetings" style="color:var(--bt-success)">—</div><div class="bt-card-sub">ครั้ง</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">
+      <div class="bt-card">
+        <div class="bt-section-header">
+          <h2>โครงการล่าสุด</h2>
+          <a href="/projects.html" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+        </div>
+        <div id="pm-projects-list"><p style="color:#888;text-align:center;padding:30px">กำลังโหลด...</p></div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-section-header">
+          <h2>งานเร่งด่วน</h2>
+          <a href="/my-tasks.html" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+        </div>
+        <div id="pm-tasks-list"><p style="color:#888;text-align:center;padding:30px">กำลังโหลด...</p></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('pm-dashboard.html', 'Project Management');
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const d = await BT.call('dashboard/projects', {}, 'GET');
+      document.getElementById('pm-active').textContent   = d.active_projects ?? 0;
+      document.getElementById('pm-tasks').textContent    = d.open_tasks ?? 0;
+      document.getElementById('pm-overdue').textContent  = d.overdue_tasks ?? 0;
+      document.getElementById('pm-meetings').textContent = d.meetings_this_month ?? 0;
+
+      const riskColor = { High:'red', Medium:'orange', Low:'green' };
+      const projRows = (d.projects || []).map(p => `
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:0.85rem;font-weight:600">${p.project_name}</span>
+            <span class="bt-badge bt-badge-${riskColor[p.risk_level]||'grey'}">${p.risk_level||'Low'}</span>
+          </div>
+          <div style="background:#e5e7eb;border-radius:99px;height:6px">
+            <div style="width:${p.progress||0}%;background:var(--bt-primary);height:6px;border-radius:99px"></div>
+          </div>
+          <div style="font-size:0.75rem;color:#888;margin-top:2px">กำหนด: ${p.deadline||'-'}</div>
+        </div>`).join('');
+      document.getElementById('pm-projects-list').innerHTML = projRows || '<p style="color:#888;text-align:center;padding:20px">ไม่มีโครงการ</p>';
+
+      const prioColor = { Critical:'red', High:'orange', Medium:'blue', Low:'grey' };
+      const taskRows = (d.urgent_tasks || []).map(t => `<tr>
+        <td>${t.task_name}</td>
+        <td><span class="bt-badge bt-badge-${prioColor[t.priority]||'grey'}">${t.priority||'-'}</span></td>
+        <td style="font-size:0.82rem;color:${t.deadline && t.deadline < new Date().toISOString().slice(0,10) ? 'var(--bt-danger)' : '#888'}">${t.deadline||'-'}</td>
+      </tr>`).join('');
+      document.getElementById('pm-tasks-list').innerHTML = taskRows
+        ? `<table class="bt-table"><thead><tr><th>งาน</th><th>Priority</th><th>กำหนด</th></tr></thead><tbody>${taskRows}</tbody></table>`
+        : '<p style="color:#888;text-align:center;padding:20px">ไม่มีงานเร่งด่วน 🎉</p>';
+    } catch(e) {
+      if (e.message === 'Unauthorized') { BT.handleUnauthorized(); return; }
+    }
+  });
+</script>
+</body>
+</html>

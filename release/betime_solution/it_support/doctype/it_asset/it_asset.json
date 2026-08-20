@@ -1,0 +1,182 @@
+{
+ "actions": [],
+ "autoname": "format:BT-ASSET-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "IT Support",
+ "name": "IT Asset",
+ "naming_rule": "Expression",
+ "title_field": "asset_name",
+ "search_fields": "asset_name,asset_type,serial_number,assigned_user",
+ "track_changes": 1,
+ "fields": [
+  {
+   "fieldname": "asset_name",
+   "fieldtype": "Data",
+   "label": "ชื่อทรัพย์สิน",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "asset_type",
+   "fieldtype": "Select",
+   "label": "ประเภท",
+   "options": "Desktop\nLaptop\nServer\nNetwork Equipment\nPrinter\nMobile Device\nSoftware License\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "สถานะ",
+   "options": "Active\nIn Repair\nRetired\nLost\nReserved",
+   "default": "Active",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "condition",
+   "fieldtype": "Select",
+   "label": "สภาพ",
+   "options": "Excellent\nGood\nFair\nPoor",
+   "default": "Good"
+  },
+  {
+   "fieldname": "sec_details",
+   "fieldtype": "Section Break",
+   "label": "ข้อมูลทรัพย์สิน"
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Data",
+   "label": "ยี่ห้อ"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "รุ่น"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "serial_number",
+   "fieldtype": "Data",
+   "label": "Serial Number",
+   "unique": 1
+  },
+  {
+   "fieldname": "asset_tag",
+   "fieldtype": "Data",
+   "label": "Asset Tag"
+  },
+  {
+   "fieldname": "sec_assignment",
+   "fieldtype": "Section Break",
+   "label": "การมอบหมาย"
+  },
+  {
+   "fieldname": "assigned_user",
+   "fieldtype": "Link",
+   "label": "ผู้รับผิดชอบ",
+   "options": "User",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Data",
+   "label": "แผนก"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "สถานที่"
+  },
+  {
+   "fieldname": "purchase_date",
+   "fieldtype": "Date",
+   "label": "วันที่ซื้อ"
+  },
+  {
+   "fieldname": "sec_financial",
+   "fieldtype": "Section Break",
+   "label": "ข้อมูลการเงิน"
+  },
+  {
+   "fieldname": "purchase_cost",
+   "fieldtype": "Currency",
+   "label": "ราคาซื้อ"
+  },
+  {
+   "fieldname": "warranty_expiry",
+   "fieldtype": "Date",
+   "label": "หมดประกัน"
+  },
+  {
+   "fieldname": "col_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Data",
+   "label": "ผู้จำหน่าย"
+  },
+  {
+   "fieldname": "support_contract_expiry",
+   "fieldtype": "Date",
+   "label": "หมดสัญญาบริการ"
+  },
+  {
+   "fieldname": "sec_notes",
+   "fieldtype": "Section Break",
+   "label": "หมายเหตุ"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "หมายเหตุเพิ่มเติม"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 0, "export": 0, "print": 0
+  }
+ ],
+ "sort_field": "asset_name",
+ "sort_order": "ASC",
+ "links": [],
+ "states": []
+}

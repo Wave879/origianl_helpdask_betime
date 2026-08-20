@@ -1,0 +1,137 @@
+{
+ "actions": [],
+ "autoname": "format:BT-LL-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "AI Knowledge",
+ "name": "Lesson Learned",
+ "naming_rule": "Expression",
+ "title_field": "title",
+ "search_fields": "title,category,project",
+ "track_changes": 1,
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "หัวข้อบทเรียน",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "โครงการ",
+   "options": "Project Master",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "label": "ประเภท",
+   "options": "Technical\nProcess\nCommunication\nRisk Management\nContract\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "severity",
+   "fieldtype": "Select",
+   "label": "ระดับความสำคัญ",
+   "options": "Low\nMedium\nHigh",
+   "default": "Medium",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sec_detail",
+   "fieldtype": "Section Break",
+   "label": "รายละเอียดบทเรียน"
+  },
+  {
+   "fieldname": "problem",
+   "fieldtype": "Text",
+   "label": "ปัญหาที่เกิดขึ้น (Problem)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "root_cause",
+   "fieldtype": "Text",
+   "label": "สาเหตุหลัก (Root Cause)"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "solution",
+   "fieldtype": "Text",
+   "label": "วิธีแก้ไข (Solution)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "outcome",
+   "fieldtype": "Text",
+   "label": "ผลลัพธ์ (Outcome)"
+  },
+  {
+   "fieldname": "sec_meta",
+   "fieldtype": "Section Break",
+   "label": "Metadata"
+  },
+  {
+   "fieldname": "date_occurred",
+   "fieldtype": "Date",
+   "label": "วันที่เกิดขึ้น"
+  },
+  {
+   "fieldname": "applicable_to",
+   "fieldtype": "Data",
+   "label": "ใช้ได้กับโครงการประเภท"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "linked_knowledge",
+   "fieldtype": "Link",
+   "label": "Knowledge Base ที่เกี่ยวข้อง",
+   "options": "AI Knowledge Base"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 0, "export": 0, "print": 1
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  }
+ ],
+ "sort_field": "date_occurred",
+ "sort_order": "DESC",
+ "links": [],
+ "states": []
+}

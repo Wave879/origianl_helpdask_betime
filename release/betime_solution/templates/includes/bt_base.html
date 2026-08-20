@@ -1,0 +1,32 @@
+{% extends "templates/web.html" %}
+{% block title %}{{ title or 'Betime Solution' }}{% endblock %}
+{% block page_content %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="bt-shell-body">
+  <!-- Topbar -->
+  <header class="bt-appbar">
+    <button class="bt-hamburger" onclick="BT.sidebarToggle()">&#9776;</button>
+    <a href="/betime" class="bt-appbar-brand">
+      <div class="bt-brand-mark">BT</div>
+      <span><strong>Betime Solution</strong><small>Enterprise Platform</small></span>
+    </a>
+    <div style="flex:1"></div>
+    <div class="bt-appbar-actions">
+      <span class="bt-user-chip">{{ frappe.session.user.split('@')[0] }}</span>
+    </div>
+  </header>
+
+  <!-- Layout: sidebar + content -->
+  <div class="bt-layout">
+    {% include "betime_solution/templates/includes/bt_sidebar.html" %}
+    <main class="bt-main-content">
+      {% block bt_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+{% endblock %}

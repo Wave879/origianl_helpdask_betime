@@ -1,0 +1,258 @@
+{% extends "templates/web.html" %}
+{% block title %}STT Tool BT — ถอดเสียง AI{% endblock %}
+{% block head_include %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
+<div class="betime-portal">
+
+  <nav class="bt-topbar">
+    <a href="/betime" class="bt-logo">🏢 Betime Solution</a>
+    <div class="bt-nav">
+      <a href="/betime">หน้าหลัก</a>
+      <a href="/betime/stt-tool" class="active">🎙 STT Tool</a>
+      <span class="bt-user-badge">👤 {{ user_name }}</span>
+    </div>
+  </nav>
+
+  <div class="bt-container" style="padding-top:28px; padding-bottom:40px;">
+
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:1.6rem; font-weight:700; color:var(--bt-primary); margin:0;">
+        🎙 STT Tool BT — ถอดเสียงประชุม
+      </h1>
+      <p style="color:var(--bt-muted); margin:4px 0 0;">
+        อัปโหลดไฟล์เสียง → Azure Speech-to-Text → AI วิเคราะห์ → สร้าง MOM อัตโนมัติ
+      </p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+      <!-- Upload Panel -->
+      <div>
+        <div class="bt-card">
+          <div class="bt-card-title" style="margin-bottom:16px;">1️⃣ อัปโหลดไฟล์เสียง</div>
+
+          <div class="bt-stt-drop" id="drop-zone">
+            <span class="icon">🎵</span>
+            <p style="font-size:1rem; font-weight:600; margin:12px 0 4px;">ลากไฟล์มาวาง หรือคลิกเพื่อเลือก</p>
+            <p style="color:var(--bt-muted); font-size:0.85rem; margin:0;">รองรับ .wav, .mp3, .m4a, .ogg (สูงสุด 200MB)</p>
+            <input type="file" id="audio-file" accept=".wav,.mp3,.m4a,.ogg" style="display:none;">
+          </div>
+
+          <div id="file-info" style="display:none; margin-top:12px;" class="bt-alert bt-alert-info">
+            <span>📎</span>
+            <div>
+              <strong id="file-name"></strong><br>
+              <small id="file-size" style="color:var(--bt-muted)"></small>
+            </div>
+          </div>
+
+          <div class="bt-form-group" style="margin-top:20px;">
+            <label class="bt-label">โครงการที่เกี่ยวข้อง</label>
+            <select class="bt-select" id="sel-project">
+              <option value="">— เลือกโครงการ (ถ้ามี) —</option>
+              {% for p in projects %}
+              <option value="{{ p.name }}"{% if mom_name and p.name == mom_name %} selected{% endif %}>
+                {{ p.project_name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="bt-form-group">
+            <label class="bt-label">หัวข้อการประชุม</label>
+            <input class="bt-input" id="inp-title" type="text" placeholder="เช่น ประชุมทีม Weekly #12">
+          </div>
+
+          <div class="bt-form-group">
+            <label class="bt-label">วันที่ประชุม</label>
+            <input class="bt-input" id="inp-date" type="date" value="{{ frappe.utils.today() if frappe else '' }}">
+          </div>
+
+          <button class="bt-btn bt-btn-primary" id="btn-process" style="width:100%;justify-content:center;" disabled>
+            🤖 เริ่มถอดเสียง + วิเคราะห์ AI
+          </button>
+
+          <div id="progress-area" style="display:none; margin-top:16px;">
+            <div id="progress-msg" style="margin-bottom:8px; font-size:0.9rem; color:var(--bt-primary);">
+              กำลังอัปโหลด...
+            </div>
+            <div class="bt-progress">
+              <div class="bt-progress-bar" id="progress-bar" style="width:0%;transition:width 0.5s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Panel -->
+      <div>
+        <div class="bt-card" style="margin-bottom:16px;">
+          <div class="bt-card-title" style="margin-bottom:12px;">2️⃣ Transcript (ถอดความ)</div>
+          <div class="bt-transcript-box" id="transcript-box">
+            <span style="color:var(--bt-muted);">ผลการถอดเสียงจะแสดงที่นี่...</span>
+          </div>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" id="btn-copy-transcript"
+                  style="margin-top:8px;" onclick="copyText('transcript-box')">📋 คัดลอก</button>
+        </div>
+
+        <div class="bt-card" id="analysis-card" style="display:none;">
+          <div class="bt-card-title" style="margin-bottom:12px;">3️⃣ ผลวิเคราะห์ AI</div>
+
+          <div style="margin-bottom:12px;">
+            <strong>📝 สรุปการประชุม</strong>
+            <div id="ai-summary" style="background:var(--bt-light);border-radius:8px;padding:12px;margin-top:6px;font-size:0.9rem;line-height:1.7;"></div>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <strong>✅ มติที่ประชุม</strong>
+            <ul id="ai-decisions" style="margin-top:6px;padding-left:20px;font-size:0.9rem;line-height:1.8;"></ul>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <strong>⚠ ความเสี่ยง & ประเด็น</strong>
+            <ul id="ai-risks" style="margin-top:6px;padding-left:20px;font-size:0.9rem;line-height:1.8;color:var(--bt-danger);"></ul>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <strong>📌 Tasks ที่ระบบจะสร้าง</strong>
+            <div id="ai-tasks" style="margin-top:6px;"></div>
+          </div>
+
+          <button class="bt-btn bt-btn-success" id="btn-save-mom" style="width:100%;justify-content:center;">
+            💾 บันทึกเป็น MOM ในระบบ
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+let audioFile = null;
+let analysisResult = null;
+
+// Drop zone
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('audio-file');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  audioFile = file;
+  document.getElementById('file-info').style.display = 'flex';
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+  document.getElementById('btn-process').disabled = false;
+  BT.notify('📎 เลือกไฟล์: ' + file.name, 'info');
+}
+
+// Process button
+document.getElementById('btn-process').addEventListener('click', async () => {
+  if (!audioFile) return;
+  const title = document.getElementById('inp-title').value || 'การประชุม';
+  const date  = document.getElementById('inp-date').value || new Date().toISOString().split('T')[0];
+  const proj  = document.getElementById('sel-project').value;
+
+  setProgress(10, 'กำลังอัปโหลดไฟล์เสียง...');
+
+  // Upload file via Frappe
+  const fd = new FormData();
+  fd.append('file', audioFile, audioFile.name);
+  fd.append('is_private', '1');
+  fd.append('doctype', 'Meeting MOM');
+
+  const csrf = frappe.csrf_token || '';
+  const uploadRes = await fetch('/api/method/upload_file', {
+    method: 'POST', headers: {'X-Frappe-CSRF-Token': csrf}, body: fd
+  });
+  const uploadData = await uploadRes.json();
+  const filePath = uploadData.message?.file_url || uploadData.message?.name;
+  if (!filePath) { BT.notify('อัปโหลดล้มเหลว', 'error'); return; }
+
+  setProgress(30, 'Azure Speech-to-Text กำลังถอดเสียง...');
+
+  try {
+    const result = await BT.call('betime_solution.api.portal.process_audio_stt', {
+      file_path: filePath, meeting_title: title, meeting_date: date, project: proj
+    });
+
+    setProgress(70, 'AI กำลังวิเคราะห์ transcript...');
+    document.getElementById('transcript-box').textContent = result.transcript || '(ไม่มี transcript)';
+
+    setProgress(100, '✅ เสร็จสิ้น!');
+    analysisResult = result;
+    renderAnalysis(result);
+    document.getElementById('analysis-card').style.display = 'block';
+  } catch(e) {
+    setProgress(0, '');
+    BT.notify('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  }
+});
+
+function setProgress(pct, msg) {
+  const area = document.getElementById('progress-area');
+  area.style.display = pct > 0 ? 'block' : 'none';
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-msg').textContent = msg;
+}
+
+function renderAnalysis(r) {
+  document.getElementById('ai-summary').textContent = r.summary || '-';
+
+  const decisions = (r.decisions || []);
+  document.getElementById('ai-decisions').innerHTML =
+    decisions.length ? decisions.map(d => `<li>${d}</li>`).join('') : '<li style="color:var(--bt-muted)">ไม่มีมติ</li>';
+
+  const risks = [...(r.risks || []), ...(r.issues || [])];
+  document.getElementById('ai-risks').innerHTML =
+    risks.length ? risks.map(d => `<li>${d}</li>`).join('') : '<li style="color:var(--bt-muted)">ไม่พบความเสี่ยง</li>';
+
+  const tasks = r.tasks || [];
+  document.getElementById('ai-tasks').innerHTML = tasks.length
+    ? `<div style="display:flex;flex-direction:column;gap:8px;">${tasks.map(t => `
+        <div style="background:var(--bt-light);border-radius:8px;padding:10px 14px;font-size:0.88rem;">
+          <strong>${t.task_name}</strong><br>
+          <small>📅 กำหนด: +${t.deadline_days || 7} วัน | 👤 ${t.assigned_to_hint || 'PM'}</small>
+          ${t.description ? `<br><small style="color:var(--bt-muted)">${t.description}</small>` : ''}
+        </div>`).join('')}</div>`
+    : '<p style="color:var(--bt-muted)">ไม่มี Tasks</p>';
+}
+
+// Save MOM
+document.getElementById('btn-save-mom').addEventListener('click', async () => {
+  if (!analysisResult) return;
+  const title = document.getElementById('inp-title').value || 'การประชุม';
+  const date  = document.getElementById('inp-date').value;
+  const proj  = document.getElementById('sel-project').value;
+
+  try {
+    const result = await BT.call('betime_solution.api.portal.save_mom_from_stt', {
+      ...analysisResult, meeting_title: title, meeting_date: date, project: proj
+    });
+    BT.notify('✅ บันทึก MOM แล้ว: ' + result.mom_name, 'info');
+    setTimeout(() => window.location.href = '/app/meeting-mom/' + result.mom_name, 1500);
+  } catch(e) {
+    BT.notify('บันทึกล้มเหลว: ' + e.message, 'error');
+  }
+});
+
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => BT.notify('📋 คัดลอกแล้ว', 'info'));
+}
+</script>
+{% endblock %}

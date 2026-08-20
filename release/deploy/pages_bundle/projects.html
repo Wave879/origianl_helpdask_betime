@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Master — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .pm-head-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .pm-mode-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:0.75rem; font-weight:700; padding:4px 10px;
+      border-radius:999px; background:#EEF2FF; color:#3730A3;
+    }
+    /* Modal */
+    .pm-modal-overlay {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+      z-index:1000; align-items:center; justify-content:center;
+    }
+    .pm-modal-overlay.open { display:flex; }
+    .pm-modal {
+      background:#fff; border-radius:14px; padding:28px 32px;
+      width:100%; max-width:520px; box-shadow:0 8px 40px rgba(0,0,0,.18);
+      max-height:90vh; overflow-y:auto;
+    }
+    .pm-modal h3 { margin:0 0 20px; font-size:1.1rem; font-weight:700; color:var(--bt-primary,#E65100); }
+    .pm-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .pm-form-grid .full { grid-column:1/-1; }
+    .pm-form-group { display:flex; flex-direction:column; gap:5px; }
+    .pm-form-group label { font-size:0.8rem; font-weight:600; color:#555; }
+    .pm-form-group input, .pm-form-group select, .pm-form-group textarea {
+      border:1px solid #ddd; border-radius:8px; padding:8px 10px;
+      font-size:0.9rem; font-family:inherit; outline:none;
+      transition:border-color .2s;
+    }
+    .pm-form-group input:focus, .pm-form-group select:focus, .pm-form-group textarea:focus {
+      border-color:var(--bt-primary,#E65100);
+    }
+    .pm-modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-folder"></i> Project Master</h2></div>
+    <div class="bt-card">
+      <div class="bt-section-header">
+        <h2>รายการโครงการ</h2>
+        <div class="pm-head-actions">
+          <span class="pm-mode-badge" id="pm-mode-badge"><i class="bi bi-database"></i> Backend</span>
+          <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="openAddModal()"><i class="bi bi-plus-lg"></i> เพิ่มโครงการ</button>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="loadProjects()"><i class="bi bi-arrow-clockwise"></i> โหลด</button>
+        </div>
+      </div>
+      <div id="projects-table"><p style="color:#888;text-align:center;padding:40px">กำลังโหลดข้อมูล...</p></div>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+
+<!-- Modal เพิ่มโครงการ -->
+<div class="pm-modal-overlay" id="add-project-modal">
+  <div class="pm-modal">
+    <h3><i class="bi bi-folder-plus"></i> เพิ่มโครงการใหม่</h3>
+    <form id="add-project-form" onsubmit="submitAddProject(event)">
+      <div class="pm-form-grid">
+        <div class="pm-form-group full">
+          <label>ชื่อโครงการ <span style="color:red">*</span></label>
+          <input type="text" id="f-project_name" placeholder="ระบุชื่อโครงการ" required>
+        </div>
+        <div class="pm-form-group">
+          <label>สถานะ</label>
+          <select id="f-status">
+            <option value="Planning">Planning</option>
+            <option value="Active" selected>Active</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="pm-form-group">
+          <label>ระดับความเสี่ยง</label>
+          <select id="f-risk_level">
+            <option value="Low" selected>Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+        <div class="pm-form-group">
+          <label>วันเริ่มต้น</label>
+          <input type="date" id="f-start_date">
+        </div>
+        <div class="pm-form-group">
+          <label>วันสิ้นสุด (Deadline)</label>
+          <input type="date" id="f-deadline">
+        </div>
+        <div class="pm-form-group">
+          <label>งบประมาณ (บาท)</label>
+          <input type="number" id="f-budget" placeholder="0" min="0">
+        </div>
+        <div class="pm-form-group">
+          <label>ความคืบหน้า (%)</label>
+          <input type="number" id="f-progress" placeholder="0" min="0" max="100" value="0">
+        </div>
+        <div class="pm-form-group full">
+          <label>รายละเอียด</label>
+          <textarea id="f-description" rows="3" placeholder="รายละเอียดโครงการ..."></textarea>
+        </div>
+      </div>
+      <div class="pm-modal-footer">
+        <button type="button" class="bt-btn bt-btn-outline" onclick="closeAddModal()">ยกเลิก</button>
+        <button type="submit" class="bt-btn bt-btn-primary" id="submit-btn">
+          <i class="bi bi-check-lg"></i> บันทึก
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  BT.initApp('projects.html', 'Project Management');
+
+  function renderProjects(rows, sourceLabel = 'Backend') {
+    const tbody = rows.map(r => `<tr>
+      <td><strong>${r.project_name || r.name}</strong></td>
+      <td><span class="bt-badge bt-badge-${r.status === 'Active' ? 'success' : 'warning'}">${r.status || '-'}</span></td>
+      <td>
+        <div class="bt-progress" style="min-width:80px">
+          <div class="bt-progress-bar ${r.progress >= 100 ? 'success' : r.progress >= 50 ? '' : 'danger'}" style="width:${r.progress || 0}%"></div>
+        </div>
+        <small>${r.progress || 0}%</small>
+      </td>
+      <td><span class="bt-badge bt-badge-${r.risk_level === 'High' ? 'danger' : r.risk_level === 'Medium' ? 'warning' : 'success'}">${r.risk_level || 'Low'}</span></td>
+      <td>${r.deadline || '-'}</td>
+    </tr>`).join('');
+
+    document.getElementById('projects-table').innerHTML = `<table class="bt-table"><thead><tr><th>โครงการ</th><th>สถานะ</th><th>ความคืบหน้า</th><th>Risk</th><th>กำหนด</th></tr></thead><tbody>${tbody || '<tr><td colspan=5 style=text-align:center;color:#888>ไม่มีข้อมูล</td></tr>'}</tbody></table>`;
+    const badge = document.getElementById('pm-mode-badge');
+    badge.innerHTML = sourceLabel === 'Backend'
+      ? '<i class="bi bi-database"></i> Backend'
+      : `<i class="bi bi-exclamation-circle"></i> ${sourceLabel}`;
+    badge.style.background = sourceLabel === 'Backend' ? '#EEF2FF' : '#FEF2F2';
+    badge.style.color = sourceLabel === 'Backend' ? '#3730A3' : '#B91C1C';
+  }
+
+  async function loadProjects() {
+    try {
+      if (!BT.hasBackend || !BT.hasBackend()) {
+        renderProjects([], 'No Backend');
+        return;
+      }
+      const rows = await BT.listDocs('Project Master', ['name','project_name','status','progress','risk_level','deadline'], {}, 50);
+      renderProjects(rows || [], 'Backend');
+    } catch (e) {
+      renderProjects([], 'Load Error');
+      BT.notify('Failed to load project data', 'warning');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadProjects);
+
+  // ── Modal helpers ──────────────────────────────────────────
+  function openAddModal() {
+    document.getElementById('add-project-form').reset();
+    document.getElementById('add-project-modal').classList.add('open');
+  }
+
+  function closeAddModal() {
+    document.getElementById('add-project-modal').classList.remove('open');
+  }
+
+  // Close on overlay click
+  document.getElementById('add-project-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+  });
+
+  async function submitAddProject(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> กำลังบันทึก...';
+
+    const payload = {
+      project_name : document.getElementById('f-project_name').value.trim(),
+      status       : document.getElementById('f-status').value,
+      risk_level   : document.getElementById('f-risk_level').value,
+      start_date   : document.getElementById('f-start_date').value || null,
+      deadline     : document.getElementById('f-deadline').value || null,
+      budget       : parseFloat(document.getElementById('f-budget').value) || 0,
+      progress     : parseInt(document.getElementById('f-progress').value) || 0,
+      description  : document.getElementById('f-description').value.trim(),
+    };
+
+    try {
+      await BT.createDoc('Project Master', payload);
+      BT.notify('เพิ่มโครงการสำเร็จ', 'success');
+      closeAddModal();
+      loadProjects();
+    } catch (err) {
+      BT.notify('บันทึกไม่สำเร็จ: ' + (err.message || err), 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-check-lg"></i> บันทึก';
+    }
+  }
+</script>
+</body>
+</html>

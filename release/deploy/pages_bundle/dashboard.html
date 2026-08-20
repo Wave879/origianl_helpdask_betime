@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CEO Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .bt-mini-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 14px;
+    }
+    .bt-mini-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .bt-mini-title {
+      margin: 0;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--bt-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bt-mini-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .bt-mini-kpi {
+      background: #f8fafc;
+      border: 1px solid var(--bt-border);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .bt-mini-kpi-label {
+      font-size: 0.72rem;
+      color: var(--bt-muted);
+      margin-bottom: 5px;
+    }
+    .bt-mini-kpi-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--bt-text);
+      line-height: 1;
+    }
+    .bt-mini-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bt-mini-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--bt-border);
+      border-radius: 10px;
+      background: #fff;
+      font-size: 0.84rem;
+    }
+    .bt-mini-list .name {
+      color: var(--bt-text);
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .bt-mini-list .meta {
+      color: var(--bt-muted);
+      font-size: 0.76rem;
+      white-space: nowrap;
+    }
+    .bt-empty {
+      color: var(--bt-muted);
+      text-align: center;
+      padding: 16px;
+      border: 1px dashed var(--bt-border);
+      border-radius: 10px;
+      font-size: 0.84rem;
+    }
+    @media (max-width: 640px) {
+      .bt-mini-kpis { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-speedometer2"></i> CEO Dashboard</h2></div>
+    <div class="bt-kpi-grid">
+      <div class="bt-card"><div class="bt-card-title">โครงการ Active</div><div class="bt-card-value" id="kpi-projects">—</div><div class="bt-card-sub">Active projects</div></div>
+      <div class="bt-card"><div class="bt-card-title">งานที่เปิดอยู่</div><div class="bt-card-value" id="kpi-tasks" style="color:var(--bt-warning)">—</div><div class="bt-card-sub">Open tasks</div></div>
+      <div class="bt-card"><div class="bt-card-title">Invoice ค้างชำระ</div><div class="bt-card-value" id="kpi-invoices" style="color:var(--bt-danger)">—</div><div class="bt-card-sub">บาท</div></div>
+      <div class="bt-card"><div class="bt-card-title">ผู้ใช้งานทั้งหมด</div><div class="bt-card-value" id="kpi-users" style="color:var(--bt-success)">—</div><div class="bt-card-sub">คน</div></div>
+    </div>
+
+    <div class="bt-card" style="margin-top:20px">
+      <div class="bt-section-header">
+        <h2>โครงการล่าสุด</h2>
+        <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="loadDashboard()"><i class="bi bi-arrow-clockwise"></i> รีเฟรช</button>
+      </div>
+      <div id="projects-list"><p style="color:#888;text-align:center;padding:30px">กำลังโหลด...</p></div>
+    </div>
+
+    <div class="bt-mini-grid">
+      <div class="bt-card">
+        <div class="bt-mini-head">
+          <h3 class="bt-mini-title"><i class="bi bi-chat-dots"></i> LINE GROUP</h3>
+          <a class="bt-btn bt-btn-outline bt-btn-sm" href="/line-group.html">จัดการ</a>
+        </div>
+        <div class="bt-mini-kpis">
+          <div class="bt-mini-kpi"><div class="bt-mini-kpi-label">ทั้งหมด</div><div class="bt-mini-kpi-value" id="line-total">0</div></div>
+          <div class="bt-mini-kpi"><div class="bt-mini-kpi-label">เปิดใช้งาน</div><div class="bt-mini-kpi-value" id="line-active">0</div></div>
+          <div class="bt-mini-kpi"><div class="bt-mini-kpi-label">สมาชิก</div><div class="bt-mini-kpi-value" id="line-members">0</div></div>
+        </div>
+        <ul class="bt-mini-list" id="line-preview"></ul>
+      </div>
+
+      <div class="bt-card">
+        <div class="bt-mini-head">
+          <h3 class="bt-mini-title"><i class="bi bi-check2-all"></i> TASK LINE GROUP</h3>
+          <a class="bt-btn bt-btn-outline bt-btn-sm" href="/task-line-group.html">จัดการ</a>
+        </div>
+        <div class="bt-mini-kpis">
+          <div class="bt-mini-kpi"><div class="bt-mini-kpi-label">Rules ทั้งหมด</div><div class="bt-mini-kpi-value" id="rule-total">0</div></div>
+          <div class="bt-mini-kpi"><div class="bt-mini-kpi-label">เปิดใช้งาน</div><div class="bt-mini-kpi-value" id="rule-active">0</div></div>
+          <div class="bt-mini-kpi"><div class="bt-mini-kpi-label">Trigger เฉลี่ย</div><div class="bt-mini-kpi-value" id="rule-trigger">0</div></div>
+        </div>
+        <ul class="bt-mini-list" id="rule-preview"></ul>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('dashboard.html', 'Executive Overview');
+
+  const TASK_RULES_DATA = [];
+
+  async function renderLinePreview() {
+    let groups = [];
+    try {
+      const response = await BT.call('/line/groups', {}, 'GET');
+      groups = Array.isArray(response.data) ? response.data : [];
+    } catch {
+      groups = [];
+    }
+    const active = groups.filter(g => g.active !== false).length;
+    const members = groups.reduce((sum, g) => sum + Number(g.members || 0), 0);
+
+    document.getElementById('line-total').textContent = groups.length;
+    document.getElementById('line-active').textContent = active;
+    document.getElementById('line-members').textContent = members;
+
+    const preview = groups.slice(0, 3).map(g => `
+      <li>
+        <span class="name">${g.name || '-'}</span>
+        <span class="meta">${g.on ? 'ON' : 'OFF'} · ${Number(g.members || 0)} คน</span>
+      </li>`).join('');
+
+    document.getElementById('line-preview').innerHTML = preview || '<div class="bt-empty">ยังไม่มี LINE Group</div>';
+  }
+
+  async function renderTaskRulePreview() {
+    let rules = TASK_RULES_DATA;
+    try {
+      const response = await BT.call('/line/task-rules', {}, 'GET');
+      rules = Array.isArray(response.data) ? response.data : [];
+    } catch {
+      rules = TASK_RULES_DATA;
+    }
+    const active = rules.filter(r => r.on).length;
+    const avgTrigger = rules.length
+      ? (rules.reduce((sum, r) => sum + (Array.isArray(r.triggers) ? r.triggers.length : 0), 0) / rules.length).toFixed(1)
+      : '0';
+
+    document.getElementById('rule-total').textContent = rules.length;
+    document.getElementById('rule-active').textContent = active;
+    document.getElementById('rule-trigger').textContent = avgTrigger;
+
+    const preview = rules.slice(0, 3).map(r => `
+      <li>
+        <span class="name">${r.name || '-'}</span>
+        <span class="meta">${r.on ? 'ON' : 'OFF'} · ${r.groupName || '-'}</span>
+      </li>`).join('');
+
+    document.getElementById('rule-preview').innerHTML = preview || '<div class="bt-empty">ยังไม่มี Task Rule</div>';
+  }
+
+  async function loadDashboard() {
+    try {
+      const d = await BT.call('dashboard/ceo', {}, 'GET');
+      document.getElementById('kpi-projects').textContent  = d.active_projects ?? 0;
+      document.getElementById('kpi-tasks').textContent     = d.open_tasks ?? 0;
+      document.getElementById('kpi-invoices').textContent  = Number(d.outstanding_invoices ?? 0).toLocaleString();
+      document.getElementById('kpi-users').textContent     = d.total_users ?? 0;
+
+      const statusColor = { Active:'green', Planning:'blue', 'On Hold':'orange', Completed:'grey' };
+      const riskColor   = { High:'red', Medium:'orange', Low:'green' };
+      const rows = (d.projects || []).map(p => `
+        <tr>
+          <td><strong>${p.project_name}</strong></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;background:#e5e7eb;border-radius:99px;height:6px">
+                <div style="width:${p.progress||0}%;background:var(--bt-primary);height:6px;border-radius:99px"></div>
+              </div>
+              <span style="font-size:0.8rem;color:#888">${p.progress||0}%</span>
+            </div>
+          </td>
+          <td><span class="bt-badge bt-badge-${riskColor[p.risk_level]||'grey'}">${p.risk_level||'Low'}</span></td>
+          <td style="color:#888;font-size:0.85rem">${p.deadline||'-'}</td>
+        </tr>`).join('');
+      document.getElementById('projects-list').innerHTML = rows
+        ? `<table class="bt-table"><thead><tr><th>โครงการ</th><th>ความคืบหน้า</th><th>ความเสี่ยง</th><th>กำหนด</th></tr></thead><tbody>${rows}</tbody></table>`
+        : '<p style="color:#888;text-align:center;padding:30px">ไม่มีข้อมูลโครงการ</p>';
+    } catch(e) {
+      if (e.message === 'Unauthorized') { BT.handleUnauthorized(); return; }
+      document.getElementById('projects-list').innerHTML = `<p style="color:var(--bt-danger);padding:20px">โหลดข้อมูลไม่สำเร็จ: ${e.message}</p>`;
+    } finally {
+      await renderLinePreview();
+      await renderTaskRulePreview();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDashboard);
+  setInterval(loadDashboard, 60000);
+</script>
+</body>
+</html>

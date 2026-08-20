@@ -1,0 +1,149 @@
+{% extends "templates/web.html" %}
+{% block title %}IT Self Service{% endblock %}
+{% block page_content %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<div class="bt-page">
+
+  <div class="bt-page-header">
+    <h2>🖥️ IT Self Service</h2>
+    <span class="bt-badge {% if open_count > 0 %}warning{% else %}success{% endif %}">
+      Ticket เปิดอยู่: {{ open_count }}
+    </span>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bt-card" style="margin-bottom:1.5rem">
+    <h4>แจ้งปัญหา IT ใหม่</h4>
+    <form id="new-ticket-form">
+      <div class="bt-form-group">
+        <label>หัวข้อปัญหา *</label>
+        <input type="text" id="t-subject" class="form-control" placeholder="อธิบายปัญหาโดยย่อ" required>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="bt-form-group">
+          <label>ประเภท</label>
+          <select id="t-type" class="form-control">
+            <option value="Incident">Incident (ระบบขัดข้อง)</option>
+            <option value="Service Request">Service Request (ขอบริการ)</option>
+            <option value="Change Request">Change Request (ขอเปลี่ยนแปลง)</option>
+            <option value="Problem">Problem (ปัญหาซ้ำซาก)</option>
+          </select>
+        </div>
+        <div class="bt-form-group">
+          <label>ความเร่งด่วน</label>
+          <select id="t-priority" class="form-control">
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="bt-form-group">
+        <label>รายละเอียด *</label>
+        <textarea id="t-desc" class="form-control" rows="4" placeholder="อธิบายรายละเอียดปัญหา ขั้นตอนที่ทำก่อนเกิดปัญหา ฯลฯ" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">📨 ส่ง Ticket</button>
+    </form>
+    <div id="ticket-result" style="display:none;margin-top:1rem"></div>
+  </div>
+
+  <!-- My Tickets -->
+  <div class="bt-card" style="margin-bottom:1.5rem">
+    <h4>Ticket ของฉัน</h4>
+    {% if my_tickets %}
+    <table class="bt-table">
+      <thead>
+        <tr>
+          <th>เลขที่</th>
+          <th>หัวข้อ</th>
+          <th>ประเภท</th>
+          <th>ความเร่งด่วน</th>
+          <th>สถานะ</th>
+          <th>วันที่แจ้ง</th>
+          <th>กำหนดแก้ไข</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in my_tickets %}
+        <tr>
+          <td><a href="/app/it-ticket/{{ t.name }}">{{ t.name }}</a></td>
+          <td>{{ t.subject }}</td>
+          <td>{{ t.ticket_type }}</td>
+          <td>
+            <span class="bt-badge {% if t.priority == 'Critical' %}danger{% elif t.priority == 'High' %}warning{% elif t.priority == 'Medium' %}info{% else %}{% endif %}">
+              {{ t.priority }}
+            </span>
+          </td>
+          <td>
+            <span class="bt-badge {% if t.status == 'Open' %}danger{% elif t.status == 'In Progress' %}warning{% elif t.status in ('Resolved','Closed') %}success{% else %}info{% endif %}">
+              {{ t.status }}
+            </span>
+          </td>
+          <td>{{ frappe.utils.format_datetime(t.raised_date, 'dd/MM/yyyy HH:mm') if t.raised_date else '-' }}</td>
+          <td>{{ frappe.utils.format_datetime(t.due_datetime, 'dd/MM/yyyy HH:mm') if t.due_datetime else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#888;text-align:center">ยังไม่มี Ticket</p>
+    {% endif %}
+  </div>
+
+  <!-- My Assets -->
+  {% if my_assets %}
+  <div class="bt-card">
+    <h4>ทรัพย์สิน IT ที่ได้รับมอบหมาย</h4>
+    <table class="bt-table">
+      <thead>
+        <tr><th>รหัส</th><th>ชื่อ</th><th>ประเภท</th><th>ยี่ห้อ/รุ่น</th><th>ประกันหมด</th></tr>
+      </thead>
+      <tbody>
+        {% for a in my_assets %}
+        <tr>
+          <td>{{ a.name }}</td>
+          <td>{{ a.asset_name }}</td>
+          <td>{{ a.asset_type }}</td>
+          <td>{{ (a.brand or '') + ' ' + (a.model or '') }}</td>
+          <td>{{ frappe.utils.format_date(a.warranty_expiry) if a.warranty_expiry else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+document.getElementById('new-ticket-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.textContent = 'กำลังส่ง...';
+    try {
+        const r = await BT.call(
+            'betime_solution.api.portal.submit_it_ticket',
+            {
+                subject: document.getElementById('t-subject').value,
+                ticket_type: document.getElementById('t-type').value,
+                priority: document.getElementById('t-priority').value,
+                description: document.getElementById('t-desc').value,
+            }
+        );
+        document.getElementById('ticket-result').style.display = 'block';
+        document.getElementById('ticket-result').innerHTML =
+            `<div class="alert alert-success">✅ ส่ง Ticket สำเร็จ: <strong>${r.ticket_name}</strong> — จะติดต่อกลับตาม SLA</div>`;
+        e.target.reset();
+        setTimeout(() => location.reload(), 3000);
+    } catch (err) {
+        BT.notify('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📨 ส่ง Ticket';
+    }
+});
+</script>
+{% endblock %}

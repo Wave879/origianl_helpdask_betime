@@ -1,0 +1,4482 @@
+﻿<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helpdeck Knowledge — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .hdm-shell { display:flex; gap:0; min-height:calc(100vh - 120px); }
+    .hdm-nav {
+      width:220px; min-width:220px; background:#fff; border-right:1px solid #E2E8F0;
+      border-radius:12px 0 0 12px; overflow-y:auto; padding:10px 0;
+    }
+    .hdm-nav-group { padding:10px 14px 4px; font-size:0.65rem; font-weight:800;
+      color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; }
+    .hdm-nav-group.project-management {
+      padding-top: 14px;
+      font-size: 0.78rem;
+      color: #9aa4b2;
+      letter-spacing: 0.08em;
+    }
+    .hdm-nav-group.clickable {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .hdm-nav-group.clickable:hover { color:#64748b; }
+    .hdm-nav-group-arrow {
+      font-size: 0.65rem;
+      transition: transform .15s ease;
+      opacity: .72;
+    }
+    .hdm-nav-group.collapsed .hdm-nav-group-arrow {
+      transform: rotate(-90deg);
+    }
+    .hdm-nav-item {
+      display:block; padding:7px 16px; font-size:0.82rem; color:#334155;
+      cursor:pointer; border-left:3px solid transparent; transition:all .15s;
+    }
+    .hdm-nav-item:hover { background:#F8FAFC; color:#E85D26; }
+    .hdm-nav-item.active { background:#FFF4EE; color:#E85D26; border-left-color:#E85D26; font-weight:600; }
+    .hdm-content {
+      flex:1; background:#fff; border-radius:0 12px 12px 0;
+      border:1px solid #E2E8F0; border-left:none; padding:20px; overflow:auto;
+    }
+    .hdm-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+    .hdm-table-wrap { overflow-x:auto; }
+    .hk-input, .hk-textarea {
+      width:100%; border:1px solid #DDE2EC; border-radius:8px;
+      padding:6px 8px; font-size:0.82rem; font-family:inherit;
+      background:#fff; box-sizing:border-box;
+    }
+    .hk-textarea { min-height:60px; resize:vertical; }
+    .hk-actions { display:flex; gap:6px; flex-wrap:wrap; }
+    .hdm-empty { text-align:center; color:#94a3b8; padding:60px 20px; }
+    .hdm-skeleton-wrap {
+      padding: 18px;
+    }
+    .hdm-skeleton-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .hdm-skeleton-line,
+    .hdm-skeleton-chip,
+    .hdm-skeleton-block {
+      position: relative;
+      overflow: hidden;
+      background: #eef2f7;
+      border-radius: 12px;
+    }
+    .hdm-skeleton-line::after,
+    .hdm-skeleton-chip::after,
+    .hdm-skeleton-block::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.7) 50%, transparent 100%);
+      transform: translateX(-100%);
+      animation: hdm-shimmer 1.3s ease-in-out infinite;
+    }
+    .hdm-skeleton-line { height: 14px; }
+    .hdm-skeleton-chip { height: 22px; border-radius: 999px; }
+    .hdm-skeleton-block { height: 56px; border-radius: 14px; }
+    .hdm-skeleton-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .hdm-skeleton-row {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr .8fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .hdm-skeleton-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .hdm-skeleton-stat {
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    @keyframes hdm-shimmer {
+      100% { transform: translateX(100%); }
+    }
+    /* import spinner */
+    @keyframes hdm-spin { to { transform: rotate(360deg); } }
+    @keyframes hdu-fade-up {
+      from {
+        opacity:0;
+        transform:translateY(10px);
+      }
+      to {
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+    .hdm-spinner {
+      display:inline-block; width:13px; height:13px;
+      border:2px solid currentColor; border-top-color:transparent;
+      border-radius:50%; animation:hdm-spin .7s linear infinite;
+      vertical-align:middle; margin-right:5px;
+    }
+    .hdm-import-progress {
+      margin-top:6px; font-size:.75rem; color:#64748b;
+    }
+    /* grouped sub table */
+    .hdm-group-row {
+      background:#f1f5f9; cursor:pointer; user-select:none;
+    }
+    .hdm-group-row:hover { background:#e2e8f0; }
+    .hdm-group-row td {
+      padding:8px 12px; font-weight:700; font-size:.82rem; color:#1e293b;
+    }
+    .hdm-group-arrow { display:inline-block; transition:transform .2s; margin-right:6px; color:#64748b; }
+    .hdm-group-arrow.open { transform:rotate(90deg); }
+    .hdm-sub-row td { padding:6px 12px; font-size:.82rem; }
+    .hdm-sub-row.hidden { display:none; }
+    .hd-rel-dashboard { display:flex; flex-direction:column; gap:16px; }
+    .hd-rel-summary {
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:12px;
+    }
+    .hd-rel-stat {
+      border:1px solid #dbe4f0;
+      border-radius:16px;
+      padding:14px 16px;
+      background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow:0 8px 20px rgba(15, 23, 42, .04);
+    }
+    .hd-rel-stat .k { display:block; font-size:.72rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+    .hd-rel-stat .v { font-size:1.45rem; font-weight:800; color:#0f172a; line-height:1.1; }
+    .hd-rel-stat .s { margin-top:6px; font-size:.78rem; color:#64748b; }
+    .hd-rel-sections { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
+    .hd-rel-card {
+      border:1px solid #dbe4f0;
+      border-radius:18px;
+      background:#fff;
+      overflow:hidden;
+      box-shadow:0 12px 30px rgba(15, 23, 42, .05);
+    }
+    .hd-rel-card-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:16px 18px 12px;
+      background:linear-gradient(135deg, #eff6ff 0%, #ffffff 58%, #fff7ed 100%);
+      border-bottom:1px solid #e2e8f0;
+    }
+    .hd-rel-card-head h4 {
+      margin:0;
+      font-size:.95rem;
+      font-weight:800;
+      color:#0f172a;
+    }
+    .hd-rel-card-head p {
+      margin:4px 0 0;
+      font-size:.78rem;
+      color:#64748b;
+      line-height:1.45;
+    }
+    .hd-rel-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:#dbeafe;
+      color:#1d4ed8;
+      font-size:.75rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .hd-rel-list {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:14px 18px 18px;
+    }
+    .hd-rel-item {
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:12px 14px;
+      background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+    .hd-rel-item-top {
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:8px;
+    }
+    .hd-rel-item-title {
+      font-size:.88rem;
+      font-weight:800;
+      color:#0f172a;
+    }
+    .hd-rel-item-sub {
+      margin-top:3px;
+      font-size:.76rem;
+      color:#64748b;
+      line-height:1.45;
+    }
+    .hd-rel-flow {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+    .hd-rel-chip {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#3730a3;
+      font-size:.75rem;
+      font-weight:800;
+      border:1px solid #dbe4f0;
+    }
+    .hd-rel-chip.green { background:#ecfdf3; color:#15803d; }
+    .hd-rel-chip.orange { background:#fff7ed; color:#ea580c; }
+    .hd-rel-chip.blue { background:#eff6ff; color:#1d4ed8; }
+    .hd-rel-chain {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+    .hd-rel-arrow {
+      color:#94a3b8;
+      font-weight:900;
+    }
+    /* modal */
+    .hdm-modal-backdrop {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);
+      z-index:1000; align-items:center; justify-content:center;
+    }
+    .hdm-modal-backdrop.open { display:flex; }
+    .hdm-modal {
+      background:#fff; border-radius:14px; padding:28px 28px 24px;
+      width:480px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.18);
+    }
+    .hdm-modal h3 { margin:0 0 18px; font-size:1rem; font-weight:700; color:#1e293b; }
+    .hdm-modal label { display:block; font-size:.78rem; font-weight:600; color:#64748b; margin-bottom:4px; }
+    .hdm-modal .field { margin-bottom:14px; }
+    .hdm-modal-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+    .hdm-view-modal {
+      width: min(920px, 96vw);
+      padding: 0;
+      overflow: hidden;
+    }
+    .hdm-view-head {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      padding:22px 24px 16px;
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 58%, #fff7ed 100%);
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .hdm-view-head h3 {
+      margin:0 0 6px;
+      font-size:1.08rem;
+      font-weight:800;
+      color:#0f172a;
+    }
+    .hdm-view-subtitle {
+      margin:0;
+      color:#64748b;
+      font-size:.82rem;
+      line-height:1.5;
+    }
+    .hdm-view-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 12px;
+      border-radius:999px;
+      background:#dbeafe;
+      color:#1d4ed8;
+      font-size:.78rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .hdm-view-body {
+      padding:20px 24px 24px;
+      display:grid;
+      gap:16px;
+    }
+    .hdm-view-grid {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:12px;
+    }
+    .hdm-view-card {
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:12px 14px;
+      min-width:0;
+    }
+    .hdm-view-label {
+      font-size:.68rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#64748b;
+      margin-bottom:6px;
+    }
+    .hdm-view-value {
+      font-size:.92rem;
+      line-height:1.5;
+      color:#0f172a;
+      word-break:break-word;
+    }
+    .hdm-view-panel {
+      background:#fff;
+      border:1px solid #e2e8f0;
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .hdm-view-panel-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      padding:12px 14px;
+      background:linear-gradient(135deg, #f8fafc 0%, #fff7ed 100%);
+      border-bottom:1px solid #e2e8f0;
+      color:#0f172a;
+      font-size:.82rem;
+      font-weight:800;
+    }
+    .hdm-view-panel-head span {
+      color:#64748b;
+      font-weight:600;
+      font-size:.74rem;
+    }
+    .hdm-view-pre {
+      margin:0;
+      padding:14px;
+      background:#0f172a;
+      color:#e2e8f0;
+      font-size:.78rem;
+      line-height:1.65;
+      max-height:240px;
+      overflow:auto;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .hdm-view-extra-grid {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:10px;
+      padding:14px;
+      background:#fff;
+    }
+    .hdm-view-extra-item {
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      padding:10px 12px;
+      min-width:0;
+    }
+    .hdm-view-extra-item .k {
+      font-size:.68rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#64748b;
+      margin-bottom:4px;
+    }
+    .hdm-view-extra-item .v {
+      font-size:.88rem;
+      line-height:1.5;
+      color:#0f172a;
+      word-break:break-word;
+    }
+    .hdm-view-extra-main {
+      font-size:.88rem;
+      font-weight:700;
+      color:#0f172a;
+      line-height:1.45;
+    }
+    .hdm-view-extra-sub {
+      margin-top:3px;
+      font-size:.74rem;
+      color:#64748b;
+      line-height:1.45;
+    }
+    .hdm-view-extra-empty {
+      padding:14px;
+      color:#94a3b8;
+      font-size:.82rem;
+      background:#fff;
+    }
+    .hdm-view-footer {
+      padding:0 24px 22px;
+      margin-top:0;
+      display:flex;
+      justify-content:flex-end;
+    }
+    .hdu-modal {
+      width:min(980px, 96vw);
+      padding:0;
+      overflow:hidden;
+    }
+    .hdu-head {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      padding:22px 24px 16px;
+      background:linear-gradient(135deg, #eff6ff 0%, #ffffff 60%, #fff7ed 100%);
+      border-bottom:1px solid #e2e8f0;
+    }
+    .hdu-identity {
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      min-width:0;
+    }
+    .hdu-avatar {
+      width:60px;
+      height:60px;
+      border-radius:16px;
+      background:linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color:#1d4ed8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.2rem;
+      font-weight:900;
+      letter-spacing:.02em;
+      flex:0 0 auto;
+      box-shadow:0 8px 18px rgba(37,99,235,.14);
+    }
+    .hdu-name {
+      margin:0;
+      font-size:1.1rem;
+      line-height:1.35;
+      color:#0f172a;
+      font-weight:800;
+    }
+    .hdu-sub {
+      margin:4px 0 0;
+      color:#64748b;
+      font-size:.82rem;
+      line-height:1.5;
+    }
+    .hdu-badges {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .hdu-stats {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      padding:16px 24px 0;
+    }
+    .hdu-stat {
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:12px 14px;
+    }
+    .hdu-stat-k {
+      font-size:.68rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#64748b;
+      margin-bottom:6px;
+    }
+    .hdu-stat-v {
+      font-size:.92rem;
+      color:#0f172a;
+      font-weight:700;
+      line-height:1.45;
+      word-break:break-word;
+    }
+    .hdu-tabs {
+      display:flex;
+      gap:0;
+      padding:18px 24px 0;
+      border-bottom:1px solid #e2e8f0;
+      margin-bottom:0;
+    }
+    .hdu-tab {
+      appearance:none;
+      border:none;
+      background:none;
+      padding:10px 14px 11px;
+      font-size:.82rem;
+      font-weight:700;
+      color:#64748b;
+      border-bottom:2px solid transparent;
+      cursor:pointer;
+    }
+    .hdu-tab.active {
+      color:#1d4ed8;
+      border-bottom-color:#1d4ed8;
+    }
+    .hdu-body {
+      padding:18px 24px 22px;
+      display:grid;
+      gap:16px;
+    }
+    .hdu-panel {
+      display:none;
+    }
+    .hdu-panel.active {
+      display:grid;
+      gap:14px;
+    }
+    .hdu-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+    .hdu-card {
+      background:#fff;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:12px 14px;
+      min-width:0;
+    }
+    .hdu-card.kv {
+      background:#f8fafc;
+    }
+    .hdu-k {
+      font-size:.68rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:800;
+      color:#64748b;
+      margin-bottom:6px;
+    }
+    .hdu-v {
+      font-size:.9rem;
+      color:#0f172a;
+      line-height:1.55;
+      word-break:break-word;
+      white-space:pre-wrap;
+    }
+    .hdu-section {
+      border:1px solid #e2e8f0;
+      border-radius:16px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .hdu-section-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      padding:12px 14px;
+      background:linear-gradient(135deg, #f8fafc 0%, #fff7ed 100%);
+      border-bottom:1px solid #e2e8f0;
+      font-size:.82rem;
+      font-weight:800;
+      color:#0f172a;
+    }
+    .hdu-section-head span {
+      font-weight:600;
+      font-size:.74rem;
+      color:#64748b;
+    }
+    .hdu-table-wrap {
+      overflow:auto;
+    }
+    #user-panel-team .hdu-section:first-child .hdu-body {
+      max-height:120px;
+      overflow:auto;
+    }
+    #user-panel-team .hdu-table-wrap {
+      max-height:320px;
+      overflow:auto;
+    }
+    #user-panel-team .hdu-table-wrap thead th {
+      position:sticky;
+      top:0;
+      z-index:1;
+      background:#f8fbff;
+    }
+    .hdu-empty {
+      padding:16px 14px;
+      color:#94a3b8;
+      font-size:.82rem;
+    }
+    .hdu-table {
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0 6px;
+      table-layout:fixed;
+    }
+    .hdu-table thead th {
+      padding:0 12px 8px;
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#64748b;
+      text-align:left;
+      white-space:nowrap;
+    }
+    .hdu-table thead th:nth-child(1) { width:16%; }
+    .hdu-table thead th:nth-child(2) { width:20%; }
+    .hdu-table thead th:nth-child(3) { width:18%; }
+    .hdu-table thead th:nth-child(4) { width:18%; }
+    .hdu-table thead th:nth-child(5) { width:16%; }
+    .hdu-table thead th:nth-child(6) { width:8%; }
+    .hdu-table thead th:nth-child(7) { width:4%; }
+    .hdu-table tbody tr {
+      background:#fff;
+      box-shadow:0 8px 18px rgba(15,23,42,.04);
+      border:1px solid #dbe4f0;
+    }
+    .hdu-table tbody tr:hover {
+      box-shadow:0 14px 24px rgba(15,23,42,.08);
+      border-color:#bfd1f0;
+    }
+    .hdu-table tbody td {
+      padding:10px 12px;
+      vertical-align:middle;
+      border-top:1px solid transparent;
+      border-bottom:1px solid transparent;
+      background:#fff;
+    }
+    .hdu-table tbody td:first-child {
+      border-left:1px solid #dbe4f0;
+      border-top-left-radius:16px;
+      border-bottom-left-radius:16px;
+    }
+    .hdu-table tbody td:last-child {
+      border-right:1px solid #dbe4f0;
+      border-top-right-radius:16px;
+      border-bottom-right-radius:16px;
+    }
+    .hdu-row-main {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+    .hdu-row-avatar {
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:linear-gradient(135deg, #1d4ed8 0%, #60a5fa 100%);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.85rem;
+      font-weight:900;
+      flex:0 0 auto;
+      box-shadow:0 8px 18px rgba(37,99,235,.18);
+    }
+    .hdu-row-name {
+      font-size:.92rem;
+      font-weight:800;
+      color:#0f172a;
+      line-height:1.3;
+    }
+    .hdu-row-sub {
+      margin-top:3px;
+      font-size:.76rem;
+      color:#64748b;
+      line-height:1.35;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .hdu-row-cell {
+      font-size:.84rem;
+      color:#0f172a;
+      line-height:1.4;
+      min-width:0;
+    }
+    .hdu-row-tags {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .hdu-row-badges {
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+      align-items:center;
+    }
+    .hdu-row-badges .hdu-pill {
+      padding:3px 7px;
+      font-size:.68rem;
+      line-height:1.2;
+    }
+    .hdu-row-actions {
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .hdu-row-actions .bt-btn {
+      min-width:56px;
+      padding:5px 8px;
+      font-size:.74rem;
+      white-space:nowrap;
+      line-height:1.1;
+    }
+    .hdu-row-status {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:74px;
+    }
+    .hdu-list-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(235px, 1fr));
+      gap:10px;
+    }
+    .hdu-user-card {
+      border:1px solid #dbe4f0;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 6px 14px rgba(15,23,42,.04);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      cursor:pointer;
+      transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      min-height:146px;
+      animation:hdu-fade-up .34s ease both;
+      will-change:transform, opacity;
+    }
+    .hdu-user-card:hover {
+      transform:translateY(-1px);
+      box-shadow:0 12px 24px rgba(15,23,42,.08);
+      border-color:#bfd1f0;
+    }
+    .hdu-user-card-head {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:10px 10px 8px;
+      background:linear-gradient(135deg, #eff6ff 0%, #ffffff 62%, #fff7ed 100%);
+      border-bottom:1px solid #e2e8f0;
+    }
+    .hdu-user-avatar {
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg, #1d4ed8 0%, #60a5fa 100%);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.78rem;
+      font-weight:900;
+      flex:0 0 auto;
+      box-shadow:0 8px 16px rgba(37,99,235,.16);
+    }
+    .hdu-user-name {
+      font-size:.88rem;
+      font-weight:800;
+      color:#0f172a;
+      line-height:1.25;
+      margin:0;
+    }
+    .hdu-user-sub {
+      margin-top:2px;
+      font-size:.72rem;
+      color:#64748b;
+      line-height:1.3;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .hdu-user-body {
+      padding:9px 10px 14px;
+      display:grid;
+      gap:7px;
+      flex:1;
+    }
+    .hdu-user-line {
+      display:grid;
+      gap:2px;
+    }
+    .hdu-user-label {
+      font-size:.63rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#94a3b8;
+    }
+    .hdu-user-value {
+      font-size:.76rem;
+      color:#0f172a;
+      line-height:1.35;
+      word-break:break-word;
+    }
+    .hdu-user-badges {
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+    }
+    .hdu-user-actions {
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:auto;
+      padding-top:4px;
+    }
+    .hdu-user-actions .bt-btn {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:1 1 0;
+      min-width:0;
+      padding:5px 8px;
+      border-radius:10px;
+      font-size:.71rem;
+      line-height:1.1;
+      white-space:nowrap;
+      text-align:center;
+    }
+    .hdu-user-actions .danger {
+      color:#dc2626;
+      border-color:#dc2626;
+      background:#fff;
+    }
+    .hdu-action-cell {
+      position:relative;
+      text-align:center;
+      vertical-align:middle;
+    }
+    .hdu-action-box {
+      display:grid;
+      gap:6px;
+      min-width:110px;
+      margin:0 auto;
+    }
+    .hdu-action-box .bt-btn {
+      width:100%;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:10px;
+      font-size:.74rem;
+      line-height:1.15;
+      white-space:nowrap;
+    }
+    .hdu-action-box .bt-btn:first-child {
+      background:#eff6ff;
+      border-color:#bfdbfe;
+      color:#1d4ed8;
+    }
+    .hdu-action-box .danger {
+      background:#fff5f5;
+      border-color:#fecaca;
+      color:#dc2626;
+    }
+    .hdu-list-meta {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+      color:#64748b;
+      font-size:.8rem;
+    }
+    .hdu-project-badges {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .hdu-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:6px 10px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-size:.76rem;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .hdu-pill.orange { background:#fff7ed; color:#ea580c; }
+    .hdu-pill.green { background:#ecfdf5; color:#16a34a; }
+    @media (max-width: 720px) {
+      .hdm-view-grid { grid-template-columns:1fr; }
+      .hdm-view-head { flex-direction:column; }
+      .hdm-view-footer { padding-inline:16px; }
+      .hdu-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .hdu-grid { grid-template-columns:1fr; }
+      .hdu-head { flex-direction:column; }
+      .hdu-tabs { overflow-x:auto; }
+      .hdu-list-grid { grid-template-columns:1fr; }
+      .hdu-user-actions .bt-btn { flex:1 1 100%; }
+    }
+    /* project detail modal */
+    .hdm-proj-backdrop {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+      z-index:1100; align-items:flex-start; justify-content:center; overflow-y:auto; padding:24px 12px;
+    }
+    .hdm-proj-backdrop.open { display:flex; }
+    .hdm-proj-modal {
+      background:#fff; border-radius:14px; width:860px; max-width:98vw;
+      box-shadow:0 24px 80px rgba(0,0,0,.22); position:relative;
+    }
+    .hdm-proj-header {
+      padding:20px 28px 16px; border-bottom:1px solid #e2e8f0;
+    }
+    .hdm-proj-header h2 { margin:0 0 12px; font-size:1.2rem; font-weight:800; color:#1e293b; }
+    .hdm-proj-close {
+      position:absolute; top:14px; right:18px; background:none; border:none;
+      font-size:1.4rem; cursor:pointer; color:#94a3b8; line-height:1;
+    }
+    .hdm-proj-close:hover { color:#e85d26; }
+    .hdm-proj-token-box {
+      background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;
+      padding:10px 14px; margin-bottom:12px;
+    }
+    .hdm-proj-token-row { display:flex; gap:8px; align-items:center; font-size:.8rem; margin-bottom:4px; }
+    .hdm-proj-token-row:last-child { margin-bottom:0; }
+    .hdm-proj-token-label { color:#64748b; min-width:140px; font-weight:600; }
+    .hdm-proj-token-val { color:#334155; word-break:break-all; }
+    .hdm-proj-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; padding:14px 28px 10px; }
+    .hdm-proj-field label { font-size:.72rem; color:#64748b; font-weight:600; }
+    .hdm-proj-field p { margin:2px 0 0; font-size:.9rem; color:#1e293b; }
+    .hdm-proj-desc { padding:0 28px 14px; font-size:.85rem; color:#334155; }
+    /* tabs */
+    .hdm-proj-tabs { border-top:1px solid #e2e8f0; display:flex; gap:0; padding:0 28px; }
+    .hdm-proj-tab {
+      padding:10px 18px; font-size:.82rem; font-weight:600; cursor:pointer;
+      border-bottom:2px solid transparent; color:#64748b; margin-bottom:-1px;
+    }
+    .hdm-proj-tab.active { color:#e85d26; border-bottom-color:#e85d26; }
+    .hdm-proj-tab-content { padding:16px 28px 22px; min-height:200px; }
+    .hdm-proj-section-title { font-size:.78rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin:0 0 10px; }
+    .hdm-proj-cfg-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 32px; }
+    .hdm-proj-cfg-group h4 { font-size:.78rem; font-weight:700; color:#e85d26; margin:0 0 8px; }
+    .hdm-proj-cfg-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:.82rem; color:#334155; }
+    /* ticket detail modal */
+    .tkd-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:16px; }
+    .tkd-title { margin:0; font-size:1.1rem; font-weight:800; color:#0f172a; line-height:1.35; }
+    .tkd-sub { margin-top:4px; color:#64748b; font-size:.8rem; }
+    .tkd-badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .tkd-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:14px; }
+    .tkd-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px 14px; }
+    .tkd-card.full { grid-column:1 / -1; }
+    .tkd-k { font-size:.7rem; font-weight:800; color:#64748b; letter-spacing:.05em; text-transform:uppercase; margin-bottom:6px; }
+    .tkd-v { color:#0f172a; font-size:.9rem; line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+    .tkd-pre { max-height:240px; overflow:auto; background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 14px; margin:0; white-space:pre-wrap; word-break:break-word; font-size:.78rem; line-height:1.65; }
+    .tkd-raw summary { cursor:pointer; font-weight:700; color:#334155; margin-bottom:8px; }
+    .tkd-raw[open] summary { margin-bottom:10px; }
+    @media (max-width: 720px) {
+      .tkd-grid { grid-template-columns:1fr; }
+      .tkd-card.full { grid-column:auto; }
+      .tkd-head { flex-direction:column; }
+    }
+    @media (max-width: 720px) {
+      .bt-main-content {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+      }
+      .bt-page-header { margin-bottom: 12px; }
+      .bt-page-header h2 { font-size: 1.05rem; }
+      .bt-card { overflow: hidden; }
+      .hdm-shell {
+        display: block;
+        min-height: auto;
+      }
+      .hdm-nav {
+        width: 100%;
+        min-width: 0;
+        max-height: 240px;
+        border-right: 0;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 12px 12px 0 0;
+        overflow: auto;
+        padding: 8px 0;
+      }
+      .hdm-nav-group {
+        padding: 9px 12px 4px;
+        background: #fff;
+      }
+      .hdm-nav-item {
+        padding: 8px 14px;
+        font-size: 0.82rem;
+      }
+      .hdm-content {
+        border-left: 1px solid #e2e8f0;
+        border-radius: 0 0 12px 12px;
+        padding: 14px;
+        overflow: visible;
+      }
+      .hdm-toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .hdm-toolbar input {
+        grid-column: 1 / -1;
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 40px;
+      }
+      .hdm-toolbar .bt-btn {
+        width: 100%;
+        min-width: 0 !important;
+        justify-content: center;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      .hdm-table-wrap { overflow: visible; }
+      .hdm-table-wrap .bt-table,
+      .hdm-table-wrap .bt-table thead,
+      .hdm-table-wrap .bt-table tbody,
+      .hdm-table-wrap .bt-table tr,
+      .hdm-table-wrap .bt-table td {
+        display: block;
+        width: 100%;
+      }
+      .hdm-table-wrap .bt-table thead { display: none; }
+      .hdm-table-wrap .bt-table tr {
+        margin-bottom: 10px;
+        border: 1px solid #dbe4f0;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, .05);
+        overflow: hidden;
+      }
+      .hdm-table-wrap .bt-table td {
+        box-sizing: border-box;
+        padding: 10px 12px !important;
+        border-bottom: 1px solid #edf2f7;
+        text-align: left;
+      }
+      .hdm-table-wrap .bt-table td:last-child { border-bottom: 0; }
+      .hdm-table-wrap .bt-table td::before {
+        display: block;
+        margin-bottom: 4px;
+        color: #64748b;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+      }
+      .hdm-table-wrap .bt-table td:nth-child(1)::before { content: 'Code'; }
+      .hdm-table-wrap .bt-table td:nth-child(2)::before { content: 'Name'; }
+      .hdm-table-wrap .bt-table td:nth-child(3)::before { content: 'Status'; }
+      .hdm-table-wrap .bt-table td:nth-child(4)::before { content: 'Action'; }
+      .hk-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+      .hk-actions .bt-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .hdm-group-row,
+      .hdm-sub-row {
+        display: table-row !important;
+      }
+      .hdm-group-row.hidden,
+      .hdm-sub-row.hidden {
+        display: none !important;
+      }
+      .hdm-group-row td,
+      .hdm-sub-row td {
+        display: table-cell !important;
+        width: auto;
+      }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-journal-richtext"></i> Helpdeck Knowledge</h2></div>
+    <div class="bt-card" style="padding:0">
+      <div class="hdm-shell">
+        <nav class="hdm-nav" id="hdm-nav"></nav>
+        <div class="hdm-content" id="hdm-content">
+          <div class="hdm-empty"><i class="bi bi-arrow-left-circle" style="font-size:2rem"></i><br><br>เลือกตารางจากเมนูซ้าย</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<input type="file" id="hdm-import-file" accept=".json,.csv,.xls,.xlsx,.pdf" style="display:none" onchange="handleImportFile(event)">
+
+<!-- Modal Add/Edit -->
+<div class="hdm-modal-backdrop" id="hdm-modal">
+  <div class="hdm-modal">
+    <h3 id="modal-title">เพิ่มข้อมูล</h3>
+    <div class="field"><label>Code (รหัส)</label><input class="hk-input" id="modal-code" placeholder="เช่น PRJ001"></div>
+    <div class="field"><label>Name (ชื่อ) <span style="color:#e53e3e">*</span></label><input class="hk-input" id="modal-name" placeholder="ชื่อรายการ"></div>
+    <div class="field" style="display:none"><label>Extra (ข้อมูลเพิ่มเติม JSON)</label><textarea class="hk-textarea" id="modal-extra" placeholder="{}">{}</textarea></div>
+    <div class="field" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="modal-active" checked style="width:auto">
+      <label for="modal-active" style="margin:0">Active</label>
+    </div>
+    <div class="hdm-modal-footer">
+      <button class="bt-btn bt-btn-outline" onclick="closeModal()">ยกเลิก</button>
+      <button class="bt-btn bt-btn-primary" onclick="saveModal()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal View Detail -->
+<div class="hdm-modal-backdrop" id="hdm-view-modal">
+  <div class="hdm-modal hdm-view-modal">
+    <div class="hdm-view-head">
+      <div>
+        <h3>รายละเอียดข้อมูล</h3>
+        <p class="hdm-view-subtitle" id="view-subtitle">สรุป record แบบอ่านง่าย พร้อมข้อมูลดิบด้านล่าง</p>
+      </div>
+      <div class="hdm-view-badge" id="view-status">-</div>
+    </div>
+    <div class="hdm-view-body">
+      <div class="hdm-view-grid">
+        <div class="hdm-view-card">
+          <div class="hdm-view-label">Name</div>
+          <div class="hdm-view-value" id="view-name">-</div>
+        </div>
+      </div>
+
+      <div class="hdm-view-panel">
+        <div class="hdm-view-panel-head">
+          <span>Extra (parsed)</span>
+          <span>ข้อมูลสำคัญที่อ่านได้ทันที</span>
+        </div>
+        <div id="view-extra" class="hdm-view-extra-grid"></div>
+      </div>
+
+    </div>
+    <div class="hdm-view-footer">
+      <button class="bt-btn bt-btn-primary" onclick="closeViewModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="hdm-modal-backdrop" id="user-detail-modal">
+  <div class="hdm-modal hdu-modal">
+    <div class="hdu-head">
+      <div class="hdu-identity">
+        <div class="hdu-avatar" id="user-avatar">U</div>
+        <div style="min-width:0">
+          <h3 class="hdu-name" id="user-name">-</h3>
+          <p class="hdu-sub" id="user-sub">-</p>
+          <div class="hdu-badges" id="user-badges"></div>
+        </div>
+      </div>
+      <div class="hdm-view-badge" id="user-status">-</div>
+    </div>
+    <div class="hdu-stats">
+      <div class="hdu-stat"><div class="hdu-stat-k">Teams</div><div class="hdu-stat-v" id="user-stat-teams">-</div></div>
+      <div class="hdu-stat"><div class="hdu-stat-k">Projects Head</div><div class="hdu-stat-v" id="user-stat-pm">-</div></div>
+      <div class="hdu-stat"><div class="hdu-stat-k">Projects Dev</div><div class="hdu-stat-v" id="user-stat-dev">-</div></div>
+      <div class="hdu-stat"><div class="hdu-stat-k">Sub Projects</div><div class="hdu-stat-v" id="user-stat-sub">-</div></div>
+    </div>
+    <div class="hdu-tabs">
+      <button class="hdu-tab active" data-user-tab="work" onclick="switchUserTab('work')">Work Information</button>
+      <button class="hdu-tab" data-user-tab="private" onclick="switchUserTab('private')">Private Information</button>
+      <button class="hdu-tab" data-user-tab="hr" onclick="switchUserTab('hr')">ตั้งค่า HR</button>
+      <button class="hdu-tab" data-user-tab="team" onclick="switchUserTab('team')">Team HelpDesk</button>
+    </div>
+    <div class="hdu-body">
+      <div class="hdu-panel active" id="user-panel-work">
+        <div class="hdu-grid" id="user-work-grid"></div>
+      </div>
+      <div class="hdu-panel" id="user-panel-private">
+        <div class="hdu-section">
+          <div class="hdu-section-head">Private Information <span>ข้อมูลส่วนตัวที่ import มีเท่าไรก็แสดงเท่านั้น</span></div>
+          <div class="hdu-body" style="padding:14px" id="user-private-content">
+            <div class="hdu-empty">ไม่มีข้อมูลส่วนตัวในชุดข้อมูลนี้</div>
+          </div>
+        </div>
+      </div>
+      <div class="hdu-panel" id="user-panel-hr">
+        <div class="hdu-grid" id="user-hr-grid"></div>
+      </div>
+      <div class="hdu-panel" id="user-panel-team">
+        <div class="hdu-section">
+          <div class="hdu-section-head">ทีมที่เกี่ยวข้อง <span>ทีมที่ผูกกับ user คนนี้ในฐานะ owner หรือ member</span></div>
+          <div class="hdu-body" style="padding:14px">
+            <div class="hdu-project-badges" id="user-teams"></div>
+          </div>
+        </div>
+        <div class="hdu-section">
+          <div class="hdu-section-head">โครงการที่เกี่ยวข้อง <span>รวม Head / Dev / Sub Project ที่โยงกับคนนี้</span></div>
+          <div class="hdu-table-wrap">
+            <table class="bt-table" style="font-size:.82rem">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Project</th>
+                  <th>Team</th>
+                </tr>
+              </thead>
+              <tbody id="user-project-rows">
+                <tr><td colspan="3" class="hdu-empty">กำลังโหลด...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hdm-view-footer">
+      <button class="bt-btn bt-btn-primary" onclick="closeUserDetailModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project Detail Modal -->
+<div class="hdm-proj-backdrop" id="hdm-proj-modal">
+  <div class="hdm-proj-modal">
+    <button class="hdm-proj-close" onclick="closeProjModal()">×</button>
+    <div class="hdm-proj-header">
+      <h2 id="proj-modal-title">-</h2>
+      <div class="hdm-proj-token-box" id="proj-token-box">
+        <div style="font-size:.72rem;font-weight:700;color:#64748b;margin-bottom:8px">Project Token Line</div>
+        <div class="hdm-proj-token-row"><span class="hdm-proj-token-label">Channel Secret</span><span class="hdm-proj-token-val" id="proj-channel-secret">-</span></div>
+        <div class="hdm-proj-token-row"><span class="hdm-proj-token-label">Channel Access Token</span><span class="hdm-proj-token-val" id="proj-channel-token">-</span></div>
+      </div>
+    </div>
+    <div class="hdm-proj-fields">
+      <div class="hdm-proj-field"><label>Project Name</label><p id="proj-name">-</p></div>
+      <div class="hdm-proj-field"><label>Project Head</label><p id="proj-pm">-</p></div>
+      <div class="hdm-proj-field"><label>Active</label><p id="proj-active">-</p></div>
+    </div>
+    <div class="hdm-proj-desc">
+      <label style="font-size:.72rem;font-weight:700;color:#64748b">Project Description</label>
+      <p id="proj-description" style="margin:4px 0 0;color:#334155;font-size:.9rem"></p>
+    </div>
+    <!-- Tabs -->
+    <div class="hdm-proj-tabs">
+      <div class="hdm-proj-tab active" id="proj-tab-sub" onclick="switchProjTab('sub')">Project Sub</div>
+      <div class="hdm-proj-tab" id="proj-tab-dev" onclick="switchProjTab('dev')">Project Dev</div>
+      <div class="hdm-proj-tab" id="proj-tab-cfg" onclick="switchProjTab('cfg')">Config</div>
+    </div>
+    <div class="hdm-proj-tab-content">
+      <!-- Sub -->
+      <div id="proj-content-sub">
+        <p style="color:#94a3b8;font-size:.82rem">กำลังโหลด...</p>
+      </div>
+      <!-- Dev -->
+      <div id="proj-content-dev" style="display:none">
+        <p style="color:#94a3b8;font-size:.82rem">กำลังโหลด...</p>
+      </div>
+      <!-- Config -->
+      <div id="proj-content-cfg" style="display:none">
+        <div class="hdm-proj-cfg-grid">
+          <div class="hdm-proj-cfg-group">
+            <h4>เลขอ้างอิง / เลขคดี</h4>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-case-ref" disabled> Show Case Ref Code</div>
+            <h4 style="margin-top:14px">ประเภทและหัวข้อ</h4>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-req-type" disabled> ประเภทใบคำขอ</div>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-report-topic" disabled> รายงานหัวข้อการแจ้ง</div>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-topic" disabled> หัวข้อการแจ้ง</div>
+          </div>
+          <div class="hdm-proj-cfg-group">
+            <h4>พื้นที่</h4>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-area-office" disabled> สำนักงานเขต</div>
+            <h4 style="margin-top:14px">อื่น ๆ</h4>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-updated-at" disabled> วันที่อัปเดตล่าสุด</div>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-dept" disabled> หน่วยงาน</div>
+            <div class="hdm-proj-cfg-row"><input type="checkbox" id="cfg-division" disabled> ฝ่าย</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="hdm-modal-backdrop" id="ticket-detail-modal">
+  <div class="hdm-modal" style="max-width:820px">
+    <h3>รายละเอียด Ticket</h3>
+    <div id="ticket-detail-body">
+      <div class="hdm-empty" style="padding:24px 12px">ไม่มีข้อมูล</div>
+    </div>
+    <div class="hdm-modal-footer">
+      <button class="bt-btn bt-btn-primary" onclick="closeTicketDetailModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script src="/assets/vendor/xlsx.full.min.js"></script>
+<script>
+  BT.initApp('helpdeck.html', 'Helpdeck Knowledge');
+
+  const HD_TABLES = [
+    { group: 'Helpdesk', tables: [
+      { key: 'helpdesk_relation', label: 'Relationship Map' },
+    ]},
+    { group: 'เจ้าหน้าที่', tables: [
+      { key: 'hd_users',       label: 'User Management' },
+      { key: 'hd_teams',       label: 'Team Management' },
+      { key: 'hd_main_team_project', label: 'Main Team / Project' },
+    ]},
+    { group: 'ข้อมูลพื้นฐาน', tables: [
+      { key: 'hd_projects',      label: 'Project/Service' },
+      { key: 'hd_sub_projects',  label: 'Sub Project/Service' },
+      { key: 'hd_questions',     label: 'Question Management' },
+      { key: 'hd_channels',      label: 'Channel' },
+      { key: 'hd_projects_dev',  label: 'Project/Service - Dev' },
+      { key: 'hd_contacts',      label: 'Contact Customer' },
+      { key: 'hd_configs',       label: 'Config Generate' },
+      { key: 'hd_sla',           label: 'SLA' },
+      { key: 'hd_criteria',      label: 'Criteria' },
+      { key: 'hd_sub_criteria',  label: 'Sub Criteria' },
+      { key: 'hd_request_types', label: 'ประเภทใบคำขอ' },
+      { key: 'hd_report_topics', label: 'รายงานหัวข้อการแจ้ง' },
+      { key: 'hd_topics',        label: 'หัวข้อการแจ้ง' },
+    ]},
+    { group: 'ข้อมูลที่อยู่', tables: [
+      { key: 'hd_provinces',    label: 'จังหวัด' },
+      { key: 'hd_districts',    label: 'อำเภอ' },
+      { key: 'hd_subdistricts', label: 'ตำบล' },
+      { key: 'hd_postcodes',    label: 'ไปรษณีย์' },
+    ]},
+    { group: 'Other', tables: [
+      { key: 'hd_firebase',    label: 'Key FireBase' },
+      { key: 'hd_line_tokens', label: 'Line Token' },
+    ]},
+    { group: 'Project Management', tables: [
+      { key: 'hd_topics', menuKey: 'pm_hd_topics', label: 'Area Management' },
+      { key: 'hd_request_types', menuKey: 'pm_hd_request_types', label: 'Case Type Management' },
+    ]},
+    { group: 'Flow Management', tables: [
+      { key: 'hd_flow_products',    label: 'Flow Management' },
+      { key: 'hd_flow_areas',       label: 'Area Management' },
+      { key: 'hd_flow_case_types',  label: 'Case Type Management' },
+    ]},
+  ];
+
+  let currentTable = null;
+  let currentRowsCache = [];
+  let editingId = null;
+  let currentTicketRows = new Map();
+  let kanbanDragTicketId = null;
+  const _hdRole = localStorage.getItem('bt_role') || '';
+  const isSuperAdmin = _hdRole === 'admin' || _hdRole === 'superadmin';
+
+  function authHeaders() {
+    const t = localStorage.getItem('bt_token') || '';
+    return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t };
+  }
+
+  async function loadSystemUsers() {
+    const res = await fetch('/api/users', { headers: authHeaders() });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'โหลด users ไม่สำเร็จ');
+    return Array.isArray(data.data) ? data.data : [];
+  }
+
+  async function getHelpdeskMasterContext() {
+    if (window.BT && typeof BT.loadHdContext === 'function') {
+      try {
+        return await BT.loadHdContext({ scope: 'helpdesk' });
+      } catch (error) {
+        console.warn('Failed to load master context', error);
+      }
+    }
+    return window.BT && BT.masterContext ? BT.masterContext : null;
+  }
+
+  function esc(s) {
+    return String(s || '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+  }
+
+  function buildNav() {
+    const nav = document.getElementById('hdm-nav');
+    nav.innerHTML = HD_TABLES.map((g, idx) => `
+      <div class="hdm-nav-group clickable${['Project Management','Flow Management'].includes(g.group) ? ' project-management' : ''}" data-nav-group="${idx}" onclick="toggleNavGroup(${idx})">
+        <span>${esc(g.group)}</span>
+        <span class="hdm-nav-group-arrow">▾</span>
+      </div>
+      ${g.tables.map(t => {
+        const menuKey = t.menuKey || t.key;
+        return `<div class="hdm-nav-item" id="nav_${menuKey}" onclick="selectTable('${menuKey}','${esc(t.label)}','${t.key}')">${esc(t.label)}</div>`;
+      }).join('')}
+    `).join('');
+  }
+
+  function toggleNavGroup(groupIndex) {
+    const nav = document.getElementById('hdm-nav');
+    if (!nav) return;
+    const headers = Array.from(nav.querySelectorAll('.hdm-nav-group.clickable'));
+    const header = headers[groupIndex];
+    if (!header) return;
+    const groupKeys = (HD_TABLES[groupIndex]?.tables || []).map((t) => t.key);
+    const shouldCollapse = !header.classList.contains('collapsed');
+    header.classList.toggle('collapsed', shouldCollapse);
+    groupKeys.forEach((key) => {
+      const item = document.getElementById('nav_' + key);
+      if (item) item.style.display = shouldCollapse ? 'none' : '';
+    });
+  }
+
+  function findTableLabel(key) {
+    for (const group of HD_TABLES) {
+      for (const table of group.tables) {
+        if (table.key === key) return table.label;
+      }
+    }
+    return key;
+  }
+
+  const referenceTableKeys = [
+    'hd_users', 'hd_teams', 'hd_projects', 'hd_sub_projects', 'hd_projects_dev',
+    'hd_channels', 'hd_contacts', 'hd_configs', 'hd_sla', 'hd_criteria',
+    'hd_sub_criteria', 'hd_request_types', 'hd_report_topics', 'hd_topics',
+    'hd_provinces', 'hd_districts', 'hd_subdistricts', 'hd_postcodes',
+    'hd_project_info_pdf', 'hd_project_manual_pdf', 'hd_faq_helpdeck',
+    'hd_flow_products', 'hd_flow_areas', 'hd_flow_case_types',
+  ];
+  const referenceTableCache = new Map();
+  const referenceLookupCache = new Map();
+  let referenceLookupPromise = null;
+  const EXCEL_IMPORT_TARGETS = {
+    'tcp.main.product.xls': 'hd_flow_products',
+    'tcp.main.product.xlsx': 'hd_flow_products',
+    'tcp.main.product.csv': 'hd_flow_products',
+    'tcp.main.area.xls': 'hd_flow_areas',
+    'tcp.main.area.xlsx': 'hd_flow_areas',
+    'tcp.main.area.csv': 'hd_flow_areas',
+    'tcp.main.area.sub.xls': 'hd_flow_case_types',
+    'tcp.main.area.sub.xlsx': 'hd_flow_case_types',
+    'tcp.main.area.sub.csv': 'hd_flow_case_types',
+    'tcp.mdm.channel.xls': 'hd_channels',
+    'tcp.mdm.channel.xlsx': 'hd_channels',
+    'tcp.mdm.channel.csv': 'hd_channels',
+    'tcp.main.team.xls': 'hd_teams',
+    'tcp.main.team.xlsx': 'hd_teams',
+    'tcp.mdm.service.dev.xls': 'hd_projects_dev',
+    'tcp.mdm.service.dev.xlsx': 'hd_projects_dev',
+    'tcp.mdm.service.dev.csv': 'hd_projects_dev',
+    'hr.employee.xls': 'hd_users',
+    'hr.employee.xlsx': 'hd_users',
+    'res.partner.xls': 'hd_contacts',
+    'res.partner.xlsx': 'hd_contacts',
+    'config.generate.xls': 'hd_configs',
+    'config.generate.xlsx': 'hd_configs',
+    'tcp.mdm.priority.xls': 'hd_sla',
+    'tcp.mdm.priority.xlsx': 'hd_sla',
+    'mdm.sub.criteria.xls': 'hd_sub_criteria',
+    'mdm.sub.criteria.xlsx': 'hd_sub_criteria',
+    'mdm.province.xls': 'hd_provinces',
+    'mdm.province.xlsx': 'hd_provinces',
+    'mdm.district.xls': 'hd_districts',
+    'mdm.district.xlsx': 'hd_districts',
+    'mdm.sub.district.xls': 'hd_subdistricts',
+    'mdm.sub.district.xlsx': 'hd_subdistricts',
+    'mdm.postcode.xls': 'hd_postcodes',
+    'mdm.postcode.xlsx': 'hd_postcodes',
+    'mdm.postcode.csv': 'hd_postcodes',
+  };
+
+  function invalidateReferenceLookups() {
+    referenceTableCache.clear();
+    referenceLookupCache.clear();
+    referenceLookupPromise = null;
+  }
+
+  function parseExtraObject(raw) {
+    if (!raw) return {};
+    if (typeof raw === 'object') return raw || {};
+    try { return JSON.parse(raw || '{}') || {}; } catch { return {}; }
+  }
+
+  function normalizeLookupToken(value) {
+    return String(value ?? '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
+  }
+
+  function compactParts(parts, joiner = ' • ') {
+    return parts.filter(Boolean).join(joiner);
+  }
+
+  function summarizeRecord(row, extraObj = {}) {
+    return compactParts([
+      row?.name || '-',
+    ]);
+  }
+
+  function buildLookupBucket(rows) {
+    const index = new Map();
+    (rows || []).forEach((row) => {
+      const extra = parseExtraObject(row?.extra);
+      const values = [
+        row?.id,
+        row?.code,
+        row?.name,
+        extra.source_id,
+        extra.external_id,
+        extra.external_code,
+        extra.project_sync_id,
+        extra.parent_project,
+        extra.project_id,
+        extra.project_ref,
+        extra.owner_id,
+        extra.owner_name,
+        extra.manager_employee_id,
+        extra.user_id,
+        extra.username,
+        extra.linked_helpdesk_id,
+        extra.email,
+        extra.login,
+        extra.member_ids,
+        extra.member_names,
+        extra.member_codes,
+        extra.member_emails,
+        extra.team_member_refs,
+        extra.team_member_names,
+        extra.team_member_display_names,
+        extra.team_member_team_helpdesk_refs,
+        extra.team_member_team_helpdesk_display_names,
+        extra.team_member_team_helpdesk_ids,
+        extra.member_count,
+        extra.team_name,
+        extra.team_name_en,
+        extra.team_helpdesk_id,
+        extra.team_helpdesk_display_name,
+        extra.project_name,
+        extra.project_code,
+        extra.area_id,
+        extra.area_ref,
+        extra.flow_code,
+        extra.flow_name,
+        extra.channel_code,
+        extra.channel_name,
+        extra.area_name,
+        extra.area_navigate_page,
+        extra.sub_service_code,
+        extra.sub_service_name,
+        extra.employee_id,
+        extra.job_title,
+        extra.department,
+        extra.project_service,
+        extra.case_type_id,
+        extra.case_type_ref,
+        extra.case_type_name,
+        extra.case_type_detail,
+        extra.case_type_sequence,
+        extra.case_subject,
+        extra.case_type,
+        extra.title,
+        extra.ministry,
+        extra.app_name,
+        extra.running_number,
+        extra.priority_level,
+        extra.priority_name,
+        extra.file_name,
+        extra.file_url,
+        extra.faq_question,
+        extra.faq_answer,
+        extra.province_id,
+        extra.district_id,
+        extra.sub_district_id,
+        extra.subdistrict_id,
+        extra.postcode,
+      ];
+      const entry = { row, extra, label: summarizeRecord(row, extra) };
+      values.forEach((value) => {
+        const key = normalizeLookupToken(value);
+        if (key && !index.has(key)) index.set(key, entry);
+      });
+    });
+    return index;
+  }
+
+  async function loadReferenceTable(tableKey, force = false) {
+    if (!force && referenceTableCache.has(tableKey)) {
+      return referenceTableCache.get(tableKey);
+    }
+    const res = await fetch(`/api/hd-master?table=${encodeURIComponent(tableKey)}`, { headers: authHeaders() });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || `โหลด ${tableKey} ไม่สำเร็จ`);
+    let rows = Array.isArray(data.data) ? data.data : [];
+    if (tableKey === 'hd_users') {
+      try {
+        const systemUsers = (await loadSystemUsers()).map(normalizeSystemUserAsHdUser);
+        rows = mergeHdUserRows(systemUsers, rows);
+      } catch (err) {
+        console.warn('[Helpdeck] load users table failed', err);
+      }
+    }
+    referenceTableCache.set(tableKey, rows);
+    referenceLookupCache.set(tableKey, buildLookupBucket(rows));
+    return rows;
+  }
+
+  async function warmReferenceLookups(force = false) {
+    if (!referenceLookupPromise || force) {
+      referenceLookupPromise = Promise.all(referenceTableKeys.map((tableKey) => loadReferenceTable(tableKey, force)))
+        .catch((err) => {
+          invalidateReferenceLookups();
+          throw err;
+        });
+    }
+    return referenceLookupPromise;
+  }
+
+  function findLinkedEntry(tableKey, value) {
+    const bucket = referenceLookupCache.get(tableKey);
+    if (!bucket) return null;
+    const raw = String(value ?? '').trim();
+    if (!raw) return null;
+    const candidates = [
+      raw,
+      normalizeLookupToken(raw),
+    ];
+    if (/^\d+$/.test(raw)) {
+      candidates.push(String(Number(raw)));
+    }
+    for (const candidate of candidates) {
+      const hit = bucket.get(normalizeLookupToken(candidate));
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  function formatLinkedLabel(tableKey, entry, rawValue) {
+    if (!entry?.row) return String(rawValue ?? '-');
+    const row = entry.row;
+    const extra = entry.extra || {};
+    const title = row.name || String(rawValue ?? '-');
+    const meta = [];
+    if (tableKey === 'hd_users') {
+      if (extra.email) meta.push(`Email: ${extra.email}`);
+      if (extra.login && extra.login !== extra.email) meta.push(`Login: ${extra.login}`);
+      if (extra.team_helpdesk_display_name) meta.push(`Team: ${extra.team_helpdesk_display_name}`);
+      if (extra.team_helpdesk_id) meta.push(`Team ID: ${extra.team_helpdesk_id}`);
+      if (extra.manager_employee_id) meta.push(`Head: ${resolveUserLabel(extra.manager_employee_id)}`);
+    } else if (tableKey === 'hd_flow_areas') {
+      if (extra.project_id || extra.project_ref) meta.push(`Project: ${resolveProjectLabel(extra.project_id || extra.project_ref)}`);
+      if (extra.area_name && extra.area_name !== title) meta.push(`Area: ${extra.area_name}`);
+    } else if (tableKey === 'hd_projects') {
+      if (extra.project_pm) meta.push(`Head: ${resolveUserLabel(extra.project_pm)}`);
+    } else if (tableKey === 'hd_teams') {
+      if (extra.team_helpdesk_display_name) meta.push(`HelpDesk: ${extra.team_helpdesk_display_name}`);
+      if (extra.team_helpdesk_id) meta.push(`HelpDesk ID: ${extra.team_helpdesk_id}`);
+      if (extra.owner_name) meta.push(`Owner: ${extra.owner_name}`);
+      if (extra.member_count !== undefined && extra.member_count !== null) meta.push(`Members: ${extra.member_count}`);
+    }
+    return {
+      primary: title,
+      secondary: meta.join(' • '),
+      raw: String(rawValue ?? '-'),
+      tableKey,
+    };
+  }
+
+  function normalizeUserLookupTokens(userRow) {
+    const extra = parseExtraObject(userRow?.extra);
+    return [
+      userRow?.id,
+      userRow?.code,
+      userRow?.name,
+      extra.user_id,
+      extra.username,
+      extra.linked_helpdesk_id,
+      extra.source_id,
+      extra.external_id,
+      extra.email,
+      extra.login,
+      extra.job_title,
+      extra.department_id,
+      extra.manager_employee_id,
+    ]
+      .filter(Boolean)
+      .map(normalizeLookupToken);
+  }
+
+  function userMatchesValue(userRow, value) {
+    const token = normalizeLookupToken(value);
+    if (!token) return false;
+    return normalizeUserLookupTokens(userRow).includes(token);
+  }
+
+  function valueMatchesUserTokens(value, userTokens) {
+    if (value === null || value === undefined || value === '') return false;
+    const values = Array.isArray(value) ? value : String(value).split(/[,\n;]+/);
+    return values.some((item) => userTokens.includes(normalizeLookupToken(item)));
+  }
+
+  function resolveUserLabel(value) {
+    const entry = findLinkedEntry('hd_users', value);
+    if (!entry) return String(value ?? '-');
+    return entry.row.name || entry.row.code || String(value ?? '-');
+  }
+
+  function resolveProjectLabel(value) {
+    const entry = findLinkedEntry('hd_projects', value);
+    if (!entry) return String(value ?? '-');
+    return entry.row.name || entry.row.code || String(value ?? '-');
+  }
+
+  function normalizeSystemUserAsHdUser(row) {
+    const id = String(row?.id || '').trim();
+    const username = String(row?.username || '').trim();
+    const email = String(row?.email || '').trim();
+    const role = String(row?.role || '').trim();
+    const accountType = String(row?.account_type || 'permanent').trim() || 'permanent';
+    return {
+      id: id || username || email,
+      code: username || email || id,
+      name: String(row?.full_name || username || email || id || '-').trim(),
+      active: row?.is_active !== false && row?.is_active !== 0 && String(row?.is_active) !== '0',
+      extra: JSON.stringify({
+        source: 'users',
+        user_id: id,
+        username,
+        login: username || email,
+        email,
+        role,
+        job_title: role,
+        department: String(row?.department || '').trim(),
+        account_type: accountType,
+        user_expires_at: String(row?.user_expires_at || '').trim(),
+        must_change_password: row?.must_change_password ? 'yes' : 'no',
+        access_keys: Array.isArray(row?.access_keys) ? row.access_keys : [],
+      }),
+      _systemUser: true,
+    };
+  }
+
+  function userMergeKeys(row) {
+    const extra = parseExtraObject(row?.extra);
+    return [
+      row?.id,
+      row?.code,
+      row?.name,
+      extra.user_id,
+      extra.username,
+      extra.login,
+      extra.email,
+      extra.source_id,
+      extra.external_id,
+      extra.linked_helpdesk_id,
+    ].filter(Boolean).map(normalizeLookupToken).filter(Boolean);
+  }
+
+  function mergeHdUserRows(systemRows = [], helpdeskRows = []) {
+    const map = new Map();
+    const aliases = new Map();
+    const add = (row) => {
+      const keys = userMergeKeys(row);
+      const existingAlias = keys.find((key) => aliases.has(key));
+      if (!existingAlias) {
+        const key = keys[0] || normalizeLookupToken(row.id || row.code || row.name);
+        map.set(key, row);
+        keys.forEach((item) => aliases.set(item, key));
+        return;
+      }
+      const mapKey = aliases.get(existingAlias);
+      const existing = map.get(mapKey);
+      const existingExtra = parseExtraObject(existing.extra);
+      const nextExtra = parseExtraObject(row.extra);
+      const merged = { ...existing };
+      merged.code = existing.code || row.code || '';
+      merged.name = existing.name || row.name || '';
+      merged.active = existing.active !== false && row.active !== false;
+      merged.extra = JSON.stringify({
+        ...nextExtra,
+        ...existingExtra,
+        linked_helpdesk_id: existingExtra.source === 'users' ? row.id : existing.id,
+        helpdesk_code: row.code || nextExtra.employee_id || nextExtra.source_id || '',
+      });
+      map.set(mapKey, merged);
+      userMergeKeys(merged).forEach((item) => aliases.set(item, mapKey));
+    };
+    systemRows.forEach(add);
+    helpdeskRows.forEach(add);
+    return Array.from(map.values()).sort((a, b) => String(a.name || a.code || '').localeCompare(String(b.name || b.code || ''), 'th'));
+  }
+
+  function userRowMatchesSearch(row, text) {
+    const token = normalizeLookupToken(text);
+    if (!token) return true;
+    const extra = parseExtraObject(row?.extra);
+    return [
+      row?.id,
+      row?.code,
+      row?.name,
+      extra.user_id,
+      extra.username,
+      extra.login,
+      extra.email,
+      extra.role,
+      extra.job_title,
+      extra.department,
+      extra.account_type,
+    ].some((value) => normalizeLookupToken(value).includes(token));
+  }
+
+  function buildFieldSpec(key, label, relation = null) {
+    return { key, label, relation };
+  }
+
+  function isHiddenRawIdField(key) {
+    const normalized = String(key || '').trim().toLowerCase();
+    return (
+      ['source', 'source_id', 'external_id', 'project_sync_id', 'sync_id', 'id', 'code'].includes(normalized)
+      || normalized.endsWith('_id')
+      || normalized.endsWith('_code')
+    );
+  }
+
+  const VIEW_EXTRA_SCHEMAS = {
+    hd_teams: [
+      buildFieldSpec('team_name_en', 'Team Name EN'),
+      buildFieldSpec('team_name', 'Team Name'),
+      buildFieldSpec('team_helpdesk_display_name', 'Team HelpDesk'),
+      buildFieldSpec('team_helpdesk_id', 'Team HelpDesk ID'),
+      buildFieldSpec('owner_id', 'Owner', { table: 'hd_users' }),
+      buildFieldSpec('owner_name', 'Owner Name'),
+      buildFieldSpec('member_count', 'Member Count'),
+      buildFieldSpec('team_member_names', 'Team Member Names'),
+      buildFieldSpec('team_member_display_names', 'Team Member Display Names'),
+      buildFieldSpec('team_member_team_helpdesk_display_names', 'Member Team HelpDesk'),
+      buildFieldSpec('remark', 'Remark'),
+    ],
+    hd_main_team_project: [
+      buildFieldSpec('project_service_id', 'Project / Service ID', { table: 'hd_projects' }),
+      buildFieldSpec('project_service_name', 'Project / Service'),
+      buildFieldSpec('user_id', 'Person', { table: 'hd_users' }),
+      buildFieldSpec('person_name', 'Person Name'),
+      buildFieldSpec('role_type', 'Role Type'),
+      buildFieldSpec('position_name', 'Position Name'),
+      buildFieldSpec('department_name', 'Department Name'),
+      buildFieldSpec('source', 'Source'),
+      buildFieldSpec('sort_order', 'Sort Order'),
+    ],
+    hd_users: [
+      buildFieldSpec('email', 'Email'),
+      buildFieldSpec('login', 'Login'),
+      buildFieldSpec('position', 'Position'),
+      buildFieldSpec('job_title', 'Job Title'),
+      buildFieldSpec('department_id', 'Department ID'),
+      buildFieldSpec('manager_employee_id', 'Manager', { table: 'hd_users' }),
+      buildFieldSpec('team_helpdesk_display_name', 'Team HelpDesk'),
+      buildFieldSpec('team_helpdesk_id', 'Team HelpDesk ID'),
+      buildFieldSpec('work_phone', 'Work Phone'),
+      buildFieldSpec('mobile_phone', 'Mobile Phone'),
+      buildFieldSpec('work_location', 'Work Location'),
+    ],
+    hd_projects: [
+      buildFieldSpec('project_sync_id', 'Project Sync ID'),
+      buildFieldSpec('project_pm', 'Project Head', { table: 'hd_users' }),
+      buildFieldSpec('project_description', 'Project Description'),
+      buildFieldSpec('service_token', 'Service Token'),
+      buildFieldSpec('line_channel_secret', 'Line Channel Secret'),
+      buildFieldSpec('line_channel_access_token', 'Line Channel Access Token'),
+    ],
+    hd_sub_projects: [
+      buildFieldSpec('parent_project', 'Parent Project', { table: 'hd_projects' }),
+      buildFieldSpec('subproject_name', 'Sub Project Name'),
+      buildFieldSpec('subproject_code', 'Sub Project Code'),
+      buildFieldSpec('project_pm', 'Project Head', { table: 'hd_users' }),
+    ],
+    hd_projects_dev: [
+      buildFieldSpec('parent_project', 'Parent Project', { table: 'hd_projects' }),
+      buildFieldSpec('external_id', 'External ID'),
+    ],
+    hd_flow_products: [
+      buildFieldSpec('flow_code', 'Flow Code'),
+      buildFieldSpec('flow_name', 'Flow Name'),
+      buildFieldSpec('area_ref', 'Area', { table: 'hd_flow_areas' }),
+    ],
+    hd_flow_areas: [
+      buildFieldSpec('area_name', 'Area Name'),
+      buildFieldSpec('title', 'Title'),
+      buildFieldSpec('title_sub', 'Title Sub'),
+      buildFieldSpec('project_id', 'Project / Service', { table: 'hd_projects' }),
+      buildFieldSpec('sequence', 'Sequence'),
+      buildFieldSpec('version', 'Version'),
+    ],
+    hd_flow_case_types: [
+      buildFieldSpec('area_ref', 'Area', { table: 'hd_flow_areas' }),
+      buildFieldSpec('project_id', 'Project / Service', { table: 'hd_projects' }),
+      buildFieldSpec('case_type_name', 'Case Type Name'),
+      buildFieldSpec('case_type_detail', 'Case Type Detail'),
+      buildFieldSpec('case_type_sequence', 'Case Type Sequence'),
+      buildFieldSpec('version', 'Version'),
+    ],
+    hd_project_info_pdf: [
+      buildFieldSpec('file_name', 'File Name'),
+      buildFieldSpec('file_url', 'PDF File'),
+      buildFieldSpec('note', 'Note'),
+    ],
+    hd_project_manual_pdf: [
+      buildFieldSpec('file_name', 'File Name'),
+      buildFieldSpec('file_url', 'PDF File'),
+      buildFieldSpec('note', 'Note'),
+    ],
+    hd_faq_helpdeck: [
+      buildFieldSpec('faq_question', 'FAQ Question'),
+      buildFieldSpec('faq_answer', 'FAQ Answer'),
+      buildFieldSpec('tags', 'Tags'),
+    ],
+    hd_channels: [
+      buildFieldSpec('channel_code', 'Channel Code'),
+      buildFieldSpec('channel_name', 'Channel Name'),
+      buildFieldSpec('channel_description', 'Channel Description'),
+    ],
+    hd_contacts: [
+      buildFieldSpec('email', 'Email'),
+      buildFieldSpec('phone', 'Phone'),
+      buildFieldSpec('mobile', 'Mobile'),
+    ],
+    hd_configs: [
+      buildFieldSpec('app_name', 'App Name'),
+      buildFieldSpec('running_number', 'Running Number'),
+      buildFieldSpec('remarks', 'Remarks'),
+      buildFieldSpec('year', 'Year'),
+    ],
+    hd_sla: [
+      buildFieldSpec('project_id', 'Project', { table: 'hd_projects' }),
+      buildFieldSpec('priority_level', 'Priority Level'),
+      buildFieldSpec('priority_name', 'Priority Name'),
+      buildFieldSpec('priority_detail', 'Priority Detail'),
+      buildFieldSpec('priority_duration_day', 'Duration Day'),
+      buildFieldSpec('priority_duration_hours', 'Duration Hours'),
+      buildFieldSpec('priority_duration_minute', 'Duration Minute'),
+      buildFieldSpec('priority_finish_day', 'Finish Day'),
+      buildFieldSpec('priority_finish_hours', 'Finish Hours'),
+      buildFieldSpec('priority_finish_minute', 'Finish Minute'),
+      buildFieldSpec('priority_tm', 'Priority TM'),
+    ],
+    hd_sub_criteria: [
+      buildFieldSpec('criteria_id', 'Criteria', { table: 'hd_criteria' }),
+      buildFieldSpec('sub_criteria_name', 'Sub Criteria Name'),
+      buildFieldSpec('sequence', 'Sequence'),
+    ],
+    hd_provinces: [
+      buildFieldSpec('province_name_th', 'Province TH'),
+      buildFieldSpec('province_name_en', 'Province EN'),
+      buildFieldSpec('province_code', 'Province Code'),
+    ],
+    hd_districts: [
+      buildFieldSpec('province_id', 'Province', { table: 'hd_provinces' }),
+      buildFieldSpec('district_name_th', 'District TH'),
+      buildFieldSpec('district_name_en', 'District EN'),
+      buildFieldSpec('district_code', 'District Code'),
+    ],
+    hd_subdistricts: [
+      buildFieldSpec('province_id', 'Province', { table: 'hd_provinces' }),
+      buildFieldSpec('district_id', 'District', { table: 'hd_districts' }),
+      buildFieldSpec('subdistrict_name_th', 'Subdistrict TH'),
+      buildFieldSpec('subdistrict_name_en', 'Subdistrict EN'),
+      buildFieldSpec('subdistrict_code', 'Subdistrict Code'),
+    ],
+    hd_postcodes: [
+      buildFieldSpec('province_id', 'Province', { table: 'hd_provinces' }),
+      buildFieldSpec('district_id', 'District', { table: 'hd_districts' }),
+      buildFieldSpec('subdistrict_id', 'Subdistrict', { table: 'hd_subdistricts' }),
+      buildFieldSpec('postcode', 'Postcode'),
+    ],
+  };
+
+  async function buildExtraFields(extraObj, row) {
+    try { await warmReferenceLookups(); } catch {}
+    const schema = VIEW_EXTRA_SCHEMAS[currentTable] || [];
+    const seen = new Set();
+    const items = [];
+    const pushField = async (spec, rawValue) => {
+      if (rawValue === null || rawValue === undefined || rawValue === '') return;
+      if (!spec.relation && isHiddenRawIdField(spec.key)) return;
+      const baseText = formatExtraValue(rawValue);
+      if (!baseText || baseText === '-') return;
+      seen.add(spec.key);
+      let primary = baseText;
+      let secondary = spec.label && spec.label !== spec.key ? spec.label : '';
+      if (spec.relation?.table) {
+        const linked = findLinkedEntry(spec.relation.table, rawValue);
+        if (linked) {
+          const linkedLabel = formatLinkedLabel(spec.relation.table, linked, rawValue);
+          primary = linkedLabel.primary;
+          secondary = compactParts([
+            spec.label,
+            linkedLabel.secondary,
+          ]);
+        } else {
+          secondary = compactParts([spec.label, 'ยังไม่พบข้อมูลที่เชื่อมกัน']);
+        }
+      }
+      items.push({
+        key: spec.key,
+        label: spec.label || humanizeKey(spec.key),
+        primary,
+        secondary,
+      });
+    };
+
+    for (const spec of schema) {
+      await pushField(spec, extraObj?.[spec.key]);
+    }
+
+    Object.entries(extraObj || {}).forEach(([key, value]) => {
+      if (seen.has(key)) return;
+      if (isHiddenRawIdField(key)) return;
+      if (value === null || value === undefined || value === '') return;
+      if (typeof value === 'object' && !Array.isArray(value)) return;
+      items.push({
+        key,
+        label: humanizeKey(key),
+        primary: formatExtraValue(value),
+        secondary: '',
+      });
+    });
+
+    return items.slice(0, 12);
+  }
+
+  function selectTable(key, label, actualKey = null) {
+    currentTable = actualKey || key;
+    document.querySelectorAll('.hdm-nav-item').forEach(el => el.classList.remove('active'));
+    const navEl = document.getElementById('nav_' + key);
+    if (navEl) navEl.classList.add('active');
+    if (key === 'helpdesk_kanban') {
+      const nav = document.getElementById('hdm-nav');
+      if (nav) nav.style.display = '';
+      const shell = document.querySelector('.hdm-shell');
+      if (shell) shell.style.gridTemplateColumns = '';
+      document.getElementById('hdm-content').innerHTML = `
+        <div class="hdm-toolbar">
+          <strong style="font-size:.95rem;color:#1e293b">${esc(label)}</strong>
+          <input type="text" id="hdm-search" class="bt-input" style="max-width:260px;margin-left:auto" placeholder="ค้นหา ticket / project..." onkeydown="if(event.key==='Enter')loadTicketKanban()">
+          <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="loadTicketKanban()">ค้นหา</button>
+        </div>
+        <div id="hdm-list">${renderLoadingSkeleton('list')}</div>
+      `;
+      loadTicketKanban();
+      return;
+    }
+    if (key === 'helpdesk_relation') {
+      const nav = document.getElementById('hdm-nav');
+      if (nav) nav.style.display = '';
+      const shell = document.querySelector('.hdm-shell');
+      if (shell) shell.style.gridTemplateColumns = '';
+      document.getElementById('hdm-content').innerHTML = `
+        <div class="hdm-toolbar">
+          <strong style="font-size:.95rem;color:#1e293b">${esc(label)}</strong>
+          <span style="color:#64748b;font-size:.8rem">มุมมองความสัมพันธ์ของข้อมูล Helpdeck ทั้งชุด</span>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" style="margin-left:auto" onclick="renderRelationDashboard()"><i class="bi bi-arrow-clockwise"></i> รีเฟรช</button>
+        </div>
+        <div id="hdm-list">${renderLoadingSkeleton('relation')}</div>
+      `;
+      renderRelationDashboard();
+      return;
+    }
+    const nav = document.getElementById('hdm-nav');
+    if (nav) nav.style.display = '';
+    const shell = document.querySelector('.hdm-shell');
+    if (shell) shell.style.gridTemplateColumns = '';
+    document.getElementById('hdm-content').innerHTML = `
+      <div class="hdm-toolbar">
+        <strong style="font-size:.95rem;color:#1e293b">${esc(label)}</strong>
+        <input type="text" id="hdm-search" class="bt-input" style="max-width:260px;margin-left:auto" placeholder="ค้นหา..." onkeydown="if(event.key==='Enter')loadRows()">
+        <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="loadRows()">ค้นหา</button>
+        <button class="bt-btn bt-btn-outline bt-btn-sm" id="hdm-import-btn" onclick="openImportPicker()"><i class="bi bi-upload"></i> นำเข้า</button>
+        ${isSuperAdmin ? `<button class="bt-btn bt-btn-outline bt-btn-sm" style="color:#dc2626;border-color:#dc2626" onclick="clearTable()"><i class="bi bi-trash3"></i> ล้างข้อมูล</button>` : ''}
+        <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="openAddModal()"><i class="bi bi-plus-lg"></i> เพิ่ม</button>
+      </div>
+      <div id="hdm-list">${renderLoadingSkeleton('list')}</div>
+    `;
+    loadRows();
+  }
+
+  function renderLoadingSkeleton(mode = 'list') {
+    if (mode === 'relation') {
+      return `
+        <div class="hdm-skeleton-wrap">
+          <div class="hdm-skeleton-stats">
+            ${Array.from({ length: 4 }).map(() => `
+              <div class="hdm-skeleton-stat">
+                <div class="hdm-skeleton-line" style="width:45%;height:10px"></div>
+                <div class="hdm-skeleton-line" style="width:65%;height:20px"></div>
+                <div class="hdm-skeleton-line" style="width:72%;height:12px"></div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="hdm-skeleton-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+            ${Array.from({ length: 4 }).map(() => `
+              <div class="hdm-skeleton-card">
+                <div class="hdm-skeleton-line" style="width:34%;height:12px"></div>
+                <div class="hdm-skeleton-line" style="width:78%;height:18px"></div>
+                <div class="hdm-skeleton-line" style="width:62%;height:12px"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <span class="hdm-skeleton-chip" style="width:68px"></span>
+                  <span class="hdm-skeleton-chip" style="width:92px"></span>
+                  <span class="hdm-skeleton-chip" style="width:80px"></span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="hdm-skeleton-wrap">
+        <div class="hdm-skeleton-grid">
+          ${Array.from({ length: 5 }).map(() => `
+            <div class="hdm-skeleton-card">
+              <div class="hdm-skeleton-row">
+                <div class="hdm-skeleton-line" style="width:52%"></div>
+                <div class="hdm-skeleton-line" style="width:78%"></div>
+                <div class="hdm-skeleton-chip" style="width:88px"></div>
+                <div class="hdm-skeleton-chip" style="width:96px"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function normalizeTicketStatus(status) {
+    const s = String(status || '').toLowerCase();
+    if (['open', 'new', 'draft'].includes(s)) return 'Open';
+    if (['process', 'in_progress', 'progress', 'pending'].includes(s)) return 'In Progress';
+    if (['finish', 'done', 'closed', 'resolved'].includes(s)) return 'Done';
+    if (['cancel', 'cancelled', 'canceled'].includes(s)) return 'Cancelled';
+    return 'Other';
+  }
+
+  function ticketStatusColor(status) {
+    return ({
+      'Open': '#f97316',
+      'In Progress': '#2563eb',
+      'Done': '#16a34a',
+      'Cancelled': '#64748b',
+      'Other': '#a855f7',
+    })[status] || '#64748b';
+  }
+
+  function kanbanDisplayToRawStatus(status) {
+    return ({
+      'Open': 'open',
+      'In Progress': 'process',
+      'Done': 'closed',
+      'Cancelled': 'cancel',
+      'Other': 'other',
+    })[status] || 'open';
+  }
+
+  function renderTicketKanban(rows) {
+    currentTicketRows = new Map(rows.map((row) => [String(row.id), row]));
+    const groups = {
+      'Open': [],
+      'In Progress': [],
+      'Done': [],
+      'Cancelled': [],
+      'Other': [],
+    };
+    rows.forEach(row => groups[normalizeTicketStatus(row.status)].push(row));
+    const html = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:4px 2px 12px">
+      ${Object.entries(groups).map(([name, items]) => `
+        <section data-kanban-status="${esc(name)}" ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event,'${esc(name)}')" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:12px;min-height:280px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:${ticketStatusColor(name)}"></span>
+              <strong style="font-size:.95rem;color:#0f172a">${esc(name)}</strong>
+            </div>
+            <span class="bt-badge bt-badge-grey">${items.length}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${items.map(t => {
+              const ex = t.extra || {};
+              return `<article draggable="true" ondragstart="handleKanbanDragStart(event,'${esc(t.id)}')" onclick="openTicketDetailModal('${esc(t.id)}')" style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:12px;box-shadow:0 1px 4px rgba(15,23,42,.05);cursor:pointer;transition:transform .12s ease, box-shadow .12s ease" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 10px 24px rgba(15,23,42,.10)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 4px rgba(15,23,42,.05)'">
+                <div style="font-size:.72rem;color:#64748b;margin-bottom:6px">${esc(t.odoo_ticket_id || t.id)}</div>
+                <div style="font-weight:700;color:#0f172a;line-height:1.35;margin-bottom:8px">${esc(t.title || '-')}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+                  ${t.project ? `<span class="bt-badge bt-badge-info">${esc(t.project)}</span>` : ''}
+                  ${t.bug_type ? `<span class="bt-badge bt-badge-warning">${esc(t.bug_type)}</span>` : ''}
+                </div>
+                <div style="font-size:.8rem;color:#475569;display:grid;gap:4px">
+                  <div><strong>ผู้ดูแล:</strong> ${esc(t.assigned_dev || ex.owner_officer || '-')}</div>
+                  <div><strong>ทีม:</strong> ${esc(ex.owner_team || '-')}</div>
+                  <div><strong>อัปเดต:</strong> ${esc((t.updated_at || '').slice(0,16).replace('T',' ') || '-')}</div>
+                </div>
+              </article>`;
+            }).join('') || `<div style="text-align:center;color:#94a3b8;padding:24px 8px">ไม่มี ticket</div>`}
+          </div>
+        </section>
+      `).join('')}
+    </div>`;
+    document.getElementById('hdm-list').innerHTML = html;
+  }
+
+  async function loadTicketKanban() {
+    const q = (document.getElementById('hdm-search')?.value || '').trim();
+    try {
+      const res = await fetch(`/api/helpdesk/tickets${q ? '?q=' + encodeURIComponent(q) : ''}`, { headers: authHeaders() });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'โหลด ticket ไม่สำเร็จ');
+      renderTicketKanban(data.data || []);
+    } catch (e) {
+      document.getElementById('hdm-list').innerHTML = `<p style="color:#b91c1c;padding:16px">${esc(e.message)}</p>`;
+    }
+  }
+
+  function handleKanbanDragStart(event, id) {
+    kanbanDragTicketId = String(id);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(id));
+  }
+
+  function handleKanbanDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }
+
+  async function handleKanbanDrop(event, nextDisplayStatus) {
+    event.preventDefault();
+    const id = event.dataTransfer.getData('text/plain') || kanbanDragTicketId;
+    if (!id) return;
+    const row = currentTicketRows.get(String(id));
+    if (!row) return;
+    const nextStatus = kanbanDisplayToRawStatus(nextDisplayStatus);
+    if (String(row.status || '').toLowerCase() === String(nextStatus).toLowerCase()) return;
+    try {
+      const res = await fetch(`/api/helpdesk/tickets/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'อัปเดตสถานะไม่สำเร็จ');
+      if (data.data) currentTicketRows.set(String(id), data.data);
+      await loadTicketKanban();
+      BT.notify(`ย้าย ticket ไป ${nextDisplayStatus} แล้ว`, 'info');
+    } catch (e) {
+      BT.notify(e.message || 'อัปเดตสถานะไม่สำเร็จ', 'error');
+    } finally {
+      kanbanDragTicketId = null;
+    }
+  }
+
+  function closeTicketDetailModal() {
+    document.getElementById('ticket-detail-modal').classList.remove('open');
+  }
+
+  function openTicketDetailModal(id) {
+    const row = currentTicketRows.get(String(id));
+    if (!row) return;
+    const ex = row.extra || {};
+    const displayStatus = normalizeTicketStatus(row.status || '-');
+    document.getElementById('ticket-detail-body').innerHTML = `
+      <div class="tkd-head">
+        <div>
+          <h4 class="tkd-title">${esc(row.title || '-')}</h4>
+          <div class="tkd-sub">${esc(row.odoo_ticket_id || row.id || '-')}</div>
+          <div class="tkd-badges">
+            <span class="bt-badge bt-badge-info">${esc(row.project || ex.project_code || '-')}</span>
+            <span class="bt-badge bt-badge-warning">${esc(row.bug_type || ex.type || '-')}</span>
+            <span class="bt-badge ${displayStatus === 'Done' ? 'bt-badge-success' : displayStatus === 'Cancelled' ? 'bt-badge-grey' : displayStatus === 'In Progress' ? 'bt-badge-info' : 'bt-badge-warning'}">${esc(displayStatus)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="tkd-grid">
+        <div class="tkd-card"><div class="tkd-k">Owner</div><div class="tkd-v">${esc(row.assigned_dev || ex.owner_officer || '-')}</div></div>
+        <div class="tkd-card"><div class="tkd-k">Team</div><div class="tkd-v">${esc(ex.owner_team || '-')}</div></div>
+        <div class="tkd-card"><div class="tkd-k">Sub Project</div><div class="tkd-v">${esc(ex.subproject_name || ex.subproject_code || '-')}</div></div>
+        <div class="tkd-card"><div class="tkd-k">Customer</div><div class="tkd-v">${esc(ex.customer || '-')}</div></div>
+        <div class="tkd-card"><div class="tkd-k">Created</div><div class="tkd-v">${esc((row.created_at || '').slice(0,16).replace('T',' ') || '-')}</div></div>
+        <div class="tkd-card"><div class="tkd-k">Updated</div><div class="tkd-v">${esc((row.updated_at || '').slice(0,16).replace('T',' ') || '-')}</div></div>
+        <div class="tkd-card full"><div class="tkd-k">Description</div><div class="tkd-v">${esc(row.description || '-')}</div></div>
+      </div>
+    `;
+    document.getElementById('ticket-detail-modal').classList.add('open');
+  }
+
+  function openImportPicker() {
+    const fileEl = document.getElementById('hdm-import-file');
+    fileEl.value = '';
+    fileEl.click();
+  }
+
+  function normalizeImportedRows(rawRows) {
+    // Build flexible column alias mapping per table
+    const TABLE_MAP = {
+      hd_projects:      { code: ['project code','code'], name: ['project name','name'] },
+      hd_sub_projects:  { code: ['project sub code','sub code','code'], name: ['sub service name','name'] },
+      hd_channels:      { code: ['channel code','code'], name: ['channel name','name'] },
+      hd_users:         { code: ['user code','code','employee id','อีเมลที่ทำงาน','work email','email'], name: ['full name','name','user name','ชื่อ'] },
+      hd_users_extid:   { code: ['user code','code','employee id','รหัสจากภายนอก','external id'], name: ['full name','name','user name','ชื่อ'] },
+      hd_teams:         { code: ['team code','code'], name: ['team name','name'] },
+      hd_questions:     { code: ['question code','code'], name: ['question','name'] },
+      hd_topics:        { code: ['topic code','code'], name: ['topic name','name'] },
+      hd_request_types: { code: ['request type code','code'], name: ['request type name','name'] },
+      hd_criteria:      { code: ['criteria code','code'], name: ['criteria name','name'] },
+      hd_sub_criteria:  { code: ['sub criteria code','code'], name: ['sub criteria name','name'] },
+      hd_flow_products: { code: ['flow code','code'], name: ['flow name','name'] },
+      hd_flow_areas:    { code: ['area name','title','code'], name: ['title sub','area name','title','name'] },
+      hd_flow_case_types: { code: ['case type name','code','name'], name: ['case type detail','case type name','name'] },
+      hd_contacts:      { code: ['รหัสจากภายนอก','external id','external code','id'], name: ['ชื่อที่ใช้แสดง','display name','name'] },
+      hd_configs:       { code: ['app name','name','code'], name: ['app name','name'] },
+      hd_sla:           { code: ['priority name','sla name','name','priority level'], name: ['priority name','sla name','name','priority level'] },
+      hd_provinces:     { code: ['รหัสจังหวัด','province code','code'], name: ['ชื่อจังหวัดภาษาไทย','province name thai','name'] },
+      hd_districts:     { code: ['รหัสอำเภอ','district code','code'], name: ['ชื่ออำเภอภาษาไทย','district name thai','name'] },
+      hd_subdistricts:  { code: ['รหัสตำบล','sub district code','code'], name: ['ชื่อตำบลภาษาไทย','sub district name thai','name'] },
+      hd_postcodes:     { code: ['รหัสไปรษณีย์','postcode','code'], name: ['รหัสไปรษณีย์','postcode','code'] },
+    };
+
+    const getCol = (keys, row) => {
+      for (const k of keys) {
+        for (const rk of Object.keys(row)) {
+          if (rk.toLowerCase().trim() === String(k).toLowerCase().trim()) return String(row[rk] || '').trim();
+        }
+      }
+      return '';
+    };
+
+    const mkExtra = (base = {}) => JSON.stringify({ source: 'odoo', ...base });
+
+    if (currentTable === 'hd_contacts') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const name = getCol(['ชื่อที่ใช้แสดง','display name','name'], r);
+        const email = getCol(['อีเมล','email','e-mail'], r);
+        const phone = getCol(['โทรศัพท์','phone'], r);
+        const mobile = getCol(['มือถือ','mobile'], r);
+        return {
+          code: extId || email || name,
+          name: name || email || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            display_name: name,
+            email,
+            phone,
+            mobile,
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_flow_products') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const areaRef = getCol(['area','Area'], r);
+        const flowCode = getCol(['flow code','Flow Code','code'], r);
+        const flowName = getCol(['flow name','Flow Name','name'], r);
+        return {
+          code: flowCode || extId,
+          name: flowName || flowCode || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            area_id: areaRef,
+            area_ref: areaRef,
+            flow_code: flowCode,
+            flow_name: flowName || flowCode,
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_flow_areas') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const active = getCol(['Area Active','active'], r);
+        const areaName = getCol(['Area Name','area name','title'], r);
+        const navPage = getCol(['Area Navigate Page','area navigate page','navigate page'], r);
+        const projectRef = getCol(['Project / Service','project / service','project','service'], r);
+        const sequence = getCol(['Sequence','sequence'], r);
+        const title = getCol(['Title','title'], r);
+        const titleSub = getCol(['Title Sub','title sub'], r);
+        const version = getCol(['Version','version'], r);
+        return {
+          code: areaName || title || extId,
+          name: titleSub || title || areaName || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            area_name: areaName,
+            area_navigate_page: navPage,
+            project_id: projectRef,
+            project_ref: projectRef,
+            sequence,
+            title,
+            title_sub: titleSub,
+            version,
+          }),
+          active: !(String(active).toLowerCase() === 'false' || active === '0'),
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_flow_case_types') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const active = getCol(['Case Type Active','active'], r);
+        const areaRef = getCol(['Area','area'], r);
+        const detail = getCol(['Case Type Detail','case type detail','detail'], r);
+        const name = getCol(['Case Type Name','case type name','name'], r);
+        const sequence = getCol(['Case Type Sequence','case type sequence','sequence'], r);
+        const projectRef = getCol(['Project / Service','project / service','project','service'], r);
+        const version = getCol(['Version','version'], r);
+        return {
+          code: name || extId,
+          name: detail || name || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            area_id: areaRef,
+            area_ref: areaRef,
+            project_id: projectRef,
+            project_ref: projectRef,
+            case_type_name: name,
+            case_type_detail: detail,
+            case_type_sequence: sequence,
+            version,
+          }),
+          active: !(String(active).toLowerCase() === 'false' || active === '0'),
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_faq_helpdeck') {
+      return rawRows.map((r) => {
+        const question = getCol(['faq question', 'question', 'คำถาม', 'topic', 'name'], r);
+        const answer = getCol(['faq answer', 'answer', 'คำตอบ', 'content', 'description'], r);
+        const tags = getCol(['tags', 'tag', 'หมวด', 'category'], r);
+        return {
+          code: question || tags || answer,
+          name: answer || question || tags,
+          extra: mkExtra({
+            faq_question: question,
+            faq_answer: answer,
+            tags,
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_configs') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const appName = getCol(['app name','ชื่อแอป','name'], r);
+        const remark = getCol(['remark','remarks','หมายเหตุ'], r);
+        const runningNumber = getCol(['running number','running no','running'], r);
+        const active = getCol(['active'], r);
+        const year = getCol(['year','ปี'], r);
+        return {
+          code: appName || extId,
+          name: appName || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            app_name: appName,
+            remarks: remark,
+            running_number: runningNumber,
+            year,
+          }),
+          active: !(String(active).toLowerCase() === 'false' || active === '0'),
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_sla') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const priorityLevel = getCol(['priority','priority level','ระดับความสำคัญ'], r);
+        const priorityName = getCol(['priority name','ชื่อ priority','name'], r);
+        const priorityDetail = getCol(['priority detail','detail','รายละเอียด'], r);
+        const priorityDurationDay = getCol(['priority duration day','duration day','วัน'], r);
+        const priorityDurationHours = getCol(['priority duration hours','duration hours','ชั่วโมง'], r);
+        const priorityDurationMinute = getCol(['priority duration minute','duration minute','นาที'], r);
+        const projectRef = getCol(['project','โปรเจกต์'], r);
+        const projectNum = (projectRef.match(/tcp_mdm_service_(\d+)_/) || [])[1] || projectRef;
+        return {
+          code: extId || `${projectNum || 'sla'}-${priorityLevel || priorityName || 'x'}`,
+          name: priorityName || priorityLevel || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            project_id: projectNum,
+            priority_level: priorityLevel,
+            priority_name: priorityName,
+            priority_detail: priorityDetail,
+            priority_duration_day: priorityDurationDay,
+            priority_duration_hours: priorityDurationHours,
+            priority_duration_minute: priorityDurationMinute,
+            priority_finish_day: getCol(['priority finish day','finish day'], r),
+            priority_finish_hours: getCol(['priority finish hours','finish hours'], r),
+            priority_finish_minute: getCol(['priority finish minute','finish minute'], r),
+            priority_tm: getCol(['priority tm','tm'], r),
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_provinces') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const code = getCol(['รหัสจังหวัด','province code','code'], r);
+        const nameTh = getCol(['ชื่อจังหวัดภาษาไทย','province name thai','name'], r);
+        const nameEn = getCol(['ชื่อจังหวัดภาษาอังกฤษ','province name english','en name'], r);
+        return {
+          code: code || extId,
+          name: nameTh || nameEn || code || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            province_code: code,
+            province_name_th: nameTh,
+            province_name_en: nameEn,
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_districts') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const code = getCol(['รหัสอำเภอ','district code','code'], r);
+        const provinceRef = getCol(['จังหวัด','province'], r);
+        const nameTh = getCol(['ชื่ออำเภอภาษาไทย','district name thai','name'], r);
+        const nameEn = getCol(['ชื่ออำเภอภาษาอังกฤษ','district name english','en name'], r);
+        return {
+          code: code || extId,
+          name: nameTh || nameEn || code || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            province_id: provinceRef,
+            district_code: code,
+            district_name_th: nameTh,
+            district_name_en: nameEn,
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_subdistricts') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const code = getCol(['รหัสตำบล','sub district code','code'], r);
+        const provinceRef = getCol(['จังหวัด','province'], r);
+        const districtRef = getCol(['อำเภอ','district'], r);
+        const nameTh = getCol(['ชื่อตำบลภาษาไทย','subdistrict name thai','name'], r);
+        const nameEn = getCol(['ชื่อตำบลภาษาอังกฤษ','subdistrict name english','en name'], r);
+        return {
+          code: code || extId,
+          name: nameTh || nameEn || code || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            province_id: provinceRef,
+            district_id: districtRef,
+            subdistrict_code: code,
+            subdistrict_name_th: nameTh,
+            subdistrict_name_en: nameEn,
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_postcodes') {
+      return rawRows.map((r) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const code = getCol(['รหัสไปรษณีย์','postcode','code'], r);
+        const provinceRef = getCol(['จังหวัด','province'], r);
+        const districtRef = getCol(['อำเภอ','district'], r);
+        const subdistrictRef = getCol(['ตำบล','subdistrict'], r);
+        return {
+          code: code || extId,
+          name: code || extId,
+          extra: mkExtra({
+            source_id: extId,
+            external_id: extId,
+            province_id: provinceRef,
+            district_id: districtRef,
+            subdistrict_id: subdistrictRef,
+            postcode: code,
+          }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    // Special handler for hd_users from Odoo HR export (Thai column headers)
+    if (currentTable === 'hd_users') {
+      const getCol = (keys, row) => {
+        for (const k of keys) {
+          for (const rk of Object.keys(row)) {
+            if (rk.toLowerCase().trim() === k.toLowerCase().trim()) return String(row[rk] || '').trim();
+          }
+        }
+        return '';
+      };
+      return rawRows.map(r => {
+        // Support both English/Thai Odoo HR exports and hr.employee.xls
+        const email = getCol(['อีเมลที่ทำงาน','work email','email','อีเมล'], r);
+        const name  = getCol(['ชื่อ','full name','name','user name'], r);
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const login = getCol(['login','username','user login'], r) || email;
+        const position = getCol(['ตำแหน่ง','position'], r);
+        const jobTitle = getCol(['job title','ตำแหน่งงาน','position title'], r);
+        const departmentId = getCol(['department_id','department id','แผนก'], r);
+        const managerId = getCol(['manager_employee_id','manager id','หัวหน้า'], r);
+        const workPhone = getCol(['work phone','phone','โทรศัพท์ที่ทำงาน'], r);
+        const mobilePhone = getCol(['mobile phone','mobile','มือถือ'], r);
+        const workLocation = getCol(['work location','location','สถานที่ทำงาน'], r);
+        const teamHelpdeskRef = getCol(['Team HelpDesk','team helpdesk'], r);
+        const teamHelpdeskDisplayName = getCol(['Team HelpDesk/Display Name','team helpdesk/display name'], r);
+        const teamHelpdeskId = getCol(['Team HelpDesk/ID','team helpdesk/id'], r);
+        const employeeDocuments = getCol(['Employee Documents','employee documents'], r);
+        const code  = email || extId; // prefer email as user code
+        return {
+          code,
+          name,
+          extra: JSON.stringify({
+            source: 'odoo',
+            source_id: extId,
+            external_id: extId,
+            email,
+            login,
+            position,
+            job_title: jobTitle,
+            department_id: departmentId,
+            manager_employee_id: managerId,
+            work_phone: workPhone,
+            mobile_phone: mobilePhone,
+            work_location: workLocation,
+            team_helpdesk_ref: teamHelpdeskRef,
+            team_helpdesk_display_name: teamHelpdeskDisplayName,
+            team_helpdesk_id: teamHelpdeskId,
+            employee_documents: employeeDocuments,
+          }),
+          active: true
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    if (currentTable === 'hd_teams') {
+      const getCol = (keys, row) => {
+        for (const k of keys) {
+          for (const rk of Object.keys(row)) {
+            if (rk.toLowerCase().trim() === String(k).toLowerCase().trim()) return String(row[rk] || '').trim();
+          }
+        }
+        return '';
+      };
+      const groups = new Map();
+      const order = [];
+      const addUnique = (list, value) => {
+        const text = String(value || '').trim();
+        if (!text || list.includes(text)) return;
+        list.push(text);
+      };
+      rawRows.forEach((r, idx) => {
+        const extId = getCol(['รหัสจากภายนอก','external id','external code','id'], r);
+        const teamCode = getCol(['Team Code','team code','code'], r);
+        const teamNameTh = getCol(['Team Name TH','team name th','team name'], r);
+        const teamNameEn = getCol(['Team Name EN','team name en'], r);
+        const ownerId = getCol(['Owner Team','owner team'], r);
+        const ownerName = getCol(['Owner Team/ชื่อที่ใช้แสดง','owner team/ชื่อที่ใช้แสดง'], r) || ownerId;
+        const remark = getCol(['Remark','remark'], r);
+        const memberRef = getCol(['Team Member','team member'], r);
+        const memberName = getCol(['Team Member/ชื่อ','team member/ชื่อ'], r);
+        const memberDisplayName = getCol(['Team Member/ชื่อที่ใช้แสดง','team member/ชื่อที่ใช้แสดง'], r);
+        const memberTeamHelpdeskRef = getCol(['Team Member/Team HelpDesk','team member/team helpdesk'], r);
+        const memberTeamHelpdeskDisplayName = getCol(['Team Member/Team HelpDesk/Display Name','team member/team helpdesk/display name'], r);
+        const memberTeamHelpdeskId = getCol(['Team Member/Team HelpDesk/ID','team member/team helpdesk/id'], r);
+        const active = getCol(['Active','active'], r);
+        const isActive = !active || !['0', 'false', 'inactive', 'no'].includes(String(active).trim().toLowerCase());
+        const key = memberTeamHelpdeskId || memberTeamHelpdeskDisplayName || teamCode || extId || teamNameTh || teamNameEn || `row_${idx + 1}`;
+        if (!groups.has(key)) {
+          groups.set(key, {
+            code: teamCode || extId || key,
+            name: teamNameTh || teamNameEn || teamCode || extId || key,
+            extra: JSON.stringify({
+              source: 'odoo',
+              source_id: extId,
+              external_id: extId,
+              team_helpdesk_id: memberTeamHelpdeskId,
+              team_helpdesk_display_name: memberTeamHelpdeskDisplayName,
+              team_code: teamCode,
+              team_name_th: teamNameTh,
+              team_name_en: teamNameEn,
+              owner_id: ownerId,
+              owner_name: ownerName,
+              remark,
+              member_count: 0,
+              team_member_refs: [],
+              team_member_names: [],
+              team_member_display_names: [],
+              team_member_team_helpdesk_refs: [],
+              team_member_team_helpdesk_display_names: [],
+              team_member_team_helpdesk_ids: [],
+              member_ids: [],
+              member_names: [],
+              member_codes: [],
+              member_emails: [],
+            }),
+            active: 1,
+            sort_order: idx + 1,
+          });
+          order.push(key);
+        }
+        const entry = groups.get(key);
+        const extra = JSON.parse(entry.extra || '{}');
+        if (!entry.code && (teamCode || extId)) entry.code = teamCode || extId;
+        if (!entry.name && (teamNameTh || teamNameEn || teamCode || extId)) entry.name = teamNameTh || teamNameEn || teamCode || extId;
+        if (teamNameTh) extra.team_name_th = teamNameTh;
+        if (teamNameEn) extra.team_name_en = teamNameEn;
+        if (teamCode) extra.team_code = teamCode;
+        if (memberTeamHelpdeskId) extra.team_helpdesk_id = memberTeamHelpdeskId;
+        if (memberTeamHelpdeskDisplayName) extra.team_helpdesk_display_name = memberTeamHelpdeskDisplayName;
+        if (ownerId) extra.owner_id = ownerId;
+        if (ownerName) extra.owner_name = ownerName;
+        if (remark) extra.remark = remark;
+        extra.active = isActive ? 1 : 0;
+        if (memberRef) addUnique(extra.team_member_refs, memberRef);
+        if (memberName) addUnique(extra.team_member_names, memberName);
+        if (memberDisplayName) addUnique(extra.team_member_display_names, memberDisplayName);
+        if (memberTeamHelpdeskRef) addUnique(extra.team_member_team_helpdesk_refs, memberTeamHelpdeskRef);
+        if (memberTeamHelpdeskDisplayName) addUnique(extra.team_member_team_helpdesk_display_names, memberTeamHelpdeskDisplayName);
+        if (memberTeamHelpdeskId) addUnique(extra.team_member_team_helpdesk_ids, memberTeamHelpdeskId);
+        addUnique(extra.member_ids, memberRef);
+        addUnique(extra.member_names, memberName || memberDisplayName || memberRef);
+        addUnique(extra.member_codes, memberRef);
+        addUnique(extra.member_emails, memberRef.includes('@') ? memberRef : '');
+        extra.member_count = extra.team_member_refs.length;
+        entry.extra = JSON.stringify(extra);
+        entry.active = isActive ? 1 : 0;
+      });
+      return order.map((key, idx) => {
+        const item = groups.get(key);
+        return {
+          code: item.code,
+          name: item.name,
+          extra: item.extra,
+          active: item.active !== undefined ? item.active : true,
+          sort_order: item.sort_order || idx + 1,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    // Special handler for hd_projects_dev (columns: รหัสจากภายนอก, Project Dev, Project)
+    if (currentTable === 'hd_projects_dev') {
+      const getCol = (keys, row) => {
+        for (const k of keys) {
+          for (const rk of Object.keys(row)) {
+            if (rk.toLowerCase().trim() === k) return String(row[rk] || '').trim();
+          }
+        }
+        return '';
+      };
+      return rawRows.map(r => {
+        const devRef  = getCol(['project dev','dev','employee','รหัสพนักงาน'], r);
+        const projRef = getCol(['project','โปรเจกต์'], r);
+        const extId   = getCol(['รหัสจากภายนอก','external id','external code'], r);
+        // extract numeric IDs from external ref strings
+        const empNum  = (devRef.match(/hr_employee_(\d+)_/) || [])[1] || devRef;
+        const projNum = (projRef.match(/tcp_mdm_service_(\d+)_/) || [])[1] || projRef;
+        return {
+          code:   empNum,
+          name:   devRef,
+          extra:  JSON.stringify({ parent_project: projNum, external_id: extId }),
+          active: true,
+        };
+      }).filter(r => r.code || r.name);
+    }
+
+    const aliases = TABLE_MAP[currentTable] || { code: ['code'], name: ['name'] };
+
+    // All known "reserved" keys that map to fixed columns (not stored in extra)
+    const reservedKeys = new Set([
+      ...aliases.code, ...aliases.name,
+      'active', 'extra', 'code', 'name',
+    ]);
+
+    return rawRows.map(r => {
+      // case-insensitive key lookup
+      const get = (keys) => {
+        for (const k of keys) {
+          for (const rk of Object.keys(r)) {
+            if (rk.toLowerCase().trim() === k) return String(r[rk] || '').trim();
+          }
+        }
+        return '';
+      };
+      const codeVal   = get(aliases.code);
+      const nameVal   = get(aliases.name);
+      const activeRaw = get(['active']);
+      const extraRaw  = get(['extra']);
+
+      // Collect all remaining columns into extra JSON
+      let extraObj = {};
+      try { extraObj = JSON.parse(extraRaw || '{}'); } catch {}
+      for (const rk of Object.keys(r)) {
+        const lk = rk.toLowerCase().trim();
+        if (!reservedKeys.has(lk) && r[rk] !== '' && r[rk] !== undefined) {
+          extraObj[rk] = String(r[rk]).trim();
+        }
+      }
+
+      return {
+        code:   codeVal,
+        name:   nameVal,
+        extra:  JSON.stringify(extraObj),
+        active: !(activeRaw.toLowerCase() === 'false' || activeRaw === '0'),
+      };
+    }).filter(r => r.code || r.name);
+  }
+
+  function parseCsvText(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (!lines.length) return [];
+
+    // quoted CSV parser
+    function parseLine(line) {
+      const cols = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === ',' && !inQ) {
+          cols.push(cur.trim()); cur = '';
+        } else {
+          cur += ch;
+        }
+      }
+      cols.push(cur.trim());
+      return cols;
+    }
+
+    const header = parseLine(lines[0]).map(h => h.toLowerCase().trim());
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseLine(lines[i]);
+      if (cols.every(c => !c)) continue; // skip empty lines
+      const obj = {};
+      header.forEach((h, idx) => { obj[h] = cols[idx] || ''; });
+      rows.push(obj);
+    }
+    return rows;
+  }
+
+  async function readFileText(file) {
+    const buf = await file.arrayBuffer();
+    // Try UTF-8 strict first; fallback to Windows-874 (TIS-620) for Thai Odoo exports
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(buf);
+    } catch (_) {
+      return new TextDecoder('windows-874').decode(buf);
+    }
+  }
+
+  async function readSpreadsheetRows(file) {
+    if (!window.XLSX) throw new Error('ไม่พบตัวอ่านไฟล์ Excel');
+    const buf = await file.arrayBuffer();
+    const workbook = window.XLSX.read(buf, { type: 'array', cellDates: true });
+    const sheetName = workbook.SheetNames && workbook.SheetNames[0];
+    if (!sheetName) return [];
+    const sheet = workbook.Sheets[sheetName];
+    if (!sheet) return [];
+    return window.XLSX.utils.sheet_to_json(sheet, { defval: '' });
+  }
+
+  function detectImportTarget(fileName) {
+    const base = String(fileName || '').toLowerCase().trim();
+    if (!base) return null;
+    if (EXCEL_IMPORT_TARGETS[base]) return EXCEL_IMPORT_TARGETS[base];
+    const compact = base.replace(/\s+/g, '');
+    const patterns = [
+      ['tcp.mdm.channel', 'hd_channels'],
+      ['tcp.mdm.service.dev', 'hd_projects_dev'],
+      ['hr.employee', 'hd_users'],
+      ['res.partner', 'hd_contacts'],
+      ['config.generate', 'hd_configs'],
+      ['tcp.mdm.priority', 'hd_sla'],
+      ['mdm.sub.criteria', 'hd_sub_criteria'],
+      ['mdm.province', 'hd_provinces'],
+      ['mdm.district', 'hd_districts'],
+      ['mdm.sub.district', 'hd_subdistricts'],
+      ['mdm.postcode', 'hd_postcodes'],
+    ];
+    for (const [needle, target] of patterns) {
+      if (compact.includes(needle)) return target;
+    }
+    return null;
+  }
+
+  async function handleImportFile(event) {
+    const btn = document.getElementById('hdm-import-btn');
+    try {
+      const f = event.target.files && event.target.files[0];
+      if (!f) return;
+      const ext = (f.name.split('.').pop() || '').toLowerCase();
+      const fileName = String(f.name || '').toLowerCase().trim();
+      const targetTable = detectImportTarget(fileName) || currentTable;
+      const previousTable = currentTable;
+
+      // Build list of { table, rows } to import
+      const importTasks = [];
+
+      if (ext === 'json') {
+        const raw = await readFileText(f);
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          // Plain array → import to currentTable
+          if (!targetTable) throw new Error('กรุณาเลือกตารางก่อนนำเข้าข้อมูล');
+          importTasks.push({ table: targetTable, rawRows: parsed });
+        } else if (parsed && typeof parsed === 'object') {
+          // Multi-table object: { hd_users: [...], hd_teams: [...], ... }
+          const knownTables = new Set(
+            HD_TABLES.flatMap(g => g.tables.map(t => t.key))
+          );
+          for (const key of Object.keys(parsed)) {
+            if (knownTables.has(key) && Array.isArray(parsed[key])) {
+              importTasks.push({ table: key, rawRows: parsed[key] });
+            }
+          }
+          if (!importTasks.length) throw new Error('ไม่พบ key ตารางที่รู้จักในไฟล์ JSON');
+        } else {
+          throw new Error('JSON ต้องเป็น array หรือ object ของตาราง');
+        }
+      } else if (ext === 'csv') {
+        const raw = await readFileText(f);
+        if (!targetTable) throw new Error('กรุณาเลือกตารางก่อนนำเข้าข้อมูล');
+        importTasks.push({ table: targetTable, rawRows: parseCsvText(raw) });
+      } else if (ext === 'pdf') {
+        if (!targetTable) throw new Error('กรุณาเลือกตารางก่อนนำเข้าข้อมูล');
+        if (!['hd_project_info_pdf', 'hd_project_manual_pdf'].includes(targetTable)) {
+          throw new Error('ไฟล์ PDF ใช้ได้เฉพาะตาราง ข้อมูลโครงการ และ คู่มือโครงการ');
+        }
+        const form = new FormData();
+        form.append('file', f);
+        form.append('related_type', targetTable);
+        form.append('related_id', '');
+        const uploadRes = await fetch('/upload', {
+          method: 'POST',
+          headers: { 'Authorization': authHeaders().Authorization },
+          body: form,
+        });
+        const uploadJson = await uploadRes.json();
+        if (!uploadJson.ok) throw new Error(uploadJson.error || 'อัปโหลด PDF ไม่สำเร็จ');
+        const fileUrl = uploadJson.url || `/api/files/${encodeURIComponent(uploadJson.r2_key || uploadJson.id)}`;
+        const baseName = f.name.replace(/\.[^.]+$/, '');
+        importTasks.push({
+          table: targetTable,
+          rawRows: [{
+            code: baseName,
+            name: baseName,
+            extra: JSON.stringify({
+              file_id: uploadJson.id || '',
+              file_url: fileUrl,
+              file_name: f.name,
+              content_type: f.type || 'application/pdf',
+              file_size: f.size || 0,
+              source: 'upload',
+            }),
+            active: true,
+          }],
+        });
+      } else if (ext === 'xls' || ext === 'xlsx') {
+        const rows = await readSpreadsheetRows(f);
+        if (!rows.length) throw new Error('ไม่พบข้อมูลในไฟล์ Excel');
+        if (!targetTable) throw new Error('ไม่พบตารางปลายทางสำหรับไฟล์ Excel นี้');
+        importTasks.push({ table: targetTable, rawRows: rows });
+      } else {
+        throw new Error('รองรับเฉพาะไฟล์ .json, .csv, .xls, .xlsx และ .pdf');
+      }
+
+      // Count total rows
+      let totalRows = 0;
+      const taskNormalized = importTasks.map(t => {
+        const savedTable = currentTable;
+        currentTable = t.table;
+        const rows = normalizeImportedRows(t.rawRows);
+        currentTable = savedTable;
+        totalRows += rows.length;
+        return { table: t.table, rows };
+      });
+      if (!totalRows) throw new Error('ไม่พบข้อมูลในไฟล์');
+
+      const firstTarget = taskNormalized[0]?.table;
+      const needsSwitch = Boolean(firstTarget && firstTarget !== previousTable);
+      if (needsSwitch) currentTable = firstTarget;
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="hdm-spinner"></span> กำลังนำเข้า 0/${totalRows}`;
+      }
+
+      let okCount = 0, doneCount = 0;
+      for (const task of taskNormalized) {
+        for (const r of task.rows) {
+          const res = await fetch(`/api/hd-master?table=${encodeURIComponent(task.table)}`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(r),
+          });
+          const out = await res.json();
+          if (out.ok) okCount++;
+          doneCount++;
+          if (btn) btn.innerHTML = `<span class="hdm-spinner"></span> กำลังนำเข้า ${doneCount}/${totalRows}`;
+        }
+      }
+
+      invalidateReferenceLookups();
+      if (needsSwitch) {
+        selectTable(firstTarget, findTableLabel(firstTarget));
+      } else {
+        await loadRows();
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-check-circle-fill" style="color:#16a34a"></i> สำเร็จ ${okCount}/${totalRows}`;
+        setTimeout(() => { btn.innerHTML = '<i class="bi bi-upload"></i> นำเข้า'; }, 3000);
+      }
+    } catch (e) {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-exclamation-circle-fill" style="color:#dc2626"></i> ผิดพลาด`;
+        setTimeout(() => { btn.innerHTML = '<i class="bi bi-upload"></i> นำเข้า'; }, 3000);
+      }
+      alert(e.message || 'นำเข้าข้อมูลไม่สำเร็จ');
+    }
+  }
+
+  async function loadRows() {
+    if (!currentTable) return;
+    const q = (document.getElementById('hdm-search')?.value || '').trim();
+    const url = `/api/hd-master?table=${encodeURIComponent(currentTable)}${q ? '&q=' + encodeURIComponent(q) : ''}`;
+    const listEl = document.getElementById('hdm-list');
+    if (listEl) listEl.innerHTML = renderLoadingSkeleton('list');
+    try {
+      const res = await fetch(url, { headers: authHeaders() });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'โหลดไม่สำเร็จ');
+      currentRowsCache = data.data || [];
+      if (currentTable === 'hd_users') {
+        const systemUsers = (await loadSystemUsers()).map(normalizeSystemUserAsHdUser);
+        const mergedUsers = mergeHdUserRows(systemUsers, currentRowsCache);
+        referenceTableCache.set('hd_users', mergedUsers);
+        referenceLookupCache.set('hd_users', buildLookupBucket(mergedUsers));
+        currentRowsCache = mergedUsers.filter((row) => userRowMatchesSearch(row, q));
+      }
+      renderCurrentView(currentRowsCache);
+    } catch (e) {
+      document.getElementById('hdm-list').innerHTML = `<p style="color:#b91c1c;padding:16px">${esc(e.message)}</p>`;
+    }
+  }
+
+  function renderCurrentView(rows) {
+    currentRowsCache = rows || [];
+    renderTable(currentRowsCache);
+  }
+
+  function tableRows(tableKey) {
+    return referenceTableCache.get(tableKey) || [];
+  }
+
+  function matchRefValue(extraObj, keys) {
+    const vals = Array.isArray(keys) ? keys : [keys];
+    return vals
+      .map((key) => normalizeLookupToken(extraObj?.[key]))
+      .filter(Boolean);
+  }
+
+  function relationMatches(extraObj, keys, refTokens) {
+    const sourceTokens = matchRefValue(extraObj, keys);
+    return sourceTokens.some((token) => refTokens.has(token));
+  }
+
+  async function renderRelationDashboard() {
+    const el = document.getElementById('hdm-list');
+    if (!el) return;
+    el.innerHTML = renderLoadingSkeleton('relation');
+    try {
+      await warmReferenceLookups();
+    } catch (err) {
+      el.innerHTML = `<p style="color:#b91c1c;padding:16px">${esc(err.message || 'โหลดข้อมูลความสัมพันธ์ไม่สำเร็จ')}</p>`;
+      return;
+    }
+
+    const projects = tableRows('hd_projects');
+    const users = tableRows('hd_users');
+    const teams = tableRows('hd_teams');
+    const subProjects = tableRows('hd_sub_projects');
+    const projectDevs = tableRows('hd_projects_dev');
+    const slas = tableRows('hd_sla');
+    const criteria = tableRows('hd_criteria');
+    const subCriteria = tableRows('hd_sub_criteria');
+    const provinces = tableRows('hd_provinces');
+    const districts = tableRows('hd_districts');
+    const subdistricts = tableRows('hd_subdistricts');
+    const postcodes = tableRows('hd_postcodes');
+    const channels = tableRows('hd_channels');
+    const contacts = tableRows('hd_contacts');
+    const configs = tableRows('hd_configs');
+    const flowProducts = tableRows('hd_flow_products');
+    const flowAreas = tableRows('hd_flow_areas');
+    const flowCaseTypes = tableRows('hd_flow_case_types');
+    const projectInfoDocs = tableRows('hd_project_info_pdf');
+    const projectManualDocs = tableRows('hd_project_manual_pdf');
+    const faqHelpdeck = tableRows('hd_faq_helpdeck');
+    let tickets = [];
+    let knowledge = [];
+    try {
+      const [ticketRes, knowledgeRes] = await Promise.all([
+        fetch('/helpdesk/tickets', { headers: authHeaders() }).then((r) => r.json()),
+        fetch('/helpdeck-knowledge', { headers: authHeaders() }).then((r) => r.json()),
+      ]);
+      if (ticketRes?.ok && Array.isArray(ticketRes.data)) tickets = ticketRes.data;
+      if (knowledgeRes?.ok && Array.isArray(knowledgeRes.data)) knowledge = knowledgeRes.data;
+    } catch {}
+
+    function rowIdentityTokens(row, extraObj = {}) {
+      return new Set([
+        row?.id,
+        row?.code,
+        row?.name,
+        extraObj?.source_id,
+        extraObj?.external_id,
+        extraObj?.criteria_name,
+        extraObj?.province_code,
+        extraObj?.province_name_th,
+        extraObj?.province_name_en,
+        extraObj?.district_code,
+        extraObj?.district_name_th,
+        extraObj?.district_name_en,
+        extraObj?.subdistrict_code,
+        extraObj?.subdistrict_name_th,
+        extraObj?.subdistrict_name_en,
+      ].map((v) => normalizeLookupToken(v)).filter(Boolean));
+    }
+
+    function linkedRowMatches(linked, row, extraObj = {}) {
+      if (!linked?.row) return false;
+      const tokens = rowIdentityTokens(row, extraObj);
+      const linkedExtra = linked.extra || {};
+      return [
+        linked.row.id,
+        linked.row.code,
+        linked.row.name,
+        linkedExtra.source_id,
+        linkedExtra.external_id,
+        linkedExtra.criteria_name,
+        linkedExtra.province_code,
+        linkedExtra.province_name_th,
+        linkedExtra.province_name_en,
+        linkedExtra.district_code,
+        linkedExtra.district_name_th,
+        linkedExtra.district_name_en,
+        linkedExtra.subdistrict_code,
+        linkedExtra.subdistrict_name_th,
+        linkedExtra.subdistrict_name_en,
+      ].map((v) => normalizeLookupToken(v)).some((token) => tokens.has(token));
+    }
+
+    const projectSummary = projects.map((project) => {
+      const pex = parseExtraObject(project.extra);
+      const tokens = new Set([
+        project.id,
+        project.code,
+        project.name,
+        pex.source_id,
+        pex.project_sync_id,
+      ].map((v) => normalizeLookupToken(v)).filter(Boolean));
+      const devCount = projectDevs.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        return [row.code, rex.parent_project, rex.parent_project_ref]
+          .map((v) => normalizeLookupToken(v))
+          .some((v) => tokens.has(v));
+      }).length;
+      const subCount = subProjects.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        return [rex.parent_project, rex.parent_project_ref]
+          .map((v) => normalizeLookupToken(v))
+          .some((v) => tokens.has(v));
+      }).length;
+      const slaCount = slas.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        return [rex.project_id, rex.project_ref]
+          .map((v) => normalizeLookupToken(v))
+          .some((v) => tokens.has(v));
+      }).length;
+      return {
+        title: project.name || project.code || '-',
+        subtitle: compactParts([project.code || '', pex.project_pm ? `Head: ${pex.project_pm}` : '']),
+        badge: `${devCount} Dev / ${subCount} Sub / ${slaCount} SLA`,
+        score: devCount + subCount + slaCount + (pex.project_pm ? 1 : 0),
+        flow: [
+          { label: 'Head', cls: 'green', value: pex.project_pm || '-' },
+          { label: 'Dev', cls: 'orange', value: String(devCount) },
+          { label: 'Sub', cls: 'blue', value: String(subCount) },
+          { label: 'SLA', cls: '', value: String(slaCount) },
+        ],
+      };
+    });
+
+    const userSummary = users.map((user) => {
+      const rel = mapUserRelationLinks(user);
+      const ex = parseExtraObject(user.extra);
+      return {
+        title: user.name || user.code || '-',
+        subtitle: compactParts([ex.email || user.code || '', ex.job_title || '']),
+        badge: `${rel.ownedTeams.length} Team / ${rel.pmProjects.length} Head / ${rel.devProjects.length} Dev`,
+        score: rel.ownedTeams.length + rel.pmProjects.length + rel.devProjects.length + rel.subProjects.length,
+        flow: [
+          { label: 'Team', cls: 'green', value: String(rel.ownedTeams.length) },
+          { label: 'Head', cls: 'orange', value: String(rel.pmProjects.length) },
+          { label: 'Dev', cls: 'blue', value: String(rel.devProjects.length) },
+          { label: 'Sub', cls: '', value: String(rel.subProjects.length) },
+        ],
+      };
+    });
+
+    const criteriaSummary = criteria.map((item) => {
+      const ex = parseExtraObject(item.extra);
+      const count = subCriteria.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        const linked = findLinkedEntry('hd_criteria', rex.criteria_id);
+        return linkedRowMatches(linked, item, ex);
+      }).length;
+      return {
+        title: item.name || item.code || '-',
+        subtitle: ex.criteria_name || '',
+        badge: `${count} Sub Criteria`,
+        score: count,
+      };
+    });
+
+    const provinceSummary = provinces.map((item) => {
+      const ex = parseExtraObject(item.extra);
+      const districtCount = districts.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        const linked = findLinkedEntry('hd_provinces', rex.province_id);
+        return linkedRowMatches(linked, item, ex);
+      }).length;
+      const subdistrictCount = subdistricts.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        const linked = findLinkedEntry('hd_provinces', rex.province_id);
+        return linkedRowMatches(linked, item, ex);
+      }).length;
+      const postcodeCount = postcodes.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        const linked = findLinkedEntry('hd_provinces', rex.province_id);
+        return linkedRowMatches(linked, item, ex);
+      }).length;
+      return {
+        title: item.name || item.code || '-',
+        subtitle: item.code || '',
+        badge: `${districtCount} อำเภอ / ${subdistrictCount} ตำบล / ${postcodeCount} รหัสไปรษณีย์`,
+        score: districtCount + subdistrictCount + postcodeCount,
+      };
+    });
+
+    const flowProductSummary = flowProducts.map((item) => {
+      const ex = parseExtraObject(item.extra);
+      const linkedArea = findLinkedEntry('hd_flow_areas', ex.area_ref || ex.area_id);
+      const linkedProject = linkedArea?.extra
+        ? findLinkedEntry('hd_projects', linkedArea.extra.project_id || linkedArea.extra.project_ref)
+        : findLinkedEntry('hd_projects', ex.project_id || ex.project_ref);
+      return {
+        title: item.name || item.code || '-',
+        subtitle: compactParts([ex.flow_code ? `Flow: ${ex.flow_code}` : '', linkedArea?.row?.name || linkedArea?.row?.code || '']),
+        badge: `${linkedArea ? '1 Area' : '0 Area'} / ${linkedProject ? '1 Project' : '0 Project'}`,
+        score: (linkedArea ? 1 : 0) + (linkedProject ? 1 : 0),
+        flow: [
+          { label: 'Area', cls: 'green', value: linkedArea ? (linkedArea.row.name || linkedArea.row.code || '-') : '-' },
+          { label: 'Project', cls: 'orange', value: linkedProject ? (linkedProject.row.name || linkedProject.row.code || '-') : '-' },
+        ],
+      };
+    });
+
+    const flowAreaSummary = flowAreas.map((item) => {
+      const ex = parseExtraObject(item.extra);
+      const linkedProject = findLinkedEntry('hd_projects', ex.project_id || ex.project_ref);
+      const areaTokens = rowIdentityTokens(item, ex);
+      const linkedProducts = flowProducts.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        return [rex.area_ref, rex.area_id]
+          .map((v) => normalizeLookupToken(v))
+          .some((token) => token && areaTokens.has(token));
+      }).length;
+      const linkedCaseTypes = flowCaseTypes.filter((row) => {
+        const rex = parseExtraObject(row.extra);
+        return [rex.area_ref, rex.area_id]
+          .map((v) => normalizeLookupToken(v))
+          .some((token) => token && areaTokens.has(token));
+      }).length;
+      return {
+        title: item.name || item.code || '-',
+        subtitle: compactParts([ex.area_name || '', ex.title || '']),
+        badge: `${linkedProducts} Flow / ${linkedCaseTypes} Case Type`,
+        score: linkedProducts + linkedCaseTypes + (linkedProject ? 1 : 0),
+        flow: [
+          { label: 'Project', cls: 'green', value: linkedProject ? (linkedProject.row.name || linkedProject.row.code || '-') : '-' },
+          { label: 'Flow', cls: 'orange', value: String(linkedProducts) },
+          { label: 'Case', cls: 'blue', value: String(linkedCaseTypes) },
+        ],
+      };
+    });
+
+    const flowCaseTypeSummary = flowCaseTypes.map((item) => {
+      const ex = parseExtraObject(item.extra);
+      const linkedArea = findLinkedEntry('hd_flow_areas', ex.area_ref || ex.area_id);
+      const linkedProject = findLinkedEntry('hd_projects', ex.project_id || ex.project_ref);
+      return {
+        title: item.name || item.code || '-',
+        subtitle: compactParts([ex.case_type_name || '', ex.case_type_sequence ? `Seq ${ex.case_type_sequence}` : '']),
+        badge: `${linkedArea ? 'Area linked' : 'Area missing'} / ${linkedProject ? 'Project linked' : 'Project missing'}`,
+        score: (linkedArea ? 1 : 0) + (linkedProject ? 1 : 0),
+        flow: [
+          { label: 'Area', cls: 'green', value: linkedArea ? (linkedArea.row.name || linkedArea.row.code || '-') : '-' },
+          { label: 'Project', cls: 'orange', value: linkedProject ? (linkedProject.row.name || linkedProject.row.code || '-') : '-' },
+        ],
+      };
+    });
+
+    const relationSections = `
+      <div class="hd-rel-sections">
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>โครงสร้าง Flow</h4>
+              <p>Flow / Area / Case Type / Project / Service</p>
+            </div>
+            <span class="hd-rel-badge">${flowProducts.length} Flow</span>
+          </div>
+          <div class="hd-rel-list">
+            ${flowProductSummary.sort((a, b) => b.score - a.score).slice(0, 4).map((item) => `
+              <div class="hd-rel-item">
+                <div class="hd-rel-item-top">
+                  <div>
+                    <div class="hd-rel-item-title">${esc(item.title)}</div>
+                    <div class="hd-rel-item-sub">${esc(item.subtitle)}</div>
+                  </div>
+                  <span class="bt-badge bt-badge-grey">${esc(item.badge)}</span>
+                </div>
+                <div class="hd-rel-flow">
+                  ${item.flow.map((flow) => `<span class="hd-rel-chip ${flow.cls}">${esc(flow.label)}: ${esc(flow.value)}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>โครงสร้าง Area</h4>
+              <p>Area Management / Project / Service / Flow / Case Type</p>
+            </div>
+            <span class="hd-rel-badge">${flowAreas.length} Area</span>
+          </div>
+          <div class="hd-rel-list">
+            ${flowAreaSummary.sort((a, b) => b.score - a.score).slice(0, 4).map((item) => `
+              <div class="hd-rel-item">
+                <div class="hd-rel-item-top">
+                  <div>
+                    <div class="hd-rel-item-title">${esc(item.title)}</div>
+                    <div class="hd-rel-item-sub">${esc(item.subtitle)}</div>
+                  </div>
+                  <span class="bt-badge bt-badge-grey">${esc(item.badge)}</span>
+                </div>
+                <div class="hd-rel-flow">
+                  ${item.flow.map((flow) => `<span class="hd-rel-chip ${flow.cls}">${esc(flow.label)}: ${esc(flow.value)}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>โครงสร้าง Case Type</h4>
+              <p>Case Type Management / Area / Project / Service</p>
+            </div>
+            <span class="hd-rel-badge">${flowCaseTypes.length} Case Type</span>
+          </div>
+          <div class="hd-rel-list">
+            ${flowCaseTypeSummary.sort((a, b) => b.score - a.score).slice(0, 4).map((item) => `
+              <div class="hd-rel-item">
+                <div class="hd-rel-item-top">
+                  <div>
+                    <div class="hd-rel-item-title">${esc(item.title)}</div>
+                    <div class="hd-rel-item-sub">${esc(item.subtitle)}</div>
+                  </div>
+                  <span class="bt-badge bt-badge-grey">${esc(item.badge)}</span>
+                </div>
+                <div class="hd-rel-flow">
+                  ${item.flow.map((flow) => `<span class="hd-rel-chip ${flow.cls}">${esc(flow.label)}: ${esc(flow.value)}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>โครงสร้างโปรเจกต์</h4>
+              <p>Project / Head / Dev / Sub Project / SLA</p>
+            </div>
+            <span class="hd-rel-badge">${projects.length} โปรเจกต์</span>
+          </div>
+          <div class="hd-rel-list">
+            ${projectSummary.sort((a, b) => b.score - a.score).slice(0, 6).map((item) => `
+              <div class="hd-rel-item">
+                <div class="hd-rel-item-top">
+                  <div>
+                    <div class="hd-rel-item-title">${esc(item.title)}</div>
+                    <div class="hd-rel-item-sub">${esc(item.subtitle)}</div>
+                  </div>
+                  <span class="bt-badge bt-badge-grey">${esc(item.badge)}</span>
+                </div>
+                <div class="hd-rel-flow">
+                  ${item.flow.map((flow) => `<span class="hd-rel-chip ${flow.cls}">${esc(flow.label)}: ${esc(flow.value)}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>โครงสร้างเจ้าหน้าที่</h4>
+              <p>User / Team / Head / Dev / Sub Project</p>
+            </div>
+            <span class="hd-rel-badge">${users.length} คน</span>
+          </div>
+          <div class="hd-rel-list">
+            ${userSummary.sort((a, b) => b.score - a.score).slice(0, 6).map((item) => `
+              <div class="hd-rel-item">
+                <div class="hd-rel-item-top">
+                  <div>
+                    <div class="hd-rel-item-title">${esc(item.title)}</div>
+                    <div class="hd-rel-item-sub">${esc(item.subtitle)}</div>
+                  </div>
+                  <span class="bt-badge bt-badge-grey">${esc(item.badge)}</span>
+                </div>
+                <div class="hd-rel-flow">
+                  ${item.flow.map((flow) => `<span class="hd-rel-chip ${flow.cls}">${esc(flow.label)}: ${esc(flow.value)}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>หมวดเหตุผลและความรุนแรง</h4>
+              <p>Criteria / Sub Criteria</p>
+            </div>
+            <span class="hd-rel-badge">${criteria.length} Criteria</span>
+          </div>
+          <div class="hd-rel-list">
+            ${criteriaSummary.sort((a, b) => b.score - a.score).map((item) => `
+              <div class="hd-rel-item">
+                <div class="hd-rel-item-top">
+                  <div>
+                    <div class="hd-rel-item-title">${esc(item.title)}</div>
+                    <div class="hd-rel-item-sub">${esc(item.subtitle || '')}</div>
+                  </div>
+                  <span class="bt-badge bt-badge-success">${esc(item.badge)}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>โครงสร้างพื้นที่</h4>
+              <p>Province / District / Subdistrict / Postcode</p>
+            </div>
+            <span class="hd-rel-badge">${provinces.length} จังหวัด</span>
+          </div>
+          <div class="hd-rel-list">
+            ${provinceSummary.sort((a, b) => b.score - a.score).slice(0, 6).map((item) => `
+              <div class="hd-rel-item">
+                <div class="hd-rel-item-top">
+                  <div>
+                    <div class="hd-rel-item-title">${esc(item.title)}</div>
+                    <div class="hd-rel-item-sub">${esc(item.subtitle)}</div>
+                  </div>
+                  <span class="bt-badge bt-badge-grey">${esc(item.badge)}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="hd-rel-card">
+          <div class="hd-rel-card-head">
+            <div>
+              <h4>ข้อมูลสนับสนุน</h4>
+              <p>Channel / Contact / Config / Tickets / Knowledge</p>
+            </div>
+            <span class="hd-rel-badge">Master data</span>
+          </div>
+          <div class="hd-rel-list">
+            <div class="hd-rel-item">
+              <div class="hd-rel-item-top">
+                <div>
+                  <div class="hd-rel-item-title">Channel</div>
+                  <div class="hd-rel-item-sub">ช่องทางรับเรื่องและการสื่อสาร</div>
+                </div>
+                <span class="bt-badge bt-badge-grey">${channels.length} รายการ</span>
+              </div>
+            </div>
+            <div class="hd-rel-item">
+              <div class="hd-rel-item-top">
+                <div>
+                  <div class="hd-rel-item-title">Contact Customer</div>
+                  <div class="hd-rel-item-sub">ผู้ติดต่อจาก Odoo</div>
+                </div>
+                <span class="bt-badge bt-badge-grey">${contacts.length} รายการ</span>
+              </div>
+            </div>
+            <div class="hd-rel-item">
+              <div class="hd-rel-item-top">
+                <div>
+                  <div class="hd-rel-item-title">Config Generate</div>
+                  <div class="hd-rel-item-sub">เลขรันนิ่งและค่าควบคุมระบบ</div>
+                </div>
+                <span class="bt-badge bt-badge-grey">${configs.length} รายการ</span>
+              </div>
+            </div>
+            <div class="hd-rel-item">
+              <div class="hd-rel-item-top">
+                <div>
+                  <div class="hd-rel-item-title">Tickets / Knowledge</div>
+                  <div class="hd-rel-item-sub">Ticket จริงและบทความความรู้</div>
+                </div>
+                <span class="bt-badge bt-badge-grey">${tickets.length} tickets / ${knowledge.length} articles</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+
+    el.innerHTML = `
+      <div class="hd-rel-dashboard">
+        <div class="hd-rel-summary">
+          <div class="hd-rel-stat"><span class="k">เจ้าหน้าที่</span><div class="v">${users.length}</div><div class="s">${teams.length} ทีมที่เกี่ยวข้อง</div></div>
+          <div class="hd-rel-stat"><span class="k">โปรเจกต์</span><div class="v">${projects.length}</div><div class="s">${subProjects.length} Sub Project / ${projectDevs.length} Dev links</div></div>
+          <div class="hd-rel-stat"><span class="k">Flow</span><div class="v">${flowProducts.length}</div><div class="s">${flowAreas.length} Area / ${flowCaseTypes.length} Case Type</div></div>
+          <div class="hd-rel-stat"><span class="k">ข้อมูลโครงการ</span><div class="v">${projectInfoDocs.length + projectManualDocs.length}</div><div class="s">${faqHelpdeck.length} FAQ helpdeck</div></div>
+          <div class="hd-rel-stat"><span class="k">หมวดปัญหา</span><div class="v">${criteria.length}</div><div class="s">${subCriteria.length} Sub Criteria</div></div>
+          <div class="hd-rel-stat"><span class="k">พื้นที่</span><div class="v">${provinces.length}</div><div class="s">${districts.length} อำเภอ / ${subdistricts.length} ตำบล</div></div>
+        </div>
+        ${relationSections}
+      </div>
+    `;
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) {
+      document.getElementById('hdm-list').innerHTML = `<div class="hdm-empty"><i class="bi bi-inbox" style="font-size:2rem"></i><br><br>ยังไม่มีข้อมูล</div>`;
+      return;
+    }
+
+    if (currentTable === 'hd_project_info_pdf' || currentTable === 'hd_project_manual_pdf') {
+      const tbody = rows.map((r) => {
+        const ex = parseExtraObject(r.extra);
+        const pdfUrl = ex.file_url || '';
+        return `
+          <tr>
+            <td><strong>${esc(r.name || r.code || '-')}</strong><div style="font-size:.72rem;color:#64748b">${esc(ex.file_name || '')}</div></td>
+            <td>${pdfUrl ? `<a href="${esc(pdfUrl)}" target="_blank" rel="noreferrer" class="bt-btn bt-btn-outline bt-btn-sm">เปิด PDF</a>` : '<span style="color:#94a3b8">-</span>'}</td>
+            <td><span class="bt-badge ${r.active ? 'bt-badge-success' : 'bt-badge-grey'}">${r.active ? 'Active' : 'Inactive'}</span></td>
+            <td onclick="event.stopPropagation()">
+              <div class="hk-actions">
+                <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='viewRow(${JSON.stringify(r)})'>ดู</button>
+                <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>แก้ไข</button>
+                <button class="bt-btn bt-btn-outline bt-btn-sm" style="color:#dc2626;border-color:#dc2626" onclick="deleteRow('${esc(r.id)}')">ลบ</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+      document.getElementById('hdm-list').innerHTML = `
+        <div class="hdm-table-wrap">
+          <table class="bt-table">
+            <thead><tr><th>ชื่อเอกสาร</th><th>ไฟล์</th><th>Status</th><th>จัดการ</th></tr></thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        </div>`;
+      return;
+    }
+
+    if (currentTable === 'hd_faq_helpdeck') {
+      const tbody = rows.map(r => `
+        <tr>
+          <td><strong>${esc(r.code || '-')}</strong></td>
+          <td>${esc(r.name || '-')}</td>
+          <td><span class="bt-badge ${r.active ? 'bt-badge-success' : 'bt-badge-grey'}">${r.active ? 'Active' : 'Inactive'}</span></td>
+          <td onclick="event.stopPropagation()">
+            <div class="hk-actions">
+              <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='viewRow(${JSON.stringify(r)})'>ดู</button>
+              <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>แก้ไข</button>
+              <button class="bt-btn bt-btn-outline bt-btn-sm" style="color:#dc2626;border-color:#dc2626" onclick="deleteRow('${esc(r.id)}')">ลบ</button>
+            </div>
+          </td>
+        </tr>`).join('');
+      document.getElementById('hdm-list').innerHTML = `
+        <div class="hdm-table-wrap">
+          <table class="bt-table">
+            <thead><tr><th>FAQ</th><th>คำตอบ</th><th>Status</th><th>จัดการ</th></tr></thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        </div>`;
+      return;
+    }
+
+    if (currentTable === 'hd_users') {
+      renderUsersTable(rows);
+      return;
+    }
+    if (currentTable === 'hd_sub_projects') {
+      renderSubProjectsGrouped(rows);
+      return;
+    }
+    if (currentTable === 'hd_projects_dev') {
+      renderProjectsDevGrouped(rows);
+      return;
+    }
+
+    const isProjects = currentTable === 'hd_projects';
+    const tbody = rows.map(r => `
+      <tr ${isProjects ? `style="cursor:pointer" onclick='openProjectDetail(${JSON.stringify(r)})'` : ''}>
+        <td style="color:#64748b;font-size:.75rem">${esc(r.code || '-')}</td>
+        <td><strong>${esc(r.name)}</strong></td>
+
+        <td><span class="bt-badge ${r.active ? 'bt-badge-success' : 'bt-badge-grey'}">${r.active ? 'Active' : 'Inactive'}</span></td>
+        <td onclick="event.stopPropagation()">
+          <div class="hk-actions">
+            <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='viewRow(${JSON.stringify(r)})'>ดู</button>
+            <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>แก้ไข</button>
+            <button class="bt-btn bt-btn-outline bt-btn-sm" style="color:#dc2626;border-color:#dc2626" onclick="deleteRow('${esc(r.id)}')">ลบ</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    document.getElementById('hdm-list').innerHTML = `
+      <div class="hdm-table-wrap">
+        <table class="bt-table">
+          <thead><tr><th>Code</th><th>Name</th><th>Status</th><th>จัดการ</th></tr></thead>
+          <tbody>${tbody}</tbody>
+        </table>
+      </div>`;
+  }
+
+  async function renderUsersTable(rows) {
+    try {
+      await warmReferenceLookups();
+    } catch {}
+
+    const cards = rows.map((r, idx) => {
+      const ex = parseExtraObject(r.extra);
+      const isSystemUser = ex.source === 'users' || r._systemUser;
+      const relations = mapUserRelationLinks(r);
+      const teamsText = relations.relatedTeams.slice(0, 2).map((team) => {
+        const label = team.name || team.code || '-';
+        const role = Array.isArray(team.roles) && team.roles.length ? team.roles.join('/') : '';
+        return role ? `${label} (${role})` : label;
+      }).join(', ');
+      const avatar = getInitials(r.name || ex.email || r.code || '-');
+      return `
+        <article class="hdu-user-card" style="animation-delay:${Math.min(idx * 35, 420)}ms" onclick='openUserDetail(${JSON.stringify(r)})'>
+          <div class="hdu-user-card-head">
+            <div class="hdu-user-avatar">${esc(avatar)}</div>
+            <div style="min-width:0;flex:1">
+              <h4 class="hdu-user-name">${esc(r.name || '-')}</h4>
+              <div class="hdu-user-sub">${esc(r.code || ex.source_id || '-')}</div>
+              <div class="hdu-user-sub">${esc(ex.job_title || ex.email || '')}</div>
+            </div>
+            <span class="bt-badge ${r.active ? 'bt-badge-success' : 'bt-badge-grey'}" style="flex:0 0 auto">${r.active ? 'Active' : 'Inactive'}</span>
+          </div>
+          <div class="hdu-user-body">
+            <div class="hdu-user-line">
+              <div class="hdu-user-label">Email</div>
+              <div class="hdu-user-value">${esc(ex.email || '-')}</div>
+            </div>
+            <div class="hdu-user-line">
+              <div class="hdu-user-label">Team</div>
+              <div class="hdu-user-value">${teamsText ? esc(teamsText) : '<span style="color:#94a3b8">-</span>'}</div>
+            </div>
+            <div class="hdu-user-badges">
+              <span class="hdu-pill ${isSystemUser ? 'green' : ''}">${isSystemUser ? 'users DB' : 'hd_users'}</span>
+              <span class="hdu-pill green">Head ${relations.pmProjects.length}</span>
+              <span class="hdu-pill orange">Dev ${relations.devProjects.length}</span>
+              <span class="hdu-pill">Sub ${relations.subProjects.length}</span>
+            </div>
+            <div class="hdu-user-actions" onclick="event.stopPropagation()">
+              <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='openUserDetail(${JSON.stringify(r)})'>ดูโปรไฟล์</button>
+              ${isSystemUser
+                ? `<a class="bt-btn bt-btn-outline bt-btn-sm" href="${esc(BT.url('/admin.html?tab=users'))}">แก้ใน Admin Console</a>`
+                : `<button class="bt-btn bt-btn-outline bt-btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>แก้ไข</button>
+                   <button class="bt-btn bt-btn-outline bt-btn-sm danger" onclick="deleteRow('${esc(r.id)}')">ลบ</button>`}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    document.getElementById('hdm-list').innerHTML = `
+      <div class="hdu-list-meta">
+        <div>พบ ${rows.length} รายการ</div>
+        <div>กดการ์ดเพื่อเปิดโปรไฟล์แบบละเอียด</div>
+      </div>
+      <div class="hdu-list-grid">
+        ${cards}
+      </div>`;
+  }
+
+  async function renderSubProjectsGrouped(rows) {
+    try {
+      await warmReferenceLookups();
+    } catch {}
+    // group by parent_project
+    const groups = {};
+    const order = [];
+    rows.forEach(r => {
+      const ex = parseExtraObject(r.extra);
+      const parent = ex.parent_project || '(ไม่ระบุโปรเจกต์)';
+      if (!groups[parent]) { groups[parent] = []; order.push(parent); }
+      groups[parent].push({ ...r, _ex: ex });
+    });
+
+    let tbody = '';
+    order.forEach((parent, gi) => {
+      const items = groups[parent];
+      const gid = 'grp_' + gi;
+      const parentEntry = findLinkedEntry('hd_projects', parent);
+      const parentLabel = parentEntry ? (parentEntry.row.name || parentEntry.row.code || parent) : parent;
+      tbody += `
+        <tr class="hdm-group-row" onclick="toggleGroup('${gid}')">
+          <td colspan="5">
+            <span class="hdm-group-arrow open" id="arr_${gid}">▶</span>
+            <strong>${esc(parentLabel)}</strong>
+            <span style="color:#94a3b8;font-weight:400;font-size:.78rem;margin-left:6px">(${items.length})</span>
+          </td>
+        </tr>`;
+      items.forEach(r => {
+        const pmEntry = findLinkedEntry('hd_users', r._ex.project_pm);
+        tbody += `
+          <tr class="hdm-sub-row" data-group="${gid}">
+            <td style="color:#64748b;padding-left:32px">${esc(parentLabel)}</td>
+            <td style="color:#e85d26;font-weight:600">${esc(r.code || '-')}</td>
+            <td>${esc(r.name || '-')}</td>
+            <td>${esc(pmEntry ? (pmEntry.row.name || pmEntry.row.code || r._ex.project_pm || '') : (r._ex.project_pm || ''))}</td>
+            <td onclick="event.stopPropagation()">
+              <div class="hk-actions">
+                <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='viewRow(${JSON.stringify(r)})'>ดู</button>
+                <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>แก้ไข</button>
+                <button class="bt-btn bt-btn-outline bt-btn-sm" style="color:#dc2626;border-color:#dc2626" onclick="deleteRow('${esc(r.id)}')">ลบ</button>
+              </div>
+            </td>
+          </tr>`;
+      });
+    });
+
+    document.getElementById('hdm-list').innerHTML = `
+      <div class="hdm-table-wrap">
+        <table class="bt-table">
+        <thead><tr><th>Project</th><th>Project Sub Code</th><th>Sub Service Name</th><th>Project Head</th><th>จัดการ</th></tr></thead>
+          <tbody>${tbody}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function toggleGroup(gid) {
+    const arrow = document.getElementById('arr_' + gid);
+    const subRows = document.querySelectorAll(`[data-group="${gid}"]`);
+    const isOpen = arrow.classList.contains('open');
+    arrow.classList.toggle('open', !isOpen);
+    subRows.forEach(r => r.classList.toggle('hidden', isOpen));
+  }
+
+  async function renderProjectsDevGrouped(rows) {
+    // fetch project and user lookup tables
+    let projMap = {};
+    let userMap = {};
+    try {
+      const context = await getHelpdeskMasterContext();
+      const projects = Array.isArray(context?.projects) ? context.projects : [];
+      const users = Array.isArray(context?.users) ? context.users : [];
+      projects.forEach(p => {
+        const ex = parseExtraObject(p.extra);
+        const label = p.name || p.code || p.id || '-';
+        [p.code, p.id, ex.source_id, ex.project_sync_id].forEach((key) => {
+          if (key) projMap[String(key)] = label;
+        });
+      });
+      users.forEach(u => {
+        const ex = parseExtraObject(u.extra);
+        const label = u.name || u.code || u.id || '-';
+        [u.code, u.id, u.name, ex.source_id, ex.email, ex.login].forEach((key) => {
+          if (key) userMap[String(key)] = label;
+        });
+      });
+    } catch {}
+
+    // group by employee code
+    const groups = {};
+    const order = [];
+    rows.forEach(r => {
+      let ex = {};
+      try { ex = JSON.parse(r.extra || '{}'); } catch {}
+      const empKey = r.code || r.name || '(ไม่ระบุ)';
+      if (!groups[empKey]) { groups[empKey] = []; order.push(empKey); }
+      groups[empKey].push({ ...r, _ex: ex });
+    });
+
+    let tbody = '';
+    order.forEach((empKey, gi) => {
+      const items = groups[empKey];
+      const gid = 'grp_dev_' + gi;
+      const empName = userMap[empKey] || empKey;
+      tbody += `
+        <tr class="hdm-group-row" onclick="toggleGroup('${gid}')">
+          <td colspan="3">
+            <span class="hdm-group-arrow open" id="arr_${gid}">▶</span>
+            <strong>${esc(empName)}</strong>
+            <span style="color:#94a3b8;font-weight:400;font-size:.78rem;margin-left:6px">(${items.length})</span>
+          </td>
+        </tr>`;
+      items.forEach(r => {
+        const projCode = r._ex.parent_project || '';
+        const projName = projMap[projCode] || projCode || '-';
+        tbody += `
+          <tr class="hdm-sub-row" data-group="${gid}">
+            <td style="padding-left:32px">${esc(userMap[r.code] || r.code || '-')}</td>
+            <td style="color:#e85d26;font-weight:600">${esc(projName)}</td>
+            <td onclick="event.stopPropagation()">
+              <div class="hk-actions">
+                <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='viewRow(${JSON.stringify(r)})'>ดู</button>
+                <button class="bt-btn bt-btn-outline bt-btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>แก้ไข</button>
+                <button class="bt-btn bt-btn-outline bt-btn-sm" style="color:#dc2626;border-color:#dc2626" onclick="deleteRow('${esc(r.id)}')">ลบ</button>
+              </div>
+            </td>
+          </tr>`;
+      });
+    });
+
+    document.getElementById('hdm-list').innerHTML = `
+      <div class="hdm-table-wrap">
+        <table class="bt-table">
+          <thead><tr><th>Project Dev</th><th>Project</th><th>จัดการ</th></tr></thead>
+          <tbody>${tbody}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function openAddModal() {
+    editingId = null;
+    document.getElementById('modal-title').textContent = 'เพิ่มข้อมูล';
+    document.getElementById('modal-code').value = '';
+    document.getElementById('modal-name').value = '';
+    document.getElementById('modal-extra').value = '{}';
+    document.getElementById('modal-active').checked = true;
+    document.getElementById('hdm-modal').classList.add('open');
+    document.getElementById('modal-name').focus();
+  }
+
+  function openEditModal(r) {
+    editingId = r.id;
+    document.getElementById('modal-title').textContent = 'แก้ไขข้อมูล';
+    document.getElementById('modal-code').value = r.code || '';
+    document.getElementById('modal-name').value = r.name || '';
+    document.getElementById('modal-extra').value = r.extra || '{}';
+    document.getElementById('modal-active').checked = !!r.active;
+    document.getElementById('hdm-modal').classList.add('open');
+    document.getElementById('modal-name').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('hdm-modal').classList.remove('open');
+  }
+
+  function closeViewModal() {
+    document.getElementById('hdm-view-modal').classList.remove('open');
+  }
+
+  function closeUserDetailModal() {
+    document.getElementById('user-detail-modal').classList.remove('open');
+  }
+
+  function closeUserActionMenus() {
+    document.querySelectorAll('.hdu-action-menu.open').forEach((menu) => menu.classList.remove('open'));
+  }
+
+  function toggleUserActionMenu(id, event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById(id);
+    if (!menu) return;
+    const wasOpen = menu.classList.contains('open');
+    closeUserActionMenus();
+    if (!wasOpen) menu.classList.add('open');
+  }
+
+  function switchUserTab(tab) {
+    document.querySelectorAll('[data-user-tab]').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-user-tab') === tab);
+    });
+    document.querySelectorAll('.hdu-panel').forEach((panel) => {
+      panel.classList.remove('active');
+    });
+    const panel = document.getElementById(`user-panel-${tab}`);
+    if (panel) panel.classList.add('active');
+  }
+
+  function humanizeKey(key) {
+    return String(key || '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .trim();
+  }
+
+  function formatExtraValue(value) {
+    if (value === null || value === undefined || value === '') return '-';
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || '-';
+    if (typeof value === 'object') {
+      try { return JSON.stringify(value); } catch { return '-'; }
+    }
+    return String(value);
+  }
+
+  function getInitials(name) {
+    const text = String(name || '').trim();
+    if (!text) return 'U';
+    const parts = text.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function makeStatValue(value) {
+    if (Array.isArray(value)) return value.length ? String(value.length) : '-';
+    if (value === null || value === undefined || value === '') return '-';
+    return String(value);
+  }
+
+  function mapUserRelationLinks(userRow) {
+    const extra = parseExtraObject(userRow?.extra);
+    const userTokens = normalizeUserLookupTokens(userRow);
+    const relatedTeamsMap = new Map();
+    const ownedTeams = [];
+    const memberTeams = [];
+    for (const team of (referenceTableCache.get('hd_teams') || [])) {
+      const tex = parseExtraObject(team.extra);
+      const ownerMatch = userTokens.includes(normalizeLookupToken(tex.owner_id));
+      const memberMatch = valueMatchesUserTokens(
+        tex.team_member_refs || tex.member_ids || tex.member_codes || tex.member_names || tex.member_emails || tex.team_member_display_names,
+        userTokens,
+      );
+      if (!ownerMatch && !memberMatch) continue;
+      const key = team.id || team.code || team.name;
+      const existing = relatedTeamsMap.get(key) || { team, roles: [] };
+      if (ownerMatch && !existing.roles.includes('Owner')) {
+        existing.roles.push('Owner');
+        ownedTeams.push(team);
+      }
+      if (memberMatch && !existing.roles.includes('Member')) {
+        existing.roles.push('Member');
+        memberTeams.push(team);
+      }
+      relatedTeamsMap.set(key, existing);
+    }
+    const relatedTeams = Array.from(relatedTeamsMap.values()).map((entry) => ({
+      ...entry.team,
+      roles: entry.roles,
+    }));
+    const pmProjects = (referenceTableCache.get('hd_projects') || []).filter((project) => {
+      const pex = parseExtraObject(project.extra);
+      return userMatchesValue(userRow, pex.project_pm);
+    });
+    const devProjects = (referenceTableCache.get('hd_projects_dev') || []).filter((row) => {
+      const rex = parseExtraObject(row.extra);
+      return userTokens.includes(normalizeLookupToken(row.code))
+        || userTokens.includes(normalizeLookupToken(rex.external_id))
+        || userMatchesValue(userRow, row.name);
+    });
+    const subProjects = (referenceTableCache.get('hd_sub_projects') || []).filter((row) => {
+      const rex = parseExtraObject(row.extra);
+      return userMatchesValue(userRow, rex.project_pm);
+    });
+    return { extra, userTokens, ownedTeams, memberTeams, relatedTeams, pmProjects, devProjects, subProjects };
+  }
+
+  function renderKeyValueGrid(containerId, fields) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = fields.map((field) => `
+      <div class="hdu-card kv">
+        <div class="hdu-k">${esc(field.label)}</div>
+        <div class="hdu-v">${esc(field.value || '-')}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderUserRelations(userRow, relations) {
+    const teamsEl = document.getElementById('user-teams');
+    const projectsEl = document.getElementById('user-project-rows');
+    if (teamsEl) {
+      if (relations.relatedTeams.length) {
+        teamsEl.innerHTML = relations.relatedTeams.map((team) => {
+          const tex = parseExtraObject(team.extra);
+          const label = team.name || team.code || '-';
+          const ownerLabel = resolveUserLabel(tex.owner_id);
+          const roleLabel = Array.isArray(team.roles) && team.roles.length ? team.roles.join(' / ') : 'Team';
+          return `<span class="hdu-pill"><strong>${esc(label)}</strong> · ${esc(roleLabel)} · ${esc(ownerLabel)}</span>`;
+        }).join('');
+      } else {
+        teamsEl.innerHTML = '<div class="hdu-empty">ไม่พบทีมที่เชื่อมกับคนนี้</div>';
+      }
+    }
+
+    if (projectsEl) {
+      const rows = [];
+      relations.pmProjects.forEach((project) => {
+        const pex = parseExtraObject(project.extra);
+        rows.push({
+          role: 'Project Head',
+          project: project.name || '-',
+          team: pex.team_name || pex.team_name_en || '-',
+        });
+      });
+      relations.devProjects.forEach((project) => {
+        const pex = parseExtraObject(project.extra);
+        rows.push({
+          role: 'Project Dev',
+          project: resolveProjectLabel(pex.parent_project) || '-',
+          team: pex.team_name || pex.team_name_en || '-',
+        });
+      });
+      relations.subProjects.forEach((project) => {
+        const pex = parseExtraObject(project.extra);
+        rows.push({
+          role: 'Sub Project Head',
+          project: project.name || '-',
+          team: pex.team_name || pex.team_name_en || '-',
+        });
+      });
+      if (rows.length) {
+        projectsEl.innerHTML = rows.map((item) => `
+          <tr>
+            <td><span class="hdu-pill ${item.role.includes('Dev') ? 'orange' : item.role.includes('Head') ? 'green' : ''}">${esc(item.role)}</span></td>
+            <td>${esc(item.project)}</td>
+            <td>${esc(item.team)}</td>
+          </tr>
+        `).join('');
+      } else {
+        projectsEl.innerHTML = '<tr><td colspan="3" class="hdu-empty">ไม่พบโครงการที่เชื่อมกับคนนี้</td></tr>';
+      }
+    }
+  }
+
+  async function openUserDetail(r) {
+    const extra = parseExtraObject(r.extra);
+    try { await warmReferenceLookups(); } catch {}
+    const relations = mapUserRelationLinks(r);
+    const displayName = r.name || extra.name || r.code || '-';
+    const titleBits = compactParts([
+      extra.job_title || '',
+      extra.department_id ? `Department ${extra.department_id}` : '',
+    ]);
+
+    document.getElementById('user-avatar').textContent = getInitials(displayName);
+    document.getElementById('user-name').textContent = displayName;
+    document.getElementById('user-sub').textContent = compactParts([
+      titleBits,
+      extra.email || '',
+    ], ' • ');
+    document.getElementById('user-status').textContent = r.active ? 'Active' : 'Inactive';
+    document.getElementById('user-status').style.background = r.active ? '#dcfce7' : '#e2e8f0';
+    document.getElementById('user-status').style.color = r.active ? '#166534' : '#475569';
+
+    const badges = [];
+    if (extra.login) badges.push(`<span class="bt-badge bt-badge-grey">Login: ${esc(extra.login)}</span>`);
+    document.getElementById('user-badges').innerHTML = badges.join('');
+
+    document.getElementById('user-stat-teams').textContent = makeStatValue(relations.relatedTeams);
+    document.getElementById('user-stat-pm').textContent = makeStatValue(relations.pmProjects);
+    document.getElementById('user-stat-dev').textContent = makeStatValue(relations.devProjects);
+    document.getElementById('user-stat-sub').textContent = makeStatValue(relations.subProjects);
+
+    renderKeyValueGrid('user-work-grid', [
+      { label: 'ชื่อ', value: displayName },
+      { label: 'Email', value: extra.email },
+      { label: 'Login', value: extra.login },
+      { label: 'Work Phone', value: extra.work_phone },
+      { label: 'Mobile Phone', value: extra.mobile_phone },
+      { label: 'Work Location', value: extra.work_location },
+    ]);
+
+    renderKeyValueGrid('user-hr-grid', [
+      { label: 'Job Title', value: extra.job_title },
+      { label: 'Manager', value: resolveUserLabel(extra.manager_employee_id) },
+      { label: 'Status', value: r.active ? 'Active' : 'Inactive' },
+      { label: 'Role/Permission', value: extra.user_role || extra.role || '-' },
+      { label: 'Work Location', value: extra.work_location },
+    ]);
+
+    const privateContent = document.getElementById('user-private-content');
+    if (privateContent) {
+      const privateFields = [
+        { label: 'Personal Email', value: extra.personal_email },
+        { label: 'Home Phone', value: extra.home_phone },
+        { label: 'Home Address', value: extra.home_address },
+        { label: 'Home Location', value: extra.home_location },
+      ].filter((item) => item.value);
+      privateContent.innerHTML = privateFields.length
+        ? privateFields.map((item) => `
+            <div class="hdu-card kv">
+              <div class="hdu-k">${esc(item.label)}</div>
+              <div class="hdu-v">${esc(item.value)}</div>
+            </div>
+          `).join('')
+        : '<div class="hdu-empty">ไม่มีข้อมูลส่วนตัวในชุดข้อมูลนี้</div>';
+    }
+
+    renderUserRelations(r, relations);
+    switchUserTab('work');
+    document.getElementById('user-detail-modal').classList.add('open');
+  }
+
+  async function viewRow(r) {
+    let extraObj = {};
+    try {
+      extraObj = parseExtraObject(r.extra);
+    } catch {
+      extraObj = { _raw: String(r.extra || '{}') };
+    }
+    const statusText = r.active ? 'Active' : 'Inactive';
+    const summaryBits = [
+      currentTable ? findTableLabel(currentTable) : '',
+      r.name ? `Name: ${r.name}` : '',
+    ].filter(Boolean).join(' • ');
+    let extraFields = [];
+    try {
+      extraFields = await buildExtraFields(extraObj, r);
+    } catch {
+      extraFields = [];
+    }
+
+    document.getElementById('view-subtitle').textContent = summaryBits || 'สรุป record แบบอ่านง่าย พร้อมข้อมูลดิบด้านล่าง';
+    document.getElementById('view-status').textContent = statusText;
+    document.getElementById('view-status').style.background = r.active ? '#dcfce7' : '#e2e8f0';
+    document.getElementById('view-status').style.color = r.active ? '#166534' : '#475569';
+    document.getElementById('view-name').textContent = r.name || '-';
+    document.getElementById('view-extra').innerHTML = extraFields.length
+      ? extraFields.map((item) => `
+          <div class="hdm-view-extra-item">
+            <div class="k">${esc(item.label)}</div>
+            <div class="v">
+              <div class="hdm-view-extra-main">${
+                item.key === 'file_url' && item.primary && item.primary !== '-'
+                  ? `<a href="${esc(item.primary)}" target="_blank" rel="noreferrer">เปิดไฟล์ PDF</a>`
+                  : esc(item.primary)
+              }</div>
+              ${item.secondary ? `<div class="hdm-view-extra-sub">${esc(item.secondary)}</div>` : ''}
+            </div>
+          </div>
+        `).join('')
+      : '<div class="hdm-view-extra-empty">ไม่มีข้อมูล extra ที่ควรแสดง</div>';
+    document.getElementById('hdm-view-modal').classList.add('open');
+  }
+
+  async function saveModal() {
+    const name = document.getElementById('modal-name').value.trim();
+    if (!name) { alert('กรุณาใส่ชื่อ'); return; }
+    const code = document.getElementById('modal-code').value.trim();
+    const body = {
+      code,
+      name,
+      extra: document.getElementById('modal-extra').value.trim() || '{}',
+      active: document.getElementById('modal-active').checked,
+    };
+    try {
+      let res;
+      if (editingId) {
+        // Edit mode — save directly
+        res = await fetch(`/api/hd-master/${encodeURIComponent(editingId)}`, {
+          method: 'PUT', headers: authHeaders(), body: JSON.stringify(body),
+        });
+      } else {
+        // Add mode — if no code, ask user
+        if (!code) {
+          if (!confirm('ไม่ได้ใส่ Code (รหัส)\nต้องการสร้างรายการใหม่โดยไม่มี Code หรือไม่?')) return;
+          // User confirmed → create without code, skip duplicate check
+          res = await fetch(`/api/hd-master?table=${encodeURIComponent(currentTable)}`, {
+            method: 'POST', headers: authHeaders(), body: JSON.stringify(body),
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+          closeModal();
+          invalidateReferenceLookups();
+          loadRows();
+          return;
+        }
+        // Check duplicate
+        const checkRes = await fetch(
+          `/api/hd-master?table=${encodeURIComponent(currentTable)}&q=${encodeURIComponent(code)}`,
+          { headers: authHeaders() }
+        );
+        const checkData = await checkRes.json();
+        if (checkData.ok && checkData.data && checkData.data.length > 0) {
+          const dup = checkData.data.find(r => (r.code || '').toLowerCase() === code.toLowerCase());
+          if (dup) {
+            alert(`มีข้อมูล Code "${code}" อยู่แล้วในระบบ กรุณาตรวจสอบอีกครั้ง`);
+            return;
+          }
+        }
+        res = await fetch(`/api/hd-master?table=${encodeURIComponent(currentTable)}`, {
+          method: 'POST', headers: authHeaders(), body: JSON.stringify(body),
+        });
+      }
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+      closeModal();
+      invalidateReferenceLookups();
+      loadRows();
+    } catch (e) {
+      alert(e.message || 'เกิดข้อผิดพลาด');
+    }
+  }
+
+  async function deleteRow(id) {
+    if (!confirm('ยืนยันลบรายการนี้?')) return;
+    try {
+      const res = await fetch(`/api/hd-master/${encodeURIComponent(id)}`, {
+        method: 'DELETE', headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'ลบไม่สำเร็จ');
+      invalidateReferenceLookups();
+      loadRows();
+    } catch (e) {
+      alert(e.message || 'เกิดข้อผิดพลาด');
+    }
+  }
+
+  async function clearTable() {
+    if (!currentTable) return;
+    const label = document.querySelector('.hdm-nav-item.active')?.textContent?.trim() || currentTable;
+    if (!confirm(`ยืนยันล้างข้อมูลทั้งหมดในตาราง "${label}" ?\nการกระทำนี้ไม่สามารถเรียกคืนได้`)) return;
+    try {
+      const res = await fetch(`/api/hd-master?table=${encodeURIComponent(currentTable)}&action=clear`, {
+        method: 'DELETE', headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'ล้างข้อมูลไม่สำเร็จ');
+      invalidateReferenceLookups();
+      loadRows();
+      alert(`ล้างข้อมูลตาราง "${label}" สำเร็จ`);
+    } catch (e) {
+      alert(e.message || 'เกิดข้อผิดพลาด');
+    }
+  }
+
+  document.getElementById('hdm-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  document.getElementById('hdm-view-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeViewModal();
+  });
+  document.getElementById('user-detail-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeUserDetailModal();
+  });
+  document.getElementById('ticket-detail-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTicketDetailModal();
+  });
+  document.getElementById('hdm-proj-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeProjModal();
+  });
+  document.addEventListener('click', closeUserActionMenus);
+
+  /* ── Project Detail Modal ─────────────────────────── */
+  let currentProjCode = null;
+  let currentProjTab = 'sub';
+
+  function closeProjModal() {
+    document.getElementById('hdm-proj-modal').classList.remove('open');
+  }
+
+  function switchProjTab(tab) {
+    currentProjTab = tab;
+    ['sub','dev','cfg'].forEach(t => {
+      document.getElementById('proj-tab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('proj-content-' + t).style.display = t === tab ? '' : 'none';
+    });
+  }
+
+  async function openProjectDetail(r) {
+    const extra = parseExtraObject(r.extra);
+    const projectRefs = [r.code, r.id, extra.source_id, extra.project_sync_id].filter(Boolean).map(String);
+    const projectRefSet = new Set(projectRefs);
+    try { await warmReferenceLookups(); } catch {}
+    const pmEntry = findLinkedEntry('hd_users', extra.project_pm);
+    document.getElementById('proj-modal-title').textContent = r.name || r.code || '-';
+    document.getElementById('proj-name').textContent = r.name || '-';
+    document.getElementById('proj-pm').textContent = pmEntry ? pmEntry.row.name || pmEntry.row.code || extra.project_pm || '-' : (extra.project_pm || '-');
+    document.getElementById('proj-description').textContent = extra.project_description || extra.project_desc || '';
+    document.getElementById('proj-active').innerHTML = r.active
+      ? '<span class="bt-badge bt-badge-success">Active</span>'
+      : '<span class="bt-badge bt-badge-grey">Inactive</span>';
+    document.getElementById('proj-channel-secret').textContent = extra.line_channel_secret || extra.channel_secret || '-';
+    document.getElementById('proj-channel-token').textContent = extra.line_channel_access_token || extra.channel_access_token || '-';
+    // config
+    document.getElementById('cfg-case-ref').checked = !!extra.cfg_case_ref;
+    document.getElementById('cfg-req-type').checked = !!extra.cfg_req_type;
+    document.getElementById('cfg-report-topic').checked = !!extra.cfg_report_topic;
+    document.getElementById('cfg-topic').checked = !!extra.cfg_topic;
+    document.getElementById('cfg-area-office').checked = !!extra.cfg_area_office;
+    document.getElementById('cfg-updated-at').checked = !!extra.cfg_updated_at;
+    document.getElementById('cfg-dept').checked = !!extra.cfg_dept;
+    document.getElementById('cfg-division').checked = !!extra.cfg_division;
+
+    currentProjCode = r.code;
+    switchProjTab('sub');
+    document.getElementById('hdm-proj-modal').classList.add('open');
+
+    // load sub projects
+    loadProjSub(projectRefSet);
+    loadProjDev(projectRefSet);
+  }
+
+  async function loadProjSub(projectRefSet) {
+    const el = document.getElementById('proj-content-sub');
+    el.innerHTML = '<p style="color:#94a3b8;font-size:.82rem">กำลังโหลด...</p>';
+    try {
+      const res = await fetch(`/api/hd-master?table=hd_sub_projects`, { headers: authHeaders() });
+      const data = await res.json();
+      const subs = (data.data || []).filter(s => {
+        try {
+          const ex = parseExtraObject(s.extra);
+          return [s.code, s.id, ex.parent_project, ex.parent_project_code, ex.parent_project_id]
+            .filter(Boolean)
+            .map(String)
+            .some((v) => projectRefSet.has(v));
+        } catch { return false; }
+      });
+      if (!subs.length) {
+        el.innerHTML = '<p style="color:#94a3b8;font-size:.82rem;padding:20px 0">ไม่มีข้อมูล</p>';
+        return;
+      }
+      el.innerHTML = `<table class="bt-table" style="font-size:.82rem">
+        <thead><tr><th>Project Sub Code</th><th>Sub Service Name</th><th>Project Head</th><th>Project Description</th><th>Active</th></tr></thead>
+        <tbody>${subs.map(s => {
+          const ex = parseExtraObject(s.extra);
+          const pmEntry = findLinkedEntry('hd_users', ex.project_pm);
+          return `<tr>
+            <td style="color:#e85d26;font-weight:600">${esc(s.code||'-')}</td>
+            <td>${esc(s.name||'-')}</td>
+            <td>${esc(pmEntry ? (pmEntry.row.name || pmEntry.row.code || ex.project_pm || '-') : (ex.project_pm || '-'))}</td>
+            <td>${esc(ex.project_description || ex.description || '')}</td>
+            <td><input type="checkbox" ${s.active?'checked':''} disabled></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+    } catch (e) {
+      el.innerHTML = `<p style="color:#b91c1c;font-size:.82rem">${esc(e.message)}</p>`;
+    }
+  }
+
+  async function loadProjDev(projectRefSet) {
+    const el = document.getElementById('proj-content-dev');
+    el.innerHTML = '<p style="color:#94a3b8;font-size:.82rem">กำลังโหลด...</p>';
+    try {
+      const context = await getHelpdeskMasterContext();
+      const devRows = Array.isArray(context?.project_devs) ? context.project_devs : [];
+      const devs = devRows.filter(s => {
+        try {
+          const ex = parseExtraObject(s.extra);
+          return [s.code, s.id, ex.parent_project, ex.parent_project_code, ex.parent_project_id]
+            .filter(Boolean)
+            .map(String)
+            .some((v) => projectRefSet.has(v));
+        } catch { return false; }
+      });
+      if (!devs.length) {
+        el.innerHTML = '<p style="color:#94a3b8;font-size:.82rem;padding:20px 0">ไม่มีข้อมูล</p>';
+        return;
+      }
+      el.innerHTML = `<p class="hdm-proj-section-title">Project Dev</p>
+        <table class="bt-table" style="font-size:.82rem">
+          <thead><tr><th>Dev</th><th>Project</th></tr></thead>
+          <tbody>${devs.map(d => {
+            const ex = parseExtraObject(d.extra);
+            const userEntry = findLinkedEntry('hd_users', d.code) || findLinkedEntry('hd_users', d.name);
+            const projectEntry = findLinkedEntry('hd_projects', ex.parent_project);
+            return `<tr><td>${esc(userEntry ? (userEntry.row.name || userEntry.row.code || d.code || '-') : (d.code||'-'))}</td><td>${esc(projectEntry ? (projectEntry.row.name || projectEntry.row.code || ex.parent_project || '-') : (d.name||'-'))}</td></tr>`;
+          }).join('')}</tbody>
+        </table>`;
+    } catch (e) {
+      el.innerHTML = `<p style="color:#b91c1c;font-size:.82rem">${esc(e.message)}</p>`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (new URLSearchParams(location.search).get('view') === 'helpdesk_kanban') {
+      BT.go('/ticket-kanban.html');
+      return;
+    }
+    buildNav();
+    const initialView = new URLSearchParams(location.search).get('view');
+    if (initialView) {
+      selectTable(initialView, findTableLabel(initialView));
+      return;
+    }
+    const firstTable = HD_TABLES.find((group) => Array.isArray(group.tables) && group.tables.length)?.tables?.[0];
+    if (firstTable) {
+      selectTable(firstTable.key, firstTable.label);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+{# bt_sidebar.html — include this inside every bt-page wrapper #}
+{% set user_roles = frappe.get_roles(frappe.session.user) %}
+{% set is_ceo = 'BT CEO' in user_roles or 'Administrator' in user_roles %}
+{% set is_manager = is_ceo or 'BT Manager' in user_roles %}
+{% set is_finance = is_manager or 'BT Finance' in user_roles %}
+{% set is_hr = is_manager or 'BT HR' in user_roles %}
+{% set is_compliance = is_manager or 'BT Compliance' in user_roles %}
+{% set is_admin = 'BT Admin' in user_roles or 'Administrator' in user_roles %}
+{% set cur = frappe.request.path %}
+
+<nav class="bt-sidebar" id="btSidebar">
+  <div class="bt-sidebar-brand">
+    <span class="bt-sidebar-logo">BT</span>
+    <span class="bt-sidebar-title">Betime</span>
+    <button class="bt-sidebar-close" onclick="BT.sidebarToggle()">✕</button>
+  </div>
+
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Dashboard</div>
+    {% if is_ceo %}
+    <a href="/betime/ceo-dashboard" class="bt-sidebar-item {{ 'active' if '/ceo-dashboard' in cur }}">
+      <span class="bt-si-icon">📊</span>CEO Dashboard
+    </a>
+    {% endif %}
+    {% if is_manager %}
+    <a href="/betime/manager-dashboard" class="bt-sidebar-item {{ 'active' if '/manager-dashboard' in cur }}">
+      <span class="bt-si-icon">📈</span>Manager Dashboard
+    </a>
+    {% endif %}
+    <a href="/betime/staff-dashboard" class="bt-sidebar-item {{ 'active' if '/staff-dashboard' in cur }}">
+      <span class="bt-si-icon">🖥️</span>Staff Dashboard
+    </a>
+    <a href="/betime/my-kpis" class="bt-sidebar-item {{ 'active' if '/my-kpis' in cur }}">
+      <span class="bt-si-icon">🎯</span>Personal KPIs
+    </a>
+  </div>
+
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Project Management</div>
+    <a href="/app/project-master" class="bt-sidebar-item {{ 'active' if 'project-master' in cur }}">
+      <span class="bt-si-icon">📁</span>Project Master
+    </a>
+    <a href="/app/meeting-mom" class="bt-sidebar-item {{ 'active' if 'meeting-mom' in cur }}">
+      <span class="bt-si-icon">🎙️</span>Meeting MOM
+    </a>
+    <a href="/betime/my-tasks" class="bt-sidebar-item {{ 'active' if '/my-tasks' in cur }}">
+      <span class="bt-si-icon">✅</span>My Tasks
+    </a>
+    {% if is_manager %}
+    <a href="/app/smart-task" class="bt-sidebar-item">
+      <span class="bt-si-icon">👥</span>Team Tasks
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Smart Secretary</div>
+    <a href="/app/smart-calendar" class="bt-sidebar-item {{ 'active' if 'smart-calendar' in cur }}">
+      <span class="bt-si-icon">📅</span>Calendar
+    </a>
+    {% if is_manager %}
+    <a href="/app/smart-calendar?resource=room" class="bt-sidebar-item">
+      <span class="bt-si-icon">🏢</span>Room Booking
+    </a>
+    <a href="/app/smart-calendar?resource=vehicle" class="bt-sidebar-item">
+      <span class="bt-si-icon">🚗</span>Vehicle Booking
+    </a>
+    <a href="/app/smart-calendar?food=1" class="bt-sidebar-item">
+      <span class="bt-si-icon">🍱</span>Food Planning
+    </a>
+    {% endif %}
+  </div>
+
+  {% if is_finance %}
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Finance</div>
+    <a href="/betime/submit-ot" class="bt-sidebar-item {{ 'active' if '/submit-ot' in cur }}">
+      <span class="bt-si-icon">⏱️</span>OT Claims
+    </a>
+    <a href="/app/invoice-tracking" class="bt-sidebar-item {{ 'active' if 'invoice-tracking' in cur }}">
+      <span class="bt-si-icon">🧾</span>Invoice Tracking
+    </a>
+    <a href="/app/budget-control" class="bt-sidebar-item {{ 'active' if 'budget-control' in cur }}">
+      <span class="bt-si-icon">💰</span>Budget Control
+    </a>
+    <a href="/app/query-report/Invoice Outstanding" class="bt-sidebar-item">
+      <span class="bt-si-icon">🔔</span>Billing Alerts
+    </a>
+    <a href="/app/query-report/OT Monthly Summary" class="bt-sidebar-item">
+      <span class="bt-si-icon">📋</span>Financial Reports
+    </a>
+  </div>
+  {% endif %}
+
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Document Intelligence</div>
+    <a href="/betime/ocr-lab" class="bt-sidebar-item {{ 'active' if '/ocr-lab' in cur }}">
+      <span class="bt-si-icon">🔍</span>OCR Lab
+    </a>
+    <a href="/betime/smart-drafting" class="bt-sidebar-item {{ 'active' if '/smart-drafting' in cur }}">
+      <span class="bt-si-icon">✍️</span>Smart Drafting
+    </a>
+    <a href="/betime/contract-check" class="bt-sidebar-item {{ 'active' if '/contract-check' in cur }}">
+      <span class="bt-si-icon">📜</span>Contract Check
+    </a>
+    {% if is_compliance %}
+    <a href="/app/tor-check" class="bt-sidebar-item {{ 'active' if 'tor-check' in cur }}">
+      <span class="bt-si-icon">🛡️</span>Compliance Score
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Knowledge Center</div>
+    <a href="/app/ai-knowledge-base" class="bt-sidebar-item {{ 'active' if 'ai-knowledge-base' in cur }}">
+      <span class="bt-si-icon">📚</span>AI Knowledge Base
+    </a>
+    <a href="/app/lesson-learned" class="bt-sidebar-item {{ 'active' if 'lesson-learned' in cur }}">
+      <span class="bt-si-icon">💡</span>Lesson Learned
+    </a>
+    <a href="/betime/help-desk" class="bt-sidebar-item {{ 'active' if '/help-desk' in cur }}">
+      <span class="bt-si-icon">🤖</span>RAG Search
+    </a>
+    <a href="/betime/help-desk" class="bt-sidebar-item">
+      <span class="bt-si-icon">💬</span>Help Desk Chat
+    </a>
+  </div>
+
+  {% if is_hr %}
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">HR Module</div>
+    <a href="/app/employee-profile" class="bt-sidebar-item {{ 'active' if 'employee-profile' in cur }}">
+      <span class="bt-si-icon">👤</span>Employee Profiles
+    </a>
+    <a href="/app/employee-profile?view=skills" class="bt-sidebar-item">
+      <span class="bt-si-icon">🎓</span>Skills Matrix
+    </a>
+    <a href="/app/employee-profile?view=certs" class="bt-sidebar-item">
+      <span class="bt-si-icon">📜</span>Certificates
+    </a>
+    <a href="/app/employee-profile?view=workload" class="bt-sidebar-item">
+      <span class="bt-si-icon">📊</span>Workload View
+    </a>
+  </div>
+  {% endif %}
+
+  {% if is_manager %}
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Notifications</div>
+    <a href="/betime/notifications" class="bt-sidebar-item {{ 'active' if '/notifications' in cur }}">
+      <span class="bt-si-icon">📱</span>LINE Alerts
+    </a>
+    <a href="/betime/notifications?tab=teams" class="bt-sidebar-item">
+      <span class="bt-si-icon">💬</span>Teams Notifications
+    </a>
+    <a href="/betime/notifications?tab=email" class="bt-sidebar-item">
+      <span class="bt-si-icon">📧</span>Email Alerts
+    </a>
+    <a href="/betime/notifications?tab=escalation" class="bt-sidebar-item">
+      <span class="bt-si-icon">🚨</span>Escalations
+    </a>
+  </div>
+  {% endif %}
+
+  {% if is_admin or is_ceo %}
+  <div class="bt-sidebar-section">
+    <div class="bt-sidebar-label">Admin Console</div>
+    <div class="bt-sidebar-label">User</div>
+    <a href="/betime/admin-console" class="bt-sidebar-item {{ 'active' if '/admin-console' in cur }}">
+      <span class="bt-si-icon">👥</span>Users / Roles
+    </a>
+    <a href="/app/role" class="bt-sidebar-item">
+      <span class="bt-si-icon">🔒</span>Permissions
+    </a>
+    <a href="/betime/admin-console?tab=ai" class="bt-sidebar-item">
+      <span class="bt-si-icon">🤖</span>AI Models Config
+    </a>
+    <a href="/betime/admin-console?tab=api" class="bt-sidebar-item">
+      <span class="bt-si-icon">🔌</span>API Integrations
+    </a>
+    <a href="/app/activity-log" class="bt-sidebar-item">
+      <span class="bt-si-icon">📋</span>Audit Logs
+    </a>
+  </div>
+  {% endif %}
+
+  <div class="bt-sidebar-footer">
+    <a href="/app" class="bt-sidebar-item">
+      <span class="bt-si-icon">🏠</span>Frappe Desk
+    </a>
+    <a href="/api/method/logout" class="bt-sidebar-item">
+      <span class="bt-si-icon">🚪</span>ออกจากระบบ
+    </a>
+  </div>
+</nav>
+<div class="bt-sidebar-overlay" id="btOverlay" onclick="BT.sidebarToggle()"></div>

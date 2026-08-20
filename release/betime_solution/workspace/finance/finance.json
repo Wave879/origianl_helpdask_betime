@@ -1,0 +1,41 @@
+{
+ "charts": [],
+ "content": "[]",
+ "doctype": "Workspace",
+ "extends_another_page": 0,
+ "hide_custom": 0,
+ "is_hidden": 0,
+ "label": "Finance",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "OT Claim",
+   "link_to": "OT Claim",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Invoice Tracking",
+   "link_to": "Invoice Tracking",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  }
+ ],
+ "module": "Finance",
+ "name": "Finance",
+ "public": 1,
+ "roles": [{"role": "BT Finance"}, {"role": "BT Manager"}, {"role": "BT CEO"}, {"role": "BT Admin"}],
+ "sequence_id": 3.0,
+ "shortcuts": [
+  {"color": "Orange", "format": "List", "label": "OT Claims",          "link_to": "OT Claim",         "type": "DocType"},
+  {"color": "Blue",   "format": "List", "label": "Invoice Tracking",   "link_to": "Invoice Tracking", "type": "DocType"},
+  {"color": "Green",  "format": "New",  "label": "ยื่น OT ใหม่",       "link_to": "OT Claim",         "type": "DocType"},
+  {"color": "Red",    "format": "New",  "label": "สร้าง Invoice",       "link_to": "Invoice Tracking", "type": "DocType"}
+ ],
+ "title": "Finance"
+}

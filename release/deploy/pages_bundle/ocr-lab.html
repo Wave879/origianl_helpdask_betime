@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OCR Lab — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-camera"></i> OCR Lab</h2></div>
+    <div class="bt-card" style="margin-bottom:20px">
+      <div class="bt-stt-drop" id="ocr-drop" onclick="document.getElementById('ocr-file').click()">
+        <div class="icon">📄</div>
+        <p>คลิกหรือลากไฟล์ PDF/PNG/JPG</p>
+        <input type="file" id="ocr-file" accept=".pdf,.png,.jpg,.jpeg" style="display:none" onchange="handleOCR(this)">
+      </div>
+      <div id="ocr-progress" style="display:none;margin-top:16px">
+        <div class="bt-progress"><div class="bt-progress-bar" id="ocr-bar" style="width:0%"></div></div>
+        <p id="ocr-status" style="text-align:center;color:#888">กำลัง OCR...</p>
+      </div>
+    </div>
+    <div class="bt-card" id="ocr-result-card" style="display:none">
+      <div class="bt-section-header"><h2>📄 ผลการ OCR</h2><button class="bt-btn bt-btn-success bt-btn-sm" onclick="saveToKB()">💾 บันทึก KB</button></div>
+      <textarea id="ocr-result" class="bt-input" rows="15" style="font-family:monospace;font-size:0.85rem"></textarea>
+    </div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('ocr-lab.html', 'Document Intelligence');
+      async function handleOCR(input) {
+      if (!input.files[0]) return;
+      if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อน', 'warning'); return; }
+      document.getElementById('ocr-progress').style.display='block';
+      document.getElementById('ocr-bar').style.width='40%';
+      try {
+        const fd=new FormData(); fd.append('file',input.files[0]); fd.append('is_private',1);
+        const csrf=document.cookie.match(/csrftoken=([^;]+)/)?.[1]||'';
+        const up=await fetch(BT.getApiBaseUrl()+'/api/method/upload_file',{method:'POST',credentials:'include',headers:{'X-Frappe-CSRF-Token':csrf},body:fd});
+        const uj=await up.json();
+        document.getElementById('ocr-bar').style.width='80%';
+        const r=await BT.call('betime_solution.api.portal.run_ocr',{file_path:uj.message?.file_url||uj.message?.name});
+        document.getElementById('ocr-bar').style.width='100%'; document.getElementById('ocr-status').textContent='✅ เสร็จสิ้น';
+        document.getElementById('ocr-result').value=r.extracted_text||''; document.getElementById('ocr-result-card').style.display='block';
+        window._ocrTitle=input.files[0].name;
+      } catch(e){ BT.notify('OCR ล้มเหลว: '+e.message,'error'); }
+    }
+    async function saveToKB(){ if(!BT.hasBackend()) return; try{ await BT.call('betime_solution.api.portal.save_ocr_to_knowledge',{title:window._ocrTitle||'OCR Document',content:document.getElementById('ocr-result').value}); BT.notify('✅ บันทึกใน KB แล้ว','success'); }catch(e){ BT.notify(e.message,'error'); } }
+    const drop=document.getElementById('ocr-drop'); drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover');}); drop.addEventListener('dragleave',()=>drop.classList.remove('dragover')); drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f){const inp=document.getElementById('ocr-file');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleOCR(inp);}});
+</script>
+</body>
+</html>

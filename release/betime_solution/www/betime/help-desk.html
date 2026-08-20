@@ -1,0 +1,164 @@
+{% extends "templates/web.html" %}
+{% block title %}Help Desk AI — Betime{% endblock %}
+{% block head_include %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
+<div class="betime-portal">
+
+  <nav class="bt-topbar">
+    <a href="/betime" class="bt-logo">🏢 Betime Solution</a>
+    <div class="bt-nav">
+      <a href="/betime">หน้าหลัก</a>
+      <a href="/betime/help-desk" class="active">🤖 Help Desk AI</a>
+      <span class="bt-user-badge">👤 {{ user_name }}</span>
+    </div>
+  </nav>
+
+  <div class="bt-container" style="padding-top:28px; padding-bottom:40px;">
+
+    <div style="margin-bottom:20px;">
+      <h1 style="font-size:1.6rem; font-weight:700; color:var(--bt-primary); margin:0;">
+        🤖 Help Desk AI — RAG Assistant
+      </h1>
+      <p style="color:var(--bt-muted); margin:4px 0 0;">
+        ถามได้ทุกอย่างเกี่ยวกับโครงการ, TOR, สัญญา, Lesson Learned และ Knowledge Base
+      </p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:280px 1fr; gap:20px; height:calc(100vh - 220px);">
+
+      <!-- Sidebar -->
+      <div>
+        <div class="bt-card" style="height:100%; overflow-y:auto;">
+          <div class="bt-card-title" style="margin-bottom:12px;">💡 คำถามตัวอย่าง</div>
+          {% for q in suggested_questions %}
+          <button class="bt-btn bt-btn-outline bt-btn-sm"
+                  style="width:100%;justify-content:flex-start;margin-bottom:8px;text-align:left;white-space:normal;height:auto;line-height:1.4;padding:10px 12px;"
+                  onclick="sendMessage('{{ q }}')">
+            {{ q }}
+          </button>
+          {% endfor %}
+
+          <div class="bt-card-title" style="margin-top:20px; margin-bottom:12px;">🔍 ค้นหาตาม Category</div>
+          <select class="bt-select" id="sel-category" onchange="filterByCategory()">
+            <option value="">ทุก Category</option>
+            <option value="TOR">TOR</option>
+            <option value="Contract">Contract</option>
+            <option value="SOP">SOP</option>
+            <option value="FAQ">FAQ</option>
+            <option value="Lesson Learned">Lesson Learned</option>
+            <option value="Policy">Policy</option>
+          </select>
+
+          <button class="bt-btn bt-btn-outline bt-btn-sm" style="width:100%;margin-top:12px;justify-content:center;"
+                  onclick="clearChat()">🗑 ล้างประวัติ</button>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="bt-chat-container">
+        <div class="bt-chat-messages" id="chat-messages">
+          <div class="bt-chat-msg ai">
+            👋 สวัสดีครับ! ผมคือ Help Desk AI ของ Betime Solution<br>
+            ถามผมได้เลยเกี่ยวกับโครงการ, TOR, สัญญา, หรือ Knowledge Base ทั้งหมด<br>
+            <span class="source">💡 ค้นหาจาก Azure AI Search + Knowledge Base</span>
+          </div>
+        </div>
+        <div class="bt-chat-input-row">
+          <input class="bt-chat-input" id="chat-input" type="text"
+                 placeholder="พิมพ์คำถาม... เช่น TOR โครงการ A ขาดอะไร?"
+                 onkeydown="if(event.key==='Enter')sendFromInput()">
+          <button class="bt-btn bt-btn-primary" onclick="sendFromInput()">ส่ง ➤</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+let chatHistory = [];
+let currentCategory = '';
+
+function sendFromInput() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  sendMessage(msg);
+}
+
+async function sendMessage(msg) {
+  appendMsg(msg, 'user');
+  chatHistory.push({role: 'user', content: msg});
+
+  const typingId = appendTyping();
+
+  try {
+    const result = await BT.call('betime_solution.api.portal.help_desk_chat', {
+      message: msg,
+      history: chatHistory.slice(-6),
+      category: currentCategory,
+    });
+
+    removeTyping(typingId);
+
+    const aiMsg = result.answer || 'ขออภัย ไม่พบข้อมูลที่เกี่ยวข้อง';
+    const sources = result.sources || [];
+
+    const sourceHtml = sources.length
+      ? `<br><span class="source">📚 แหล่งข้อมูล: ${sources.map(s => s.title || s).join(', ')}</span>`
+      : '';
+
+    appendMsg(aiMsg + sourceHtml, 'ai', true);
+    chatHistory.push({role: 'assistant', content: aiMsg});
+  } catch(e) {
+    removeTyping(typingId);
+    appendMsg('❌ เกิดข้อผิดพลาด: ' + e.message, 'ai');
+  }
+}
+
+function appendMsg(text, role, isHtml = false) {
+  const el = document.createElement('div');
+  el.className = 'bt-chat-msg ' + role;
+  if (isHtml) el.innerHTML = text;
+  else el.textContent = text;
+  document.getElementById('chat-messages').appendChild(el);
+  el.scrollIntoView({behavior: 'smooth'});
+  return el.id = 'msg-' + Date.now();
+}
+
+function appendTyping() {
+  const id = 'typing-' + Date.now();
+  const el = document.createElement('div');
+  el.id = id;
+  el.className = 'bt-chat-msg ai';
+  el.innerHTML = '<div class="bt-spinner" style="width:20px;height:20px;border-width:2px;"></div>';
+  document.getElementById('chat-messages').appendChild(el);
+  el.scrollIntoView({behavior: 'smooth'});
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function filterByCategory() {
+  currentCategory = document.getElementById('sel-category').value;
+  const msg = currentCategory ? `ค้นหาใน category: ${currentCategory}` : 'ค้นหาทุก category';
+  appendMsg('🔍 ' + msg, 'ai');
+}
+
+function clearChat() {
+  chatHistory = [];
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML = `<div class="bt-chat-msg ai">👋 ล้างประวัติแล้ว ถามใหม่ได้เลยครับ</div>`;
+}
+</script>
+{% endblock %}

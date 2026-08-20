@@ -1,0 +1,156 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Budget Control — Betime Solution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head><body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+<main class="bt-main-content">
+<div class="bt-page-header"><h2>Budget Control</h2>
+  <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="showAddModal()">+ เพิ่มงบประมาณ</button>
+</div>
+<div class="bt-kpi-grid">
+  <div class="bt-card"><div class="bt-card-title">งบรวมทั้งหมด</div><div class="bt-card-value" id="k-total">-</div><div class="bt-card-sub">บาท</div></div>
+  <div class="bt-card"><div class="bt-card-title">ใช้ไปแล้ว</div><div class="bt-card-value" id="k-used" style="color:var(--bt-warning)">-</div><div class="bt-card-sub" id="k-used-pct">บาท</div></div>
+  <div class="bt-card"><div class="bt-card-title">คงเหลือ</div><div class="bt-card-value" id="k-remain" style="color:var(--bt-success)">-</div><div class="bt-card-sub">บาท</div></div>
+  <div class="bt-card"><div class="bt-card-title">รายการทั้งหมด</div><div class="bt-card-value" id="k-count" style="color:var(--bt-accent)">-</div><div class="bt-card-sub">รายการ</div></div>
+</div>
+<div class="bt-card" style="margin-bottom:20px">
+  <div class="bt-section-header"><h2>งบประมาณแต่ละแผนก</h2></div>
+  <div id="dept-bars" style="display:grid;gap:14px"><p style="color:#888;text-align:center;padding:24px">กำลังโหลด...</p></div>
+</div>
+<div class="bt-card">
+  <div class="bt-section-header"><h2>รายการงบประมาณ</h2></div>
+  <table class="bt-table"><thead><tr><th>แผนก</th><th>รายการ</th><th>หมวด</th><th>แผน (฿)</th><th>จริง (฿)</th><th>สถานะ</th><th></th></tr></thead>
+  <tbody id="budget-rows"><tr><td colspan="7" style="text-align:center;color:#888">กำลังโหลด...</td></tr></tbody></table>
+</div>
+
+<!-- Add Modal -->
+<div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+  <div class="bt-card" style="width:420px;max-width:95vw">
+    <h4 style="margin:0 0 16px">เพิ่มงบประมาณ</h4>
+    <div class="bt-form-group"><label class="bt-label">ปีงบประมาณ</label><input id="m-year" class="bt-input" value="2026"/></div>
+    <div class="bt-form-group"><label class="bt-label">แผนก</label><input id="m-dept" class="bt-input" placeholder="เช่น IT, HR"/></div>
+    <div class="bt-form-group"><label class="bt-label">หมวดหมู่</label>
+      <select id="m-cat" class="bt-select"><option value="Personnel">บุคลากร</option><option value="Operations">ปฏิบัติการ</option><option value="IT">IT</option><option value="Marketing">Marketing</option><option value="Other">อื่นๆ</option></select></div>
+    <div class="bt-form-group"><label class="bt-label">รายการ</label><input id="m-name" class="bt-input" placeholder="ชื่อรายการ"/></div>
+    <div class="bt-form-group"><label class="bt-label">งบแผน (฿)</label><input id="m-planned" class="bt-input" type="number" placeholder="0"/></div>
+    <div class="bt-form-group"><label class="bt-label">ใช้จริง (฿)</label><input id="m-actual" class="bt-input" type="number" placeholder="0"/></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="bt-btn bt-btn-outline" onclick="hideModal()">ยกเลิก</button>
+      <button class="bt-btn bt-btn-primary" onclick="saveBudget()">บันทึก</button>
+    </div>
+  </div>
+</div>
+</main></div>
+<script src="/config.js"></script><script src="/shared.js"></script><script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('budget.html','Budget Control');
+
+  const token = () => localStorage.getItem('bt_token');
+  const apiReq = (path, opts={}) => fetch('/api'+path, {
+    headers: {'Authorization':'Bearer '+token(), 'Content-Type':'application/json'}, ...opts
+  });
+
+  const YEAR = new Date().getFullYear();
+  let allData = [];
+
+  function renderKpis() {
+    const total   = allData.reduce((s,r)=>s+(r.planned||0), 0);
+    const used    = allData.reduce((s,r)=>s+(r.actual||0), 0);
+    const remain  = total - used;
+    const pct     = total ? Math.round(used/total*100) : 0;
+    document.getElementById('k-total').textContent   = total.toLocaleString();
+    document.getElementById('k-used').textContent    = used.toLocaleString();
+    document.getElementById('k-used-pct').textContent= `บาท (${pct}%)`;
+    document.getElementById('k-remain').textContent  = remain.toLocaleString();
+    document.getElementById('k-count').textContent   = allData.length;
+  }
+
+  function renderDeptBars() {
+    const byDept = {};
+    allData.forEach(r => {
+      if (!byDept[r.department]) byDept[r.department] = {planned:0, actual:0};
+      byDept[r.department].planned += r.planned||0;
+      byDept[r.department].actual  += r.actual||0;
+    });
+    const rows = Object.entries(byDept).map(([dept, d]) => {
+      const pct = d.planned ? Math.round(d.actual/d.planned*100) : 0;
+      const col = pct>80?'var(--bt-danger)':pct>60?'var(--bt-warning)':'var(--bt-success)';
+      return `<div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:0.88rem;font-weight:600">${dept}</span>
+          <span style="font-size:0.82rem;color:#64748B">${d.actual.toLocaleString()} / ${d.planned.toLocaleString()} ฿ &nbsp;<strong style="color:${col}">${pct}%</strong></span>
+        </div>
+        <div style="background:#E2E8F0;border-radius:99px;height:7px">
+          <div style="width:${Math.min(pct,100)}%;background:${col};height:7px;border-radius:99px;transition:width 0.5s"></div>
+        </div>
+      </div>`;
+    });
+    document.getElementById('dept-bars').innerHTML = rows.join('') || '<p style="color:#888;text-align:center">ไม่มีข้อมูล</p>';
+  }
+
+  function renderTable() {
+    document.getElementById('budget-rows').innerHTML = allData.map(r => `
+      <tr>
+        <td>${r.department||'-'}</td>
+        <td>${r.item_name||'-'}</td>
+        <td><span class="bt-badge bt-badge-info">${r.category||'-'}</span></td>
+        <td style="text-align:right">${(r.planned||0).toLocaleString()}</td>
+        <td style="text-align:right">${(r.actual||0).toLocaleString()}</td>
+        <td><span class="bt-badge ${r.status==='approved'?'bt-badge-green':'bt-badge-orange'}">${r.status||'draft'}</span></td>
+        <td><button class="bt-btn bt-btn-outline bt-btn-sm" onclick="deleteItem(${r.id})"><i class="bi bi-trash"></i></button></td>
+      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:#888">ไม่มีข้อมูล</td></tr>';
+  }
+
+  async function deleteItem(id) {
+    if (!confirm('ลบรายการนี้?')) return;
+    try {
+      const res = await apiReq('/budget/'+id, {method:'DELETE'});
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      BT.notify('ลบแล้ว','success');
+      load();
+    } catch(e) { BT.notify('ลบไม่สำเร็จ','danger'); }
+  }
+
+  function showAddModal() {
+    const m = document.getElementById('add-modal');
+    m.style.display = 'flex';
+    document.getElementById('m-year').value = YEAR;
+  }
+  function hideModal() { document.getElementById('add-modal').style.display = 'none'; }
+
+  async function saveBudget() {
+    const body = {
+      fiscal_year: document.getElementById('m-year').value,
+      department:  document.getElementById('m-dept').value.trim(),
+      category:    document.getElementById('m-cat').value,
+      item_name:   document.getElementById('m-name').value.trim(),
+      planned:     Number(document.getElementById('m-planned').value)||0,
+      actual:      Number(document.getElementById('m-actual').value)||0,
+    };
+    if (!body.department || !body.item_name) { BT.notify('กรุณากรอกแผนกและรายการ','warning'); return; }
+    try {
+      const res = await apiReq('/budget',{method:'POST',body:JSON.stringify(body)});
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      hideModal();
+      BT.notify('เพิ่มงบประมาณแล้ว','success');
+      load();
+    } catch(e) { BT.notify('เกิดข้อผิดพลาด: '+e.message,'danger'); }
+  }
+
+  async function load() {
+    try {
+      const res = await apiReq('/budget?year='+YEAR);
+      const d = await res.json();
+      allData = d.ok && d.data?.length ? d.data : [];
+    } catch(e) { allData = []; }
+    renderKpis(); renderDeptBars(); renderTable();
+  }
+
+  document.addEventListener('DOMContentLoaded', load);
+</script>
+</body></html>

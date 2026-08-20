@@ -1,0 +1,30 @@
+{
+ "charts": [],
+ "content": "[]",
+ "doctype": "Workspace",
+ "extends_another_page": 0,
+ "hide_custom": 0,
+ "is_hidden": 0,
+ "label": "HR",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee Profile",
+   "link_to": "Employee Profile",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  }
+ ],
+ "module": "HR",
+ "name": "HR",
+ "public": 1,
+ "roles": [{"role": "BT HR"}, {"role": "BT Manager"}, {"role": "BT CEO"}, {"role": "BT Admin"}],
+ "sequence_id": 5.0,
+ "shortcuts": [
+  {"color": "Red",    "format": "List", "label": "Employee Profiles",  "link_to": "Employee Profile", "type": "DocType"},
+  {"color": "Blue",   "format": "New",  "label": "เพิ่มพนักงาน",       "link_to": "Employee Profile", "type": "DocType"}
+ ],
+ "title": "HR"
+}

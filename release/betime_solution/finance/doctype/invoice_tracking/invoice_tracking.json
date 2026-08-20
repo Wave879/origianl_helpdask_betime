@@ -1,0 +1,159 @@
+{
+ "actions": [],
+ "autoname": "format:BT-INV-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "Finance",
+ "name": "Invoice Tracking",
+ "naming_rule": "Expression",
+ "title_field": "invoice_no",
+ "search_fields": "invoice_no,project,status",
+ "track_changes": 1,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "invoice_no",
+   "fieldtype": "Data",
+   "label": "เลขที่ใบแจ้งหนี้",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "โครงการ",
+   "options": "Project Master",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "สถานะ",
+   "options": "Draft\nSent\nPartial\nPaid\nOverdue\nCancelled",
+   "default": "Draft",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "milestone",
+   "fieldtype": "Data",
+   "label": "Milestone ที่เรียกเก็บ",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sec_amount",
+   "fieldtype": "Section Break",
+   "label": "จำนวนเงิน"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "มูลค่า (Amount)",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "vat_amount",
+   "fieldtype": "Currency",
+   "label": "ภาษีมูลค่าเพิ่ม (VAT)"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "รวมทั้งสิ้น",
+   "read_only": 1
+  },
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "ยอดที่ได้รับแล้ว",
+   "default": "0"
+  },
+  {
+   "fieldname": "sec_dates",
+   "fieldtype": "Section Break",
+   "label": "วันที่"
+  },
+  {
+   "fieldname": "invoice_date",
+   "fieldtype": "Date",
+   "label": "วันที่ออกใบแจ้งหนี้",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "วันครบกำหนด",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "payment_date",
+   "fieldtype": "Date",
+   "label": "วันที่ได้รับชำระ"
+  },
+  {
+   "fieldname": "billing_alert_sent",
+   "fieldtype": "Check",
+   "label": "ส่ง Billing Alert แล้ว",
+   "default": 0,
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_notes",
+   "fieldtype": "Section Break",
+   "label": "หมายเหตุ"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "หมายเหตุ"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Finance",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 1, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 0, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  }
+ ],
+ "sort_field": "due_date",
+ "sort_order": "ASC",
+ "links": [],
+ "states": []
+}

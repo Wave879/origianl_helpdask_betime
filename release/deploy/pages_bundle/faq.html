@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAQ — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .faq-search-bar {
+      display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .faq-search-wrap {
+      position: relative; flex: 1; min-width: 220px; max-width: 520px;
+    }
+    .faq-search-wrap i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: #94a3b8; font-size: 1rem; pointer-events: none;
+    }
+    .faq-search-input {
+      width: 100%; padding: 11px 16px 11px 40px; border-radius: 12px;
+      border: 1.5px solid #DDE2EC; background: #fff;
+      font-size: 0.9rem; font-family: inherit; outline: none; box-sizing: border-box;
+    }
+    .faq-search-input:focus { border-color: var(--bt-primary); }
+
+    /* Category tabs */
+    .faq-tabs {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .faq-tab {
+      padding: 7px 18px; border-radius: 999px; border: 1.5px solid #DDE2EC;
+      background: #fff; font-size: 0.82rem; font-family: inherit; font-weight: 600;
+      cursor: pointer; color: #64748b; transition: all 0.15s;
+    }
+    .faq-tab:hover { border-color: var(--bt-primary); color: var(--bt-primary); background: #fff7ed; }
+    .faq-tab.active { background: var(--bt-primary); color: #fff; border-color: var(--bt-primary); }
+
+    /* Accordion */
+    .faq-list { display: flex; flex-direction: column; gap: 10px; }
+    .faq-item {
+      background: #fff; border-radius: 14px; border: 1.5px solid #EEF0F5;
+      overflow: hidden; transition: box-shadow 0.15s;
+    }
+    .faq-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+    .faq-item.open { border-color: var(--bt-primary); box-shadow: 0 4px 20px rgba(234,88,12,0.10); }
+    .faq-q {
+      width: 100%; background: none; border: none; padding: 16px 20px;
+      text-align: left; font-family: inherit; font-size: 0.92rem; font-weight: 700;
+      color: #1a1a2e; cursor: pointer; display: flex; align-items: center; gap: 12px;
+    }
+    .faq-q-icon {
+      width: 34px; height: 34px; border-radius: 10px; background: #fff7ed;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--bt-primary); font-size: 1rem; flex-shrink: 0;
+    }
+    .faq-q-text { flex: 1; line-height: 1.4; }
+    .faq-q-badge {
+      font-size: 0.72rem; font-weight: 700; padding: 2px 10px; border-radius: 999px;
+      background: #F1F5F9; color: #64748b; flex-shrink: 0;
+    }
+    .faq-chevron {
+      flex-shrink: 0; transition: transform 0.22s;
+      color: #94a3b8; font-size: 0.9rem;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-a {
+      display: none; padding: 0 20px 18px 66px;
+      font-size: 0.88rem; color: #475569; line-height: 1.8;
+      border-top: 1px solid #F1F5F9;
+    }
+    .faq-item.open .faq-a { display: block; }
+    .faq-a a { color: var(--bt-primary); font-weight: 600; text-decoration: none; }
+    .faq-a a:hover { text-decoration: underline; }
+
+    /* Empty / no-result */
+    .faq-empty {
+      text-align: center; padding: 60px 20px; color: #94a3b8;
+    }
+    .faq-empty i { font-size: 2.8rem; margin-bottom: 12px; display: block; }
+
+    /* Contact card */
+    .faq-contact-card {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+      border-radius: 16px; padding: 24px 28px; color: #fff;
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    }
+    .faq-contact-icon { font-size: 2.4rem; flex-shrink: 0; }
+    .faq-contact-body { flex: 1; }
+    .faq-contact-body h3 { margin: 0 0 4px; font-size: 1.05rem; }
+    .faq-contact-body p { margin: 0; font-size: 0.84rem; opacity: 0.85; }
+    .faq-contact-btn {
+      padding: 10px 22px; border-radius: 12px; background: #fff;
+      color: #1e40af; font-weight: 700; font-size: 0.88rem;
+      border: none; cursor: pointer; font-family: inherit;
+      text-decoration: none; display: inline-block; transition: opacity 0.15s;
+    }
+    .faq-contact-btn:hover { opacity: 0.88; }
+
+    @media (max-width: 640px) {
+      .faq-a { padding-left: 20px; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-question-circle"></i> คำถามที่พบบ่อย (FAQ)</h2>
+    </div>
+
+    <!-- Search -->
+    <div class="faq-search-bar">
+      <div class="faq-search-wrap">
+        <i class="bi bi-search"></i>
+        <input class="faq-search-input" id="faqSearch" type="text"
+               placeholder="ค้นหาคำถาม..." oninput="filterFAQ()">
+      </div>
+      <button class="bt-btn bt-btn-outline" onclick="clearSearch()">
+        <i class="bi bi-x-lg"></i> ล้างการค้นหา
+      </button>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="faq-tabs" id="faqTabs">
+      <button class="faq-tab active" onclick="setCategory('all', this)">ทั้งหมด</button>
+      <button class="faq-tab" onclick="setCategory('system', this)"><i class="bi bi-laptop"></i> ระบบทั่วไป</button>
+      <button class="faq-tab" onclick="setCategory('account', this)"><i class="bi bi-person-lock"></i> บัญชีผู้ใช้</button>
+      <button class="faq-tab" onclick="setCategory('project', this)"><i class="bi bi-kanban"></i> โปรเจกต์</button>
+      <button class="faq-tab" onclick="setCategory('finance', this)"><i class="bi bi-cash-stack"></i> การเงิน</button>
+      <button class="faq-tab" onclick="setCategory('hr', this)"><i class="bi bi-people"></i> HR</button>
+      <button class="faq-tab" onclick="setCategory('ai', this)"><i class="bi bi-robot"></i> AI / Smart</button>
+    </div>
+
+    <!-- FAQ list -->
+    <div class="bt-card" style="margin-bottom:20px">
+      <div class="faq-list" id="faqList">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="faq-empty" id="faqEmpty" style="display:none">
+        <i class="bi bi-search"></i>
+        ไม่พบคำถามที่ตรงกัน กรุณาลองคำค้นหาอื่น
+      </div>
+    </div>
+
+    <!-- Contact / support CTA -->
+    <div class="faq-contact-card">
+      <div class="faq-contact-icon"><i class="bi bi-headset"></i></div>
+      <div class="faq-contact-body">
+        <h3>ยังไม่พบคำตอบที่ต้องการ?</h3>
+        <p>ทีม IT Support พร้อมช่วยเหลือคุณตลอด 24/7 ผ่านระบบ Help Desk</p>
+      </div>
+      <a href="/help-desk.html" class="faq-contact-btn">
+        <i class="bi bi-chat-dots" style="margin-right:6px"></i>เปิด Help Desk
+      </a>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('faq.html', 'FAQ');
+
+/* ── Static FAQ dataset (falls back to API if backend available) ──── */
+const STATIC_FAQ = [
+  // ระบบทั่วไป
+  { id: 1, cat: 'system', icon: 'laptop', q: 'วิธีเข้าสู่ระบบครั้งแรก', a: 'ใช้อีเมลขององค์กรและรหัสผ่านที่ได้รับจาก Admin จากนั้นไปที่ <a href="/login.html">หน้า Login</a> และกรอกข้อมูลเพื่อเข้าใช้งาน' },
+  { id: 2, cat: 'system', icon: 'wifi-off', q: 'ระบบแสดงข้อความ "ไม่สามารถเชื่อมต่อ Backend"', a: 'ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต หากปัญหายังคงอยู่ ให้คลิก "ตั้งค่า Backend URL" ที่มุมขวาบน หรือติดต่อ Admin เพื่อตรวจสอบ URL ของ Server' },
+  { id: 3, cat: 'system', icon: 'phone', q: 'สามารถใช้งานบนมือถือได้ไหม?', a: 'ได้ — ระบบรองรับ Responsive Design ทั้ง Android และ iOS สามารถเพิ่ม Shortcut ไว้ที่ Home Screen เพื่อเปิดเหมือน App ได้เลย' },
+  { id: 4, cat: 'system', icon: 'bell', q: 'ฉันจะรับการแจ้งเตือนได้อย่างไร?', a: 'ระบบส่งการแจ้งเตือนผ่าน LINE, Microsoft Teams และ Email ตามที่ตั้งค่าไว้ สามารถจัดการที่เมนู <a href="/notifications.html">Notifications</a>' },
+
+  // บัญชีผู้ใช้
+  { id: 5, cat: 'account', icon: 'key', q: 'ลืมรหัสผ่านต้องทำอย่างไร?', a: 'ติดต่อผู้ดูแลระบบ (Admin) เพื่อรีเซ็ตรหัสผ่าน หรือใช้ฟีเจอร์ "ลืมรหัสผ่าน" บนหน้า Login หาก Admin เปิดใช้งานไว้' },
+  { id: 6, cat: 'account', icon: 'person-gear', q: 'วิธีแก้ไขข้อมูลส่วนตัว', a: 'ไปที่เมนู <a href="/setup.html">Set Up</a> หรือคลิกที่ชื่อผู้ใช้มุมขวาบน แล้วเลือก "แก้ไขโปรไฟล์"' },
+  { id: 7, cat: 'account', icon: 'shield-lock', q: 'ฉันเปลี่ยนบทบาท (Role) ของตัวเองได้ไหม?', a: 'ไม่ได้ — การเปลี่ยน Role ต้องได้รับการอนุมัติจาก Admin เท่านั้น ติดต่อผ่าน <a href="/help-desk.html">Help Desk</a>' },
+  { id: 8, cat: 'account', icon: 'box-arrow-right', q: 'ออกจากระบบอย่างไร?', a: 'คลิกปุ่ม "ออกจากระบบ" (สีส้มแดง) ที่ Appbar มุมขวาบน ระบบจะล้าง Session และพาไปหน้า Login ทันที' },
+
+  // โปรเจกต์
+  { id: 9, cat: 'project', icon: 'folder-plus', q: 'วิธีสร้างโปรเจกต์ใหม่', a: 'ไปที่เมนู <a href="/projects.html">Project Master</a> แล้วคลิก "+ New Project" กรอกรายละเอียด และกำหนดทีมงาน' },
+  { id: 10, cat: 'project', icon: 'check2-square', q: 'ฉันดูงานที่ได้รับมอบหมายได้จากที่ไหน?', a: 'ดูได้ที่ <a href="/my-tasks.html">My Tasks</a> หรือ <a href="/staff-dashboard.html">Staff Dashboard</a> ซึ่งจะแสดงงานเฉพาะของคุณ' },
+  { id: 11, cat: 'project', icon: 'mic', q: 'Meeting MOM คืออะไร?', a: 'MOM (Minutes of Meeting) คือระบบบันทึกการประชุมอัตโนมัติด้วย AI สามารถอัปโหลดไฟล์เสียงหรือถอดความแบบ Real-time ได้ที่ <a href="/project-co/meeting-mom">Meeting MOM</a>' },
+  { id: 12, cat: 'project', icon: 'bar-chart', q: 'ดูภาพรวมโปรเจกต์ทั้งหมดได้ที่ไหน?', a: 'ดูได้ที่ <a href="/pm-dashboard.html">PM Dashboard</a> ซึ่งแสดง KPI, Gantt และสถานะงานทุกโปรเจกต์' },
+
+  // การเงิน
+  { id: 13, cat: 'finance', icon: 'clock', q: 'วิธียื่นขอ OT', a: 'ไปที่เมนู <a href="/ot-claims.html">OT Claims</a> กรอกวันเวลา เหตุผล และส่งรอการอนุมัติจาก Supervisor' },
+  { id: 14, cat: 'finance', icon: 'receipt', q: 'ดูใบแจ้งหนี้ได้ที่ไหน?', a: 'ดูได้ที่ <a href="/invoices.html">Invoice Tracking</a> สามารถกรองตามสถานะ วันที่ และ Project' },
+  { id: 15, cat: 'finance', icon: 'bell', q: 'Billing Alerts คืออะไร?', a: 'ระบบแจ้งเตือนอัตโนมัติเมื่อมีใบแจ้งหนี้ค้างชำระ หรืองบประมาณเกิน Threshold ที่ตั้งไว้ ดูที่ <a href="/billing-alerts.html">Billing Alerts</a>' },
+
+  // HR
+  { id: 16, cat: 'hr', icon: 'clock-history', q: 'วิธี Check-in / Check-out', a: 'ไปที่ <a href="/check-in-out.html">Check in - out</a> คลิกปุ่ม Check-in เมื่อเริ่มงาน และ Check-out เมื่อเสร็จงาน ระบบจะบันทึก GPS อัตโนมัติ' },
+  { id: 17, cat: 'hr', icon: 'award', q: 'ฉันดู Certificate ของตัวเองได้ที่ไหน?', a: 'ดูได้ที่ <a href="/certificates.html">Certificates</a> ซึ่งแสดงใบรับรองทั้งหมดพร้อมวันหมดอายุ' },
+  { id: 18, cat: 'hr', icon: 'mortarboard', q: 'Skills Matrix คืออะไร?', a: 'เป็นแผนผังทักษะของพนักงานในทีม ช่วย Manager มองเห็นช่องว่างทักษะ (Skill Gap) ดูได้ที่ <a href="/skills.html">Skills Matrix</a>' },
+
+  // AI / Smart
+  { id: 19, cat: 'ai', icon: 'search', q: 'RAG Search คืออะไร?', a: 'Retrieval-Augmented Generation — ระบบค้นหาเอกสารด้วย AI ที่ตอบคำถามจากฐานข้อมูลขององค์กร สามารถเข้าได้จาก Knowledge Center > RAG Search' },
+  { id: 20, cat: 'ai', icon: 'camera', q: 'OCR Lab ใช้ทำอะไร?', a: 'แปลงรูปภาพหรือสแกนเอกสารเป็นข้อความอัตโนมัติด้วย AI สนับสนุนไฟล์ PDF, PNG, JPG ไปที่ <a href="/ocr-lab.html">OCR Lab</a>' },
+  { id: 21, cat: 'ai', icon: 'robot', q: 'CEO Bot คืออะไร?', a: 'AI Assistant สำหรับผู้บริหาร ตอบคำถามเรื่องสรุปรายงาน, KPI และข้อมูลองค์กร ตั้งค่าที่ <a href="/ceo-bot-setting.html">CEO Bot Setting</a>' },
+  { id: 22, cat: 'ai', icon: 'arrow-repeat', q: 'Auto Reschedule ทำงานอย่างไร?', a: 'AI วิเคราะห์ตาราง Calendar ของทีมแล้วจัดเรียงการประชุมใหม่โดยอัตโนมัติเมื่อมี Conflict ดูที่ <a href="/reschedule.html">Auto Reschedule</a>' },
+];
+
+let currentCat = 'all';
+let currentSearch = '';
+
+function renderFAQ() {
+  const list = document.getElementById('faqList');
+  const empty = document.getElementById('faqEmpty');
+  const q = currentSearch.trim().toLowerCase();
+
+  const filtered = STATIC_FAQ.filter(item => {
+    const catMatch = currentCat === 'all' || item.cat === currentCat;
+    const textMatch = !q || item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q);
+    return catMatch && textMatch;
+  });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = filtered.map(item => `
+    <div class="faq-item" id="faq-${item.id}">
+      <button class="faq-q" onclick="toggleFAQ(${item.id})">
+        <span class="faq-q-icon"><i class="bi bi-${item.icon}"></i></span>
+        <span class="faq-q-text">${highlight(item.q, q)}</span>
+        <span class="faq-q-badge">${catLabel(item.cat)}</span>
+        <i class="bi bi-chevron-down faq-chevron"></i>
+      </button>
+      <div class="faq-a">${item.a}</div>
+    </div>
+  `).join('');
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(re, '<mark style="background:#FFF3CD;border-radius:3px;padding:0 2px">$1</mark>');
+}
+
+function catLabel(cat) {
+  return { system: 'ระบบทั่วไป', account: 'บัญชีผู้ใช้', project: 'โปรเจกต์', finance: 'การเงิน', hr: 'HR', ai: 'AI / Smart' }[cat] || cat;
+}
+
+function toggleFAQ(id) {
+  const el = document.getElementById('faq-' + id);
+  if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  // close all
+  document.querySelectorAll('.faq-item.open').forEach(e => e.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+function setCategory(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.faq-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderFAQ();
+}
+
+function filterFAQ() {
+  currentSearch = document.getElementById('faqSearch').value;
+  renderFAQ();
+}
+
+function clearSearch() {
+  document.getElementById('faqSearch').value = '';
+  currentSearch = '';
+  renderFAQ();
+}
+
+/* Try loading from backend, fall back to static */
+async function loadFromBackend() {
+  if (!BT.hasBackend || !BT.hasBackend()) { renderFAQ(); return; }
+  try {
+    const rows = await BT.listDocs('FAQ', ['name', 'question', 'answer', 'category'], {}, 100);
+    if (rows && rows.length) {
+      STATIC_FAQ.length = 0;
+      rows.forEach((r, i) => STATIC_FAQ.push({
+        id: i + 1,
+        cat: (r.category || 'system').toLowerCase().replace(/\s+/g, '_'),
+        icon: 'question-circle',
+        q: r.question || r.name,
+        a: r.answer || '-',
+      }));
+    }
+  } catch (_) { /* use static */ }
+  renderFAQ();
+}
+
+document.addEventListener('DOMContentLoaded', loadFromBackend);
+</script>
+</body>
+</html>

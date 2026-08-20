@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CEO Bot Setting - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .bot-grid { display:grid; grid-template-columns:1.2fr 0.8fr; gap:20px; }
+    .bot-card { background:#fff; border-radius:16px; box-shadow:var(--bt-shadow); padding:26px; }
+    .bot-card h3 { margin:0; font-size:1.05rem; color:#0f172a; }
+    .bot-sub { margin-top:6px; color:#64748b; font-weight:600; font-size:0.92rem; }
+    .bot-badge {
+      display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:8px 14px; font-weight:800; font-size:0.82rem;
+      background:#eef2ff; color:#1d4ed8;
+    }
+    .bot-dot { width:10px; height:10px; border-radius:999px; background:#94a3b8; }
+    .bot-dot.ok { background:#16a34a; box-shadow:0 0 0 3px rgba(22,163,74,0.18); }
+    .bot-dot.err { background:#dc2626; box-shadow:0 0 0 3px rgba(220,38,38,0.18); }
+    .bot-form { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px; }
+    .bot-full { grid-column:1 / -1; }
+    .bot-label { display:block; margin-bottom:6px; color:#64748b; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
+    .bot-input, .bot-select {
+      width:100%; height:44px; border-radius:10px; border:1.5px solid var(--bt-border); background:#fff;
+      padding:0 12px; font:inherit; box-sizing:border-box;
+    }
+    .bot-input[readonly] { background:#f8fafc; color:#64748b; }
+    .bot-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .bot-note {
+      margin-top:14px; padding:12px 14px; border-radius:12px; font-size:0.88rem; display:none;
+      background:#dbeafe; color:#1d4ed8;
+    }
+    .bot-note.success { display:block; background:#dcfce7; color:#166534; }
+    .bot-note.error { display:block; background:#fee2e2; color:#b91c1c; }
+    .event-list { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
+    .event-row {
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
+      border:1px solid var(--bt-border); border-radius:12px; padding:12px 14px; background:#f8fafc;
+    }
+    .event-row strong { display:block; color:#0f172a; }
+    .event-row small { color:#64748b; font-weight:600; }
+    .bot-toggle { position:relative; width:46px; height:24px; flex-shrink:0; }
+    .bot-toggle input { opacity:0; width:0; height:0; }
+    .bot-slider {
+      position:absolute; inset:0; background:#cbd5e1; border-radius:999px; cursor:pointer; transition:0.2s;
+    }
+    .bot-slider::before {
+      content:''; position:absolute; left:3px; top:3px; width:18px; height:18px; background:#fff; border-radius:999px;
+      transition:0.2s; box-shadow:0 1px 3px rgba(15,23,42,0.2);
+    }
+    .bot-toggle input:checked + .bot-slider { background:#06c755; }
+    .bot-toggle input:checked + .bot-slider::before { transform:translateX(22px); }
+    .bot-log {
+      margin-top:18px; background:#0f172a; color:#cbd5e1; border-radius:14px; padding:16px;
+      min-height:240px; max-height:360px; overflow:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.8rem; line-height:1.7;
+    }
+    .bot-log .ok { color:#4ade80; }
+    .bot-log .err { color:#f87171; }
+    .bot-log .info { color:#60a5fa; }
+    .bot-kv {
+      margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:12px;
+    }
+    .bot-kv .item { border:1px solid var(--bt-border); border-radius:12px; padding:14px; background:#fbfdff; }
+    .bot-kv small { display:block; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+    .bot-kv strong { display:block; margin-top:10px; color:#0f172a; font-size:1.02rem; word-break:break-all; }
+    @media (max-width: 980px) {
+      .bot-grid { grid-template-columns:1fr; }
+      .bot-form, .bot-kv { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-robot"></i> CEO Bot Setting</h2>
+      <span class="bot-badge" id="status-badge"><span class="bot-dot" id="status-dot"></span><span id="status-text">ยังไม่เชื่อมต่อ</span></span>
+    </div>
+
+    <div class="bot-grid">
+      <section class="bot-card">
+        <h3>LINE Bot Configuration</h3>
+        <div class="bot-sub">ตั้งค่า token, secret, webhook และผู้รับ daily summary ให้ทำงานเหมือนระบบ CEO Flow</div>
+
+        <div class="bot-form">
+          <div>
+            <label class="bot-label">Channel Access Token</label>
+            <input id="line-token" class="bot-input" type="password" placeholder="กรอก token ใหม่เมื่อจะอัปเดต">
+          </div>
+          <div>
+            <label class="bot-label">Channel Secret</label>
+            <input id="line-secret" class="bot-input" type="password" placeholder="กรอก secret ใหม่เมื่อจะอัปเดต">
+          </div>
+          <div class="bot-full">
+            <label class="bot-label">Webhook URL</label>
+            <input id="line-webhook" class="bot-input" type="text" readonly>
+          </div>
+          <div>
+            <label class="bot-label">CEO LINE User ID</label>
+            <input id="line-uid" class="bot-input" type="text" placeholder="Ucxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+          </div>
+          <div>
+            <label class="bot-label">Report Time</label>
+            <input id="report-time" class="bot-input" type="time" value="08:00">
+          </div>
+          <div>
+            <label class="bot-label">Report Format</label>
+            <select id="report-format" class="bot-select">
+              <option value="summary">Summary</option>
+              <option value="full">Full</option>
+              <option value="kpi_only">KPI Only</option>
+            </select>
+          </div>
+          <div>
+            <label class="bot-label">ส่งเฉพาะวันทำงาน</label>
+            <label class="bot-toggle" style="margin-top:10px">
+              <input id="weekday-only" type="checkbox" checked>
+              <span class="bot-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="bot-actions">
+          <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="testConnection()"><i class="bi bi-send"></i> ทดสอบการเชื่อมต่อ</button>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="saveConfig()"><i class="bi bi-floppy"></i> บันทึกการตั้งค่า</button>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="copyWebhook()"><i class="bi bi-clipboard"></i> Copy Webhook URL</button>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="sendTestReport()"><i class="bi bi-send-check"></i> ส่งรายงานทดสอบ</button>
+        </div>
+
+        <div id="action-note" class="bot-note"></div>
+
+        <div class="bot-kv">
+          <div class="item">
+            <small>Token Status</small>
+            <strong id="token-state">ยังไม่ตั้งค่า</strong>
+          </div>
+          <div class="item">
+            <small>Secret Status</small>
+            <strong id="secret-state">ยังไม่ตั้งค่า</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="bot-card">
+        <h3>Notification Events</h3>
+        <div class="bot-sub">เปิดหรือปิดหมวดการแจ้งเตือนหลักที่ใช้ส่งผ่าน LINE</div>
+        <div id="event-list" class="event-list"></div>
+      </section>
+
+      <section class="bot-card" style="grid-column:1 / -1">
+        <h3>Activity Log</h3>
+        <div class="bot-sub">เก็บผลการทดสอบ การ sync group และ webhook activity ล่าสุดจาก worker</div>
+        <div id="log-box" class="bot-log"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('ceo-bot-setting.html', 'CEO Bot Setting');
+
+  const EVENT_META = {
+    daily_summary: { label: 'Daily Summary', desc: 'สรุปรายวันส่งให้ CEO ผ่าน LINE' },
+    overdue_tasks: { label: 'Overdue Tasks', desc: 'แจ้งเตือนงานเกินกำหนด' },
+    new_assignments: { label: 'New Assignments', desc: 'แจ้งเมื่อมีการมอบหมายงานใหม่' },
+    approvals: { label: 'Approvals', desc: 'แจ้งเหตุการณ์ที่เกี่ยวกับการอนุมัติ' },
+  };
+
+  let configState = {
+    webhook: '',
+    uid: '',
+    reportTime: '08:00',
+    reportFormat: 'summary',
+    weekdayOnly: true,
+    notifications: {
+      daily_summary: true,
+      overdue_tasks: true,
+      new_assignments: true,
+      approvals: true,
+    },
+    tokenConfigured: false,
+    secretConfigured: false,
+  };
+
+  function setStatus(ok, text) {
+    document.getElementById('status-text').textContent = text;
+    document.getElementById('status-dot').className = `bot-dot ${ok ? 'ok' : 'err'}`;
+  }
+
+  function setNote(message, mode = 'success') {
+    const note = document.getElementById('action-note');
+    note.textContent = message;
+    note.className = `bot-note ${mode}`;
+  }
+
+  function renderEvents() {
+    const list = document.getElementById('event-list');
+    list.innerHTML = Object.entries(EVENT_META).map(([key, meta]) => `
+      <div class="event-row">
+        <div>
+          <strong>${meta.label}</strong>
+          <small>${meta.desc}</small>
+        </div>
+        <label class="bot-toggle">
+          <input type="checkbox" ${configState.notifications[key] ? 'checked' : ''} onchange="toggleEvent('${key}', this.checked)">
+          <span class="bot-slider"></span>
+        </label>
+      </div>
+    `).join('');
+  }
+
+  function renderLogs(logs) {
+    const box = document.getElementById('log-box');
+    if (!Array.isArray(logs) || !logs.length) {
+      box.innerHTML = '<span class="info">[INFO]</span> ยังไม่มี activity log จาก worker';
+      return;
+    }
+    box.innerHTML = logs.map((log) => {
+      const css = log.type === 'ok' ? 'ok' : log.type === 'err' ? 'err' : 'info';
+      const stamp = log.created_at ? new Date(log.created_at).toLocaleString('th-TH') : '-';
+      return `<div><span class="${css}">[${stamp}]</span> ${log.message || ''}</div>`;
+    }).join('');
+  }
+
+  function applyConfigToForm() {
+    document.getElementById('line-webhook').value = configState.webhook || '';
+    document.getElementById('line-uid').value = configState.uid || '';
+    document.getElementById('report-time').value = configState.reportTime || '08:00';
+    document.getElementById('report-format').value = configState.reportFormat || 'summary';
+    document.getElementById('weekday-only').checked = configState.weekdayOnly !== false;
+    document.getElementById('token-state').textContent = configState.tokenConfigured ? 'ตั้งค่าแล้ว' : 'ยังไม่ตั้งค่า';
+    document.getElementById('secret-state').textContent = configState.secretConfigured ? 'ตั้งค่าแล้ว' : 'ยังไม่ตั้งค่า';
+    setStatus(configState.tokenConfigured && configState.secretConfigured, configState.tokenConfigured && configState.secretConfigured ? 'พร้อมใช้งาน' : 'ยังไม่เชื่อมต่อ');
+    renderEvents();
+  }
+
+  async function loadConfig() {
+    try {
+      const response = await BT.call('/line/config', {}, 'GET');
+      configState = { ...configState, ...(response.data || {}) };
+      applyConfigToForm();
+      renderLogs(response.logs || []);
+    } catch (error) {
+      setNote(error.message || 'โหลดการตั้งค่า LINE Bot ไม่สำเร็จ', 'error');
+    }
+  }
+
+  function toggleEvent(key, enabled) {
+    configState.notifications[key] = enabled;
+  }
+
+  async function saveConfig() {
+    try {
+      const payload = {
+        token: document.getElementById('line-token').value.trim(),
+        secret: document.getElementById('line-secret').value.trim(),
+        uid: document.getElementById('line-uid').value.trim(),
+        reportTime: document.getElementById('report-time').value,
+        reportFormat: document.getElementById('report-format').value,
+        weekdayOnly: document.getElementById('weekday-only').checked,
+        notifications: configState.notifications,
+      };
+      const response = await BT.call('/line/config', payload, 'PUT');
+      configState = { ...configState, ...(response.data || {}) };
+      document.getElementById('line-token').value = '';
+      document.getElementById('line-secret').value = '';
+      applyConfigToForm();
+      setNote('บันทึกการตั้งค่า LINE Bot เรียบร้อยแล้ว', 'success');
+      await refreshLogs();
+    } catch (error) {
+      setNote(error.message || 'บันทึกการตั้งค่าไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function testConnection() {
+    try {
+      const token = document.getElementById('line-token').value.trim();
+      const response = await BT.call('/line/config/test', token ? { token } : {}, 'POST');
+      const botName = response.data?.displayName || 'LINE Bot';
+      setStatus(true, 'เชื่อมต่อสำเร็จ');
+      setNote(`เชื่อมต่อสำเร็จ: ${botName}`, 'success');
+      await refreshLogs();
+    } catch (error) {
+      setStatus(false, 'เชื่อมต่อไม่สำเร็จ');
+      setNote(error.message || 'ทดสอบการเชื่อมต่อไม่สำเร็จ', 'error');
+    }
+  }
+
+  function copyWebhook() {
+    const value = document.getElementById('line-webhook').value;
+    navigator.clipboard.writeText(value).then(() => {
+      setNote('คัดลอก Webhook URL แล้ว', 'success');
+    }).catch(() => {
+      setNote('คัดลอก Webhook URL ไม่สำเร็จ', 'error');
+    });
+  }
+
+  async function sendTestReport() {
+    try {
+      const response = await BT.call('/line/report/test', {}, 'POST');
+      setNote(response.message || 'ส่งรายงานทดสอบเรียบร้อยแล้ว', 'success');
+      await refreshLogs();
+    } catch (error) {
+      setNote(error.message || 'ส่งรายงานทดสอบไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function refreshLogs() {
+    try {
+      const response = await BT.call('/line/logs', {}, 'GET');
+      renderLogs(response.data || []);
+    } catch {
+      // ignore log refresh failures
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadConfig();
+  });
+</script>
+</body>
+</html>

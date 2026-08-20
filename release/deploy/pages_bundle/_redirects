@@ -1,0 +1,9 @@
+# Login aliases
+/                         /index.html               200
+
+# Feature aliases
+/dashboard/index.html     /dashboard              302
+/manager-dashboard/index.html /manager-dashboard  302
+/staff-dashboard/index.html /staff-dashboard      302
+/admin-console            /admin.html               200
+/it-support               /admin.html               200

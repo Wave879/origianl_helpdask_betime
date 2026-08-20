@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ticket Kanban - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    body.betime-portal { background:#f5f8fc; font-family:'Sarabun',sans-serif; }
+    .tk-page { max-width:1560px; margin:0 auto; padding:4px 0 24px; }
+    .tk-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:16px; }
+    .tk-title-wrap { display:flex; align-items:center; gap:12px; min-width:0; }
+    .tk-title-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:8px; background:#2563eb; color:#fff; box-shadow:0 6px 16px rgba(37,99,235,.22); flex:0 0 auto; }
+    .tk-title-icon i { font-size:1.15rem; }
+    .tk-title { margin:0; color:#0f172a; font-size:1.18rem; font-weight:800; line-height:1.2; }
+    .tk-subtitle { margin:3px 0 0; color:#64748b; font-size:.82rem; font-weight:600; }
+    .tk-toolbar { display:flex; align-items:center; gap:8px; padding:10px; border:1px solid #dce6f2; border-radius:8px; background:#fff; box-shadow:0 2px 10px rgba(15,23,42,.04); margin-bottom:14px; }
+    .tk-search { flex:1 1 320px; min-width:180px; height:38px; border:1px solid #cbd8e8; border-radius:7px; padding:0 11px; font:inherit; font-size:.86rem; color:#0f172a; outline:none; }
+    .tk-search:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+    .tk-icon-btn { width:38px; height:38px; display:inline-grid; place-items:center; border:1px solid #cbd8e8; border-radius:7px; background:#fff; color:#334155; cursor:pointer; }
+    .tk-icon-btn:hover { color:#1d4ed8; border-color:#93c5fd; background:#f8fbff; }
+    .tk-stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+    .tk-stat { min-height:66px; padding:10px 12px; border:1px solid #dce6f2; border-radius:8px; background:#fff; display:flex; align-items:center; gap:10px; }
+    .tk-stat-dot { width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+    .tk-stat strong { display:block; color:#0f172a; font-size:1.08rem; line-height:1.05; }
+    .tk-stat span { display:block; color:#64748b; font-size:.72rem; font-weight:700; margin-top:3px; }
+    .tk-board { display:grid; grid-template-columns:repeat(5,minmax(210px,1fr)); gap:12px; align-items:start; overflow-x:auto; padding-bottom:8px; }
+    .tk-column { min-height:360px; border:1px solid #dbe5f1; border-radius:8px; background:#eef3f9; padding:10px; }
+    .tk-column.is-over { border-color:#2563eb; background:#eaf2ff; }
+    .tk-column-head { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:1px 1px 10px; }
+    .tk-column-name { display:flex; align-items:center; gap:7px; color:#0f172a; font-size:.88rem; font-weight:800; }
+    .tk-column-count { display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:22px; padding:0 6px; border-radius:999px; background:#fff; color:#475569; font-size:.72rem; font-weight:800; border:1px solid #d8e2ef; }
+    .tk-list { display:grid; gap:8px; min-height:280px; }
+    .tk-card { width:100%; text-align:left; padding:11px; border:1px solid #dbe5f1; border-radius:8px; background:#fff; color:#0f172a; cursor:pointer; font:inherit; box-shadow:0 1px 4px rgba(15,23,42,.04); }
+    .tk-card:hover { border-color:#93c5fd; box-shadow:0 6px 16px rgba(15,23,42,.08); }
+    .tk-card.is-dragging { opacity:.5; }
+    .tk-card-id { color:#64748b; font-size:.7rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .tk-card-title { margin:6px 0 8px; font-size:.86rem; font-weight:800; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .tk-tags { display:flex; flex-wrap:wrap; gap:5px; }
+    .tk-tag { display:inline-flex; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:3px 6px; border-radius:999px; background:#f1f5f9; color:#475569; font-size:.66rem; font-weight:800; }
+    .tk-tag.type { background:#fff7ed; color:#c2410c; }
+    .tk-card-meta { display:grid; gap:3px; margin-top:9px; color:#64748b; font-size:.7rem; font-weight:600; line-height:1.3; }
+    .tk-empty { display:grid; place-items:center; min-height:140px; color:#94a3b8; font-size:.78rem; font-weight:700; text-align:center; padding:12px; }
+    .tk-loading { grid-column:1 / -1; min-height:280px; display:grid; place-items:center; color:#64748b; font-weight:700; }
+    dialog.tk-dialog { width:min(680px,calc(100vw - 28px)); max-height:min(760px,calc(100vh - 28px)); padding:0; border:1px solid #dbe5f1; border-radius:8px; box-shadow:0 24px 70px rgba(15,23,42,.25); }
+    dialog.tk-dialog::backdrop { background:rgba(15,23,42,.38); }
+    .tk-dialog-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:16px; border-bottom:1px solid #e5edf6; }
+    .tk-dialog-title { margin:0; color:#0f172a; font-size:1rem; font-weight:800; line-height:1.35; }
+    .tk-dialog-sub { margin-top:4px; color:#64748b; font-size:.76rem; font-weight:700; }
+    .tk-dialog-body { padding:16px; overflow:auto; }
+    .tk-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+    .tk-detail { padding:10px; border:1px solid #dbe5f1; border-radius:7px; background:#f8fbff; }
+    .tk-detail.full { grid-column:1 / -1; }
+    .tk-detail-k { color:#64748b; font-size:.66rem; font-weight:800; letter-spacing:.03em; }
+    .tk-detail-v { margin-top:4px; color:#0f172a; font-size:.82rem; font-weight:700; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+    @media (max-width:720px) {
+      .tk-page { padding:0 0 18px; }
+      .tk-head { margin-bottom:12px; }
+      .tk-subtitle { display:none; }
+      .tk-toolbar { margin-bottom:10px; }
+      .tk-stats { grid-template-columns:repeat(5,minmax(72px,1fr)); gap:5px; overflow-x:auto; padding-bottom:2px; }
+      .tk-stat { min-width:72px; padding:8px; display:block; text-align:center; }
+      .tk-stat-dot { display:inline-block; margin-bottom:4px; }
+      .tk-board { grid-template-columns:repeat(5,minmax(82vw,1fr)); gap:9px; }
+      .tk-column { min-height:calc(100svh - 255px); }
+      .tk-detail-grid { grid-template-columns:1fr; }
+      .tk-detail.full { grid-column:auto; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+  <div id="bt-appbar-holder"></div>
+  <div class="bt-layout" id="bt-layout-holder">
+    <main class="bt-main-content">
+      <section class="tk-page">
+        <header class="tk-head">
+          <div class="tk-title-wrap">
+            <div class="tk-title-icon"><i class="bi bi-kanban" aria-hidden="true"></i></div>
+            <div><h1 class="tk-title">Ticket Kanban</h1><p class="tk-subtitle">ติดตามและจัดการสถานะ Ticket</p></div>
+          </div>
+        </header>
+        <div class="tk-toolbar">
+          <input id="ticketSearch" class="tk-search" type="search" placeholder="ค้นหา Ticket, โครงการ, ผู้รับผิดชอบ" aria-label="ค้นหา Ticket">
+          <button id="searchBtn" class="bt-btn bt-btn-primary" type="button"><i class="bi bi-search" aria-hidden="true"></i> ค้นหา</button>
+          <button id="syncOdooBtn" class="tk-icon-btn" type="button" aria-label="Sync Case จาก Odoo" title="Sync Case จาก Odoo"><i class="bi bi-cloud-arrow-down" aria-hidden="true"></i></button>
+          <button id="refreshBtn" class="tk-icon-btn" type="button" aria-label="รีเฟรชรายการ" title="รีเฟรชรายการ"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
+        </div>
+        <div class="tk-stats" id="kanbanStats" aria-label="สรุป Ticket"></div>
+        <div class="tk-board" id="kanbanBoard"><div class="tk-loading">กำลังโหลด Ticket...</div></div>
+      </section>
+    </main>
+  </div>
+  <dialog class="tk-dialog" id="ticketDialog">
+    <div class="tk-dialog-head">
+      <div><h2 class="tk-dialog-title" id="ticketDialogTitle">รายละเอียด Ticket</h2><div class="tk-dialog-sub" id="ticketDialogSub"></div></div>
+      <button class="tk-icon-btn" type="button" id="closeDialogBtn" aria-label="ปิดรายละเอียด" title="ปิด"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="tk-dialog-body" id="ticketDialogBody"></div>
+  </dialog>
+  <script src="/config.js"></script>
+  <script src="/shared.js"></script>
+  <script src="/assets/betime_solution/js/betime.js"></script>
+  <script>
+    BT.initApp('ticket-kanban.html', 'Ticket Kanban');
+    const columns = [
+      { key:'open', label:'Open', color:'#2563eb' },
+      { key:'process', label:'Process', color:'#f59e0b' },
+      { key:'finish', label:'Finish', color:'#16a34a' },
+      { key:'closed', label:'Closed', color:'#06b6d4' },
+      { key:'cancel', label:'Cancel', color:'#ef4444' },
+    ];
+    let ticketRows = [];
+    let draggedTicketId = '';
+
+    function esc(value) { return String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
+    function authHeaders() { const token = localStorage.getItem('bt_token') || ''; return token ? { Authorization:`Bearer ${token}` } : {}; }
+    function extraOf(ticket) { if (ticket?.extra && typeof ticket.extra === 'object') return ticket.extra; try { return JSON.parse(ticket?.extra || '{}'); } catch { return {}; } }
+    function normalizeStatus(status) {
+      const value = String(status || '').trim().toLowerCase();
+      if (['open','new','draft','pending'].includes(value)) return 'open';
+      if (['process','in_progress','in progress','assigned','sending'].includes(value)) return 'process';
+      if (['finish'].includes(value)) return 'finish';
+      if (['closed','done','resolved','sent','success'].includes(value)) return 'closed';
+      if (['cancel','cancelled','canceled','failed','retry'].includes(value)) return 'cancel';
+      return 'other';
+    }
+    function odooStatusOf(ticket) { const extra = extraOf(ticket); return String(extra.odoo_case_status || ticket.status || '').trim(); }
+    function reporterOf(ticket) {
+      const extra = extraOf(ticket);
+      return String(ticket.requester || extra.requester || extra.requester_name || extra.template_requester || extra.customer || 'ไม่ระบุผู้แจ้ง').trim();
+    }
+    function odooUpdatedAt(ticket) { const extra = extraOf(ticket); return extra.odoo_write_date || extra.write_date || extra.odoo_updated_at || ticket.updated_at || ticket.updatedAt || ''; }
+    function formatDate(value) {
+      const raw = String(value || '').trim();
+      const normalized = raw && !/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw) ? raw.replace(' ', 'T') + 'Z' : raw;
+      const date = new Date(normalized);
+      return Number.isNaN(date.getTime()) ? '-' : new Intl.DateTimeFormat('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}).format(date);
+    }
+    function ticketById(id) { return ticketRows.find((ticket) => String(ticket.id) === String(id)) || null; }
+    function renderStats(groups) {
+      document.getElementById('kanbanStats').innerHTML = columns.map((column) => `
+        <div class="tk-stat"><i class="tk-stat-dot" style="background:${column.color}"></i><div><strong>${groups[column.key].length}</strong><span>${esc(column.label)}</span></div></div>
+      `).join('');
+    }
+    function renderBoard() {
+      const groups = Object.fromEntries(columns.map((column) => [column.key, []]));
+      ticketRows.forEach((ticket) => {
+        const status = normalizeStatus(odooStatusOf(ticket));
+        if (groups[status]) groups[status].push(ticket);
+      });
+      renderStats(groups);
+      document.getElementById('kanbanBoard').innerHTML = columns.map((column) => {
+        const visibleTickets = groups[column.key].slice(0, 200);
+        const cards = visibleTickets.map((ticket) => {
+          const extra = extraOf(ticket);
+          return `<article class="tk-card" draggable="true" data-ticket-id="${esc(ticket.id)}" tabindex="0" role="button" aria-label="เปิดรายละเอียด ${esc(ticket.title || 'Ticket')}">
+            <div class="tk-card-id">${esc(ticket.odoo_ticket_id || ticket.id)}</div>
+            <div class="tk-card-title">${esc(ticket.title || '-')}</div>
+            <div class="tk-tags">${ticket.project ? `<span class="tk-tag">${esc(ticket.project)}</span>` : ''}${ticket.bug_type ? `<span class="tk-tag type">${esc(ticket.bug_type)}</span>` : ''}</div>
+            <div class="tk-card-meta"><div>${esc(reporterOf(ticket))}</div><div>${formatDate(ticket.updated_at || ticket.updatedAt)}</div></div>
+          </article>`;
+        }).join('') || '<div class="tk-empty">ไม่มี Ticket</div>';
+        const more = groups[column.key].length > visibleTickets.length ? `<div class="tk-empty">แสดง ${visibleTickets.length} จาก ${groups[column.key].length} รายการล่าสุด</div>` : '';
+        return `<section class="tk-column" data-status="${column.key}"><div class="tk-column-head"><div class="tk-column-name"><i class="tk-stat-dot" style="background:${column.color}"></i>${column.label}</div><span class="tk-column-count">${groups[column.key].length}</span></div><div class="tk-list">${cards}${more}</div></section>`;
+      }).join('');
+      bindBoardEvents();
+    }
+    function bindBoardEvents() {
+      document.querySelectorAll('.tk-card').forEach((card) => {
+        card.addEventListener('dragstart', (event) => { draggedTicketId = card.dataset.ticketId || ''; card.classList.add('is-dragging'); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', draggedTicketId); });
+        card.addEventListener('dragend', () => { draggedTicketId = ''; card.classList.remove('is-dragging'); document.querySelectorAll('.tk-column').forEach((column) => column.classList.remove('is-over')); });
+        card.addEventListener('click', () => openTicketDialog(card.dataset.ticketId));
+        card.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openTicketDialog(card.dataset.ticketId); } });
+      });
+      document.querySelectorAll('.tk-column').forEach((column) => {
+        column.addEventListener('dragover', (event) => { event.preventDefault(); column.classList.add('is-over'); event.dataTransfer.dropEffect = 'move'; });
+        column.addEventListener('dragleave', () => column.classList.remove('is-over'));
+        column.addEventListener('drop', async (event) => { event.preventDefault(); column.classList.remove('is-over'); await moveTicket(event.dataTransfer.getData('text/plain') || draggedTicketId, column.dataset.status); });
+      });
+    }
+    async function moveTicket(id, status) {
+      const ticket = ticketById(id);
+      if (!ticket || normalizeStatus(ticket.status) === status) return;
+      try {
+        const response = await fetch(`/api/helpdesk/tickets/${encodeURIComponent(id)}`, { method:'PUT', headers:{ 'Content-Type':'application/json', ...authHeaders() }, body:JSON.stringify({ status, sync_odoo:true }) });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.error || 'อัปเดตสถานะไม่สำเร็จ');
+        ticketRows = ticketRows.map((item) => {
+          if (String(item.id) !== String(id)) return item;
+          const updated = { ...item, ...(data.data || {}), status };
+          const extra = extraOf(updated);
+          updated.extra = { ...extra, odoo_case_status: status, kanban_status: status };
+          updated.updated_at = new Date().toISOString();
+          updated.updatedAt = updated.updated_at;
+          return updated;
+        });
+        renderBoard();
+        BT.notify('อัปเดตสถานะ Ticket แล้ว', 'success');
+      } catch (error) { BT.notify(error.message || 'อัปเดตสถานะไม่สำเร็จ', 'error'); }
+    }
+    function detail(label, value, full = false) { return `<div class="tk-detail${full ? ' full' : ''}"><div class="tk-detail-k">${esc(label)}</div><div class="tk-detail-v">${esc(value || '-')}</div></div>`; }
+    function openTicketDialog(id) {
+      const ticket = ticketById(id); if (!ticket) return;
+      const extra = extraOf(ticket); const column = columns.find((item) => item.key === normalizeStatus(odooStatusOf(ticket)));
+      document.getElementById('ticketDialogTitle').textContent = ticket.title || 'Ticket';
+      document.getElementById('ticketDialogSub').textContent = ticket.odoo_ticket_id || ticket.id || '';
+      document.getElementById('ticketDialogBody').innerHTML = `<div class="tk-detail-grid">
+        ${detail('สถานะ', column?.label || 'Other')}${detail('ผู้แจ้งเรื่อง', reporterOf(ticket))}
+        ${detail('โครงการ', ticket.project || extra.project_name || extra.project_code)}${detail('Sub Project', extra.subproject_name || extra.subproject_code)}
+        ${detail('ประเภทปัญหา', ticket.bug_type || extra.case_type_name || extra.problem_type)}${detail('อัปเดตล่าสุด', formatDate(ticket.updated_at || ticket.updatedAt))}
+        ${detail('รายละเอียดปัญหา', ticket.description || extra.case_desc || '', true)}
+      </div>`;
+      const dialog = document.getElementById('ticketDialog'); if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open','');
+    }
+    function closeTicketDialog() { const dialog = document.getElementById('ticketDialog'); if (typeof dialog.close === 'function') dialog.close(); else dialog.removeAttribute('open'); }
+    async function loadTickets() {
+      const board = document.getElementById('kanbanBoard'); board.innerHTML = '<div class="tk-loading">กำลังโหลด Ticket...</div>';
+      const query = document.getElementById('ticketSearch').value.trim();
+      try {
+        const search = new URLSearchParams({ kanban: '1' });
+        if (query) search.set('q', query);
+        const response = await fetch(`/api/helpdesk/tickets?${search.toString()}`, { headers:authHeaders() });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.error || 'โหลด Ticket ไม่สำเร็จ');
+        ticketRows = Array.isArray(data.data) ? data.data : [];
+        renderBoard();
+      } catch (error) { board.innerHTML = `<div class="tk-loading" style="color:#b91c1c">${esc(error.message || 'โหลด Ticket ไม่สำเร็จ')}</div>`; }
+    }
+    async function syncOdooCases() {
+      const button = document.getElementById('syncOdooBtn');
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/helpdesk/kanban/sync', { method:'POST', headers:{ 'Content-Type':'application/json', ...authHeaders() }, body:JSON.stringify({ limit:30000, incremental:true }) });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.error || 'Sync Odoo ไม่สำเร็จ');
+        await loadTickets();
+        BT.notify(`Sync Odoo แล้ว ${data.imported || 0} รายการใหม่, อัปเดต ${data.updated || 0} รายการ`, 'success');
+      } catch (error) { BT.notify(error.message || 'Sync Odoo ไม่สำเร็จ', 'error'); }
+      finally { button.disabled = false; }
+    }
+    document.getElementById('searchBtn').addEventListener('click', loadTickets);
+    document.getElementById('syncOdooBtn').addEventListener('click', syncOdooCases);
+    document.getElementById('refreshBtn').addEventListener('click', syncOdooCases);
+    document.getElementById('ticketSearch').addEventListener('keydown', (event) => { if (event.key === 'Enter') loadTickets(); });
+    document.getElementById('closeDialogBtn').addEventListener('click', closeTicketDialog);
+    document.getElementById('ticketDialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) closeTicketDialog(); });
+    document.addEventListener('DOMContentLoaded', syncOdooCases);
+  </script>
+</body>
+</html>

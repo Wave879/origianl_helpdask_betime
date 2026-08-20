@@ -1,0 +1,28 @@
+{
+  "_comment": "Copy this to your Frappe site's site_config.json and fill in the values. You can also set matching environment variables instead.",
+
+  "azure_openai_endpoint": "https://<your-resource>.openai.azure.com/",
+  "azure_openai_key": "<your-azure-openai-key>",
+  "azure_openai_api_version": "2024-12-01-preview",
+  "azure_openai_deployment": "<your-chat-deployment>",
+  "azure_ai_models_chat_url": "https://<your-resource>.services.ai.azure.com/models/chat/completions",
+  "azure_ai_models_chat_key": "<your-azure-ai-models-key>",
+  "azure_ai_models_chat_model": "<optional-model-name>",
+  "azure_openai_embedding_deployment": "text-embedding-3-large",
+
+  "azure_speech_key": "<your-azure-speech-key>",
+  "azure_speech_region": "southeastasia",
+
+  "azure_doc_intelligence_endpoint": "https://<your-resource>.cognitiveservices.azure.com/",
+  "azure_doc_intelligence_key": "<your-doc-intelligence-key>",
+
+  "azure_search_endpoint": "https://<your-search>.search.windows.net",
+  "azure_search_key": "<your-search-admin-key>",
+  "azure_search_index": "betime-knowledge",
+
+  "azure_tenant_id": "<your-azure-tenant-id>",
+  "azure_client_id": "<your-app-registration-client-id>",
+  "azure_client_secret": "<your-app-registration-secret>",
+
+  "azure_sharepoint_site_id": "<sharepoint-site-id>"
+}

@@ -1,0 +1,638 @@
+﻿<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ประกาศบริษัท — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .ca-grid {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .ca-grid.readonly { grid-template-columns: 1fr; }
+
+    .ca-panel-title {
+      margin: 0 0 12px;
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: var(--bt-text);
+    }
+
+    .ca-create-top-btn {
+      display: none;
+    }
+
+    .ca-create-top-btn.show {
+      display: inline-flex;
+    }
+
+    .ca-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ca-label {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--bt-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .ca-input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--bt-border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--bt-text);
+    }
+    .ca-input:focus {
+      outline: none;
+      border-color: var(--bt-primary);
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.14);
+    }
+
+    .ca-preview-wrap {
+      margin-top: 2px;
+      border: 1px dashed var(--bt-border);
+      border-radius: 10px;
+      padding: 8px;
+      display: none;
+      background: #f8fafc;
+    }
+    .ca-preview-wrap img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .ca-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .ca-item {
+      border: 1px solid var(--bt-border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+    }
+    .ca-item.unread {
+      border-color: #fed7aa;
+      background: #fffaf4;
+    }
+
+    .ca-post-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .ca-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .ca-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .ca-author-text { min-width: 0; }
+    .ca-author-text strong {
+      display: block;
+      color: var(--bt-text);
+      font-size: 0.9rem;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ca-author-text small {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+      color: var(--bt-muted);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    .ca-level {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .ca-level.info { background: #3b82f6; }
+    .ca-level.warning { background: #f59e0b; }
+    .ca-level.ok { background: #10b981; }
+
+    .ca-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .ca-actions button,
+    .ca-link-btn,
+    .ca-like-btn {
+      border: 1px solid var(--bt-border);
+      background: #fff;
+      color: #334155;
+      border-radius: 8px;
+      height: 30px;
+      padding: 0 10px;
+      font-size: 0.77rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .ca-actions button:hover,
+    .ca-link-btn:hover,
+    .ca-like-btn:hover { background: #f8fafc; }
+
+    .ca-post-content {
+      padding-left: 48px;
+    }
+    .ca-title {
+      margin: 0;
+      font-size: 1.02rem;
+      color: var(--bt-text);
+      font-weight: 800;
+      line-height: 1.4;
+    }
+    .ca-meta {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      color: var(--bt-muted);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .ca-media {
+      margin-top: 10px;
+      border: 1px solid var(--bt-border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+    .ca-media img {
+      width: 100%;
+      max-height: 360px;
+      object-fit: cover;
+      display: block;
+    }
+    .ca-link-preview {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      max-width: 100%;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ca-reactions {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-top: 1px solid var(--bt-border);
+      padding-top: 10px;
+      flex-wrap: wrap;
+    }
+    .ca-like-btn.active {
+      color: #1d4ed8;
+      border-color: #93c5fd;
+      background: #eff6ff;
+    }
+    .ca-like-count {
+      font-size: 0.78rem;
+      color: var(--bt-muted);
+      font-weight: 700;
+    }
+
+    .ca-empty {
+      text-align: center;
+      color: var(--bt-muted);
+      border: 1px dashed var(--bt-border);
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 0.9rem;
+      background: #f8fafc;
+      line-height: 1.55;
+    }
+    .ca-empty strong {
+      display: block;
+      color: var(--bt-text);
+      margin-bottom: 4px;
+      font-size: 0.96rem;
+    }
+    .ca-loading {
+      display: grid;
+      gap: 12px;
+    }
+    .ca-loading-row {
+      height: 94px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #f1f5f9, #fff, #f1f5f9);
+      background-size: 180% 100%;
+      animation: caShimmer 1.2s ease-in-out infinite;
+    }
+    @keyframes caShimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 180% 50%; }
+    }
+
+    @media (max-width: 980px) {
+      .ca-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .ca-post-content { padding-left: 0; }
+      .ca-post-head { align-items: flex-start; }
+      .ca-actions { width: 100%; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-megaphone"></i> ประกาศบริษัท</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="create-post-btn" class="bt-btn bt-btn-primary bt-btn-sm ca-create-top-btn" onclick="openCreatePost()"><i class="bi bi-plus-lg"></i> สร้างประกาศ</button>
+        <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="markAllRead()"><i class="bi bi-check2-all"></i> อ่านแล้วทั้งหมด</button>
+      </div>
+    </div>
+
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));margin-bottom:16px">
+      <div class="bt-card">
+        <div class="bt-card-title">ทั้งหมด</div>
+        <div class="bt-card-value" id="k-total">0</div>
+        <div class="bt-card-sub">ประกาศ</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">ยังไม่อ่าน</div>
+        <div class="bt-card-value" id="k-unread" style="color:var(--bt-danger)">0</div>
+        <div class="bt-card-sub">รายการ</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">ปักหมุด</div>
+        <div class="bt-card-value" id="k-warning" style="color:var(--bt-warning)">0</div>
+        <div class="bt-card-sub">สำคัญ</div>
+      </div>
+    </div>
+
+    <div class="ca-grid" id="ca-grid">
+      <div class="bt-card" id="ca-create-card">
+        <h3 class="ca-panel-title">สร้างประกาศใหม่</h3>
+        <form class="ca-form" onsubmit="addAnnouncement(event)">
+          <div>
+            <label class="ca-label">หัวข้อประกาศ</label>
+            <input id="f-title" class="ca-input" required placeholder="เช่น แจ้งวันหยุดพิเศษ">
+          </div>
+          <div>
+            <label class="ca-label">ระดับ</label>
+            <select id="f-level" class="ca-input">
+              <option value="General">ทั่วไป</option>
+              <option value="HR">HR</option>
+              <option value="IT">IT</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="ca-label">กลุ่มเป้าหมาย</label>
+            <input id="f-target-dept" class="ca-input" placeholder="all หรือชื่อแผนก" value="all">
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-weight:800;color:#334155;font-size:.86rem">
+            <input id="f-pinned" type="checkbox" style="width:16px;height:16px">
+            ปักหมุดเป็นประกาศสำคัญ
+          </label>
+          <div>
+            <label class="ca-label">รายละเอียด</label>
+            <textarea id="f-note" rows="4" class="ca-input" placeholder="ข้อความประกาศ"></textarea>
+          </div>
+          <div>
+            <label class="ca-label">รูปภาพ (อัปโหลด)</label>
+            <input id="f-image-file" type="file" accept="image/*" class="ca-input" onchange="handleImageFile(event)">
+          </div>
+          <div>
+            <label class="ca-label">ไฟล์หรือ URL ที่ต้องการแนบ (ถ้ามี)</label>
+            <input id="f-link-url" class="ca-input" placeholder="https://... หรือ ลิงก์ไฟล์เอกสาร">
+          </div>
+          <div>
+            <label class="ca-label">หรือใส่ลิงก์รูปภาพ</label>
+            <input id="f-image-url" class="ca-input" placeholder="https://example.com/image.jpg" oninput="handleImageUrlPreview()">
+          </div>
+          <div id="ca-image-preview-wrap" class="ca-preview-wrap">
+            <img id="ca-image-preview" alt="preview">
+          </div>
+          <button type="submit" class="bt-btn bt-btn-primary"><i class="bi bi-plus-lg"></i> เพิ่มประกาศ</button>
+        </form>
+      </div>
+
+      <div class="bt-card">
+        <div class="bt-section-header">
+          <h2>รายการประกาศ</h2>
+          <small style="color:var(--bt-muted)">เชื่อม Navbar อัตโนมัติ</small>
+        </div>
+        <div id="ca-list" class="ca-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('company-announcements.html', 'Company Announcements');
+
+  const token = () => localStorage.getItem('bt_token');
+  const apiReq = (path, opts={}) => fetch('/api'+path, {
+    headers: {'Authorization':'Bearer '+token(), 'Content-Type':'application/json'}, ...opts
+  });
+  const role = (localStorage.getItem('bt_role') || '').toLowerCase();
+  const isSuperAdmin = role === 'super_admin' || role === 'superadmin' || role === 'ceo' || role === 'manager';
+  const currentUser = JSON.parse(localStorage.getItem('bt_user') || '{}');
+  const actorId = String(currentUser.email || currentUser.name || currentUser.full_name || 'guest').toLowerCase();
+  const readKey = `bt_company_announcements_read::${actorId}`;
+
+  let items = [];
+  let currentImageDataUrl = '';
+  function esc(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+  function parseAnnouncementContent(content = '') {
+    const lines = String(content || '').split(/\r?\n/);
+    let imageUrl = '';
+    let linkUrl = '';
+    const body = [];
+    for (const line of lines) {
+      const image = line.match(/^(?:\[รูปภาพแนบ\]|\[IMAGE\])\s*(.+)$/);
+      const link = line.match(/^(?:\[ลิงก์แนบ\]|\[LINK\])\s*(.+)$/);
+      if (image) {
+        imageUrl = image[1].trim();
+      } else if (link) {
+        linkUrl = link[1].trim();
+      } else {
+        body.push(line);
+      }
+    }
+    return { text: body.join('\n').trim(), imageUrl, linkUrl };
+  }
+  function getReadAnnouncements() {
+    try { return new Set(JSON.parse(localStorage.getItem(readKey) || '[]')); } catch { return new Set(); }
+  }
+  function saveReadAnnouncements(ids) {
+    try { localStorage.setItem(readKey, JSON.stringify(Array.from(ids))); } catch {}
+  }
+  function applyReadState(rows = []) {
+    const read = getReadAnnouncements();
+    return rows.map(row => ({ ...row, unread: Boolean(row.is_pinned) && !read.has(String(row.id || '')) }));
+  }
+
+  function renderKpi() {
+    document.getElementById('k-total').textContent   = items.length;
+    document.getElementById('k-unread').textContent  = items.filter(x => x.unread).length;
+    document.getElementById('k-warning').textContent = items.filter(x => x.is_pinned).length;
+  }
+
+  function renderList() {
+    const el = document.getElementById('ca-list');
+    if (!items.length) {
+      el.innerHTML = `
+        <div class="ca-empty">
+          <strong>ยังไม่มีประกาศ</strong>
+          ประกาศใหม่จากผู้บริหารหรือทีมงานจะแสดงที่นี่ และจะไปโผล่ในหน้า Home อัตโนมัติ
+        </div>
+      `;
+      return;
+    }
+    el.innerHTML = items.map(it => {
+      const author   = it.author_name || it.created_by || 'BETIME Team';
+      const initials = author.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'BT';
+      const timeStr  = it.created_at ? new Date(it.created_at).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}) : '-';
+      const canEdit  = isSuperAdmin;
+      const content = parseAnnouncementContent(it.content || '');
+      return `
+      <article class="ca-item ${it.is_pinned ? 'unread' : ''}">
+        <div class="ca-post-head">
+          <div class="ca-author">
+            <span class="ca-avatar">${esc(initials)}</span>
+            <span class="ca-author-text">
+              <strong>${esc(author)}</strong>
+              <small><span class="ca-level ${it.category==='HR'?'warning':'info'}"></span>${esc(timeStr)}</small>
+            </span>
+          </div>
+          ${canEdit ? `<div class="ca-actions"><button onclick="removeAnnouncement('${esc(it.id)}')" style="color:#b91c1c"><i class="bi bi-trash"></i> ลบ</button></div>` : ''}
+        </div>
+        <div class="ca-post-content">
+          <h4 class="ca-title">${esc(it.title || '-')}</h4>
+          <div class="ca-meta">${esc(content.text || '-')}</div>
+          ${content.imageUrl ? `<div class="ca-media"><img src="${esc(content.imageUrl)}" alt="${esc(it.title || 'announcement image')}"></div>` : ''}
+          ${content.linkUrl ? `<a class="ca-link-preview" href="${esc(content.linkUrl)}" target="_blank" rel="noopener"><i class="bi bi-link-45deg"></i>${esc(content.linkUrl)}</a>` : ''}
+          <div class="ca-reactions">
+            <span class="bt-badge bt-badge-info" style="font-size:0.75rem">${esc(it.category||'General')}</span>
+            ${it.target_dept && it.target_dept !== 'all' ? `<span class="bt-badge bt-badge-grey" style="font-size:0.75rem">${esc(it.target_dept)}</span>` : ''}
+            ${it.is_pinned ? '<span class="bt-badge bt-badge-orange" style="font-size:0.75rem"><i class="bi bi-pin-fill"></i> ปักหมุด</span>' : ''}
+            ${it.unread ? '<span class="bt-badge bt-badge-danger" style="font-size:0.75rem">ยังไม่อ่าน</span>' : ''}
+          </div>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  function renderAll() { renderKpi(); renderList(); }
+
+  async function addAnnouncement(ev) {
+    if (!isSuperAdmin) { BT.notify('เฉพาะ Admin/Manager เท่านั้น', 'warning'); return; }
+    ev.preventDefault();
+    const title   = document.getElementById('f-title').value.trim();
+    const bodyText = document.getElementById('f-note').value.trim();
+    const category = document.getElementById('f-level').value;
+    const targetDept = document.getElementById('f-target-dept').value.trim() || 'all';
+    const isPinned = document.getElementById('f-pinned').checked;
+    const linkUrl = document.getElementById('f-link-url').value.trim();
+    const imageUrl = document.getElementById('f-image-url').value.trim() || currentImageDataUrl;
+    if (!title) return;
+    const contentParts = [bodyText];
+    if (linkUrl) contentParts.push(`[LINK] ${linkUrl}`);
+    if (imageUrl) contentParts.push(`[IMAGE] ${imageUrl}`);
+    const content = contentParts.filter(Boolean).join('\n');
+    try {
+      const res = await apiReq('/announcements', {
+        method:'POST',
+        body: JSON.stringify({ title, content, category, target_dept: targetDept, is_pinned: isPinned })
+      });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      ev.target.reset();
+      document.getElementById('f-target-dept').value = 'all';
+      currentImageDataUrl = '';
+      setImagePreview('');
+      BT.notify('เพิ่มประกาศเรียบร้อยแล้ว', 'success');
+      loadAnnouncements();
+    } catch(e) { BT.notify('เกิดข้อผิดพลาด: '+e.message, 'danger'); }
+  }
+
+  async function removeAnnouncement(id) {
+    if (!confirm('ลบประกาศนี้?')) return;
+    try {
+      const res = await apiReq('/announcements/'+id, { method:'DELETE' });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      BT.notify('ลบแล้ว', 'success');
+      loadAnnouncements();
+    } catch(e) { BT.notify('ลบไม่สำเร็จ: '+e.message, 'danger'); }
+  }
+
+  function openCreatePost() {
+    if (!isSuperAdmin) { BT.notify('เฉพาะ Admin/Manager เท่านั้น', 'warning'); return; }
+    const card = document.getElementById('ca-create-card');
+    if (card) { card.scrollIntoView({behavior:'smooth',block:'start'}); }
+    setTimeout(() => document.getElementById('f-title')?.focus(), 220);
+  }
+
+  function setImagePreview(src = '') {
+    const wrap = document.getElementById('ca-image-preview-wrap');
+    const img = document.getElementById('ca-image-preview');
+    if (!wrap || !img) return;
+    if (!src) {
+      wrap.style.display = 'none';
+      img.removeAttribute('src');
+      currentImageDataUrl = '';
+      return;
+    }
+    img.src = src;
+    wrap.style.display = 'block';
+  }
+
+  function handleImageFile(event) {
+    const file = event?.target?.files?.[0];
+    if (!file) {
+      setImagePreview('');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      currentImageDataUrl = String(reader.result || '');
+      setImagePreview(currentImageDataUrl);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleImageUrlPreview() {
+    const value = String(document.getElementById('f-image-url')?.value || '').trim();
+    if (value) currentImageDataUrl = '';
+    setImagePreview(/^https?:\/\//i.test(value) ? value : '');
+  }
+
+  function markAllRead() {
+    const read = getReadAnnouncements();
+    items.forEach(it => read.add(String(it.id || '')));
+    saveReadAnnouncements(read);
+    items = applyReadState(items);
+    renderAll();
+    BT.refreshAnnouncements?.();
+    BT.notify('อ่านแล้วทั้งหมด', 'success');
+  }
+
+  async function loadAnnouncements() {
+    const list = document.getElementById('ca-list');
+    if (list) {
+      list.innerHTML = '<div class="ca-loading"><div class="ca-loading-row"></div><div class="ca-loading-row"></div><div class="ca-loading-row"></div></div>';
+    }
+    try {
+      const res = await apiReq('/announcements');
+      const d = await res.json();
+      items = d.ok && d.data?.length ? applyReadState(d.data) : [];
+      try {
+        localStorage.setItem('bt_company_announcements', JSON.stringify(items.slice(0, 12).map(it => ({
+          id: it.id || '',
+          title: it.title || '-',
+          content: it.content || '',
+          text: it.content || it.title || '',
+          author: it.author_name || it.created_by || 'BETIME Team',
+          initials: String(it.author_name || it.created_by || 'BT').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'BT',
+          time: it.created_at ? new Date(it.created_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-',
+          level: it.is_pinned ? 'warning' : 'info',
+          unread: Boolean(it.is_pinned),
+        }))));
+      } catch {}
+    } catch(e) {
+      items = [];
+      if (list) {
+        list.innerHTML = `
+          <div class="ca-empty">
+            <strong>โหลดประกาศไม่ได้</strong>
+            ตรวจสอบการเชื่อมต่อหรือเข้าสู่ระบบใหม่ แล้วลองเปิดหน้านี้อีกครั้ง
+          </div>
+        `;
+      }
+      renderKpi();
+      return;
+    }
+    renderAll();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!isSuperAdmin) {
+      const createCard = document.getElementById('ca-create-card');
+      if (createCard) createCard.style.display = 'none';
+      const btn = document.getElementById('create-post-btn');
+      if (btn) btn.classList.remove('show');
+    } else {
+      const btn = document.getElementById('create-post-btn');
+      if (btn) btn.classList.add('show');
+    }
+    loadAnnouncements();
+  });
+</script>
+
+</script>
+</body>
+</html>

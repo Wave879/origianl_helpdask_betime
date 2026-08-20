@@ -1,0 +1,37 @@
+{
+  "name": "betime",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "node scripts/bundle-worker.mjs",
+    "build:watch": "node scripts/bundle-worker.mjs --watch",
+    "cf:pages:pg": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-pages-postgres.ps1",
+    "cf:pages:pg:deploy": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-pages-postgres.ps1 -Deploy",
+    "local:pages": "powershell -ExecutionPolicy Bypass -File ./scripts/run-local-pages.ps1 -Backend pg",
+    "local:pages:pg": "powershell -ExecutionPolicy Bypass -File ./scripts/run-local-pages.ps1 -Backend pg",
+    "knowledge:import-employees": "python ./scripts/import_employee_excel_to_knowledge.py",
+    "users:import-employees": "python ./scripts/import_employee_excel_to_users.py",
+    "audit:quality": "node ./scripts/site-quality-audit.mjs",
+    "docker:up": "docker-compose up -d --build",
+    "docker:down": "docker-compose down",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:migrate:status": "node scripts/migrate.mjs --status",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "pg": "^8.20.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project CO. - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-building"></i> Project CO.</h2>
+      <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="window.location='/project-co/dashboard'"><i class="bi bi-kanban"></i> Dashboard</button>
+    </div>
+
+    <!-- KPI row -->
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:24px">
+      <div class="bt-card">
+        <div class="bt-card-title">โครงการทั้งหมด</div>
+        <div class="bt-card-value" id="kpi-total">—</div>
+        <div class="bt-card-sub">รายการ</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">กำลังดำเนินการ</div>
+        <div class="bt-card-value" id="kpi-active" style="color:var(--bt-accent)">—</div>
+        <div class="bt-card-sub">โครงการ</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">เสร็จสิ้นแล้ว</div>
+        <div class="bt-card-value" id="kpi-done" style="color:var(--bt-success)">—</div>
+        <div class="bt-card-sub">โครงการ</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">งบประมาณรวม</div>
+        <div class="bt-card-value" id="kpi-budget" style="color:var(--bt-warning)">—</div>
+        <div class="bt-card-sub">ล้านบาท</div>
+      </div>
+    </div>
+
+    <!-- Filter row -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+      <input id="search-input" type="text" placeholder="ค้นหาโครงการ..." class="bt-input" style="flex:1;min-width:200px" oninput="filterTable()">
+      <select id="filter-status" class="bt-input" style="width:160px" onchange="filterTable()">
+        <option value="">ทุกสถานะ</option>
+        <option value="Active">Active</option>
+        <option value="Planning">Planning</option>
+        <option value="On Hold">On Hold</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="bt-card" style="padding:0;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table class="bt-table" id="co-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ชื่อโครงการ</th>
+              <th>แผนก</th>
+              <th>ผู้รับผิดชอบ</th>
+              <th>งบประมาณ (บาท)</th>
+              <th>วันเริ่ม</th>
+              <th>กำหนดเสร็จ</th>
+              <th>ความคืบหน้า</th>
+              <th>สถานะ</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="co-tbody">
+            <tr><td colspan="10" style="text-align:center;color:#888;padding:40px">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="co-modal" class="bt-modal" style="display:none">
+  <div class="bt-modal-content" style="max-width:720px">
+    <div class="bt-modal-header">
+      <h3 id="modal-title">เพิ่มโครงการใหม่</h3>
+      <button class="bt-modal-close" onclick="closeModal()">×</button>
+    </div>
+    <form id="co-form" onsubmit="saveProject(event)">
+      <input type="hidden" id="f-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label class="bt-label">ชื่อโครงการ</label>
+          <input id="f-name" class="bt-input" required>
+        </div>
+        <div>
+          <label class="bt-label">แผนก</label>
+          <input id="f-dept" class="bt-input" required>
+        </div>
+        <div>
+          <label class="bt-label">ผู้รับผิดชอบ</label>
+          <input id="f-owner" class="bt-input" required>
+        </div>
+        <div>
+          <label class="bt-label">งบประมาณ</label>
+          <input id="f-budget" type="number" class="bt-input" required>
+        </div>
+        <div>
+          <label class="bt-label">สถานะ</label>
+          <select id="f-status" class="bt-input">
+            <option>Active</option>
+            <option>Planning</option>
+            <option>On Hold</option>
+            <option>Completed</option>
+          </select>
+        </div>
+        <div>
+          <label class="bt-label">ความคืบหน้า (%)</label>
+          <input id="f-progress" type="number" class="bt-input" min="0" max="100" required>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <label class="bt-label">รายละเอียด</label>
+        <textarea id="f-note" class="bt-input" rows="4"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+        <button type="button" class="bt-btn bt-btn-secondary" onclick="closeModal()">ยกเลิก</button>
+        <button type="submit" class="bt-btn bt-btn-primary">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.bt-label { display:block; font-size:0.78rem; font-weight:600; color:var(--bt-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em; }
+.bt-input { width:100%; padding:8px 12px; border:1.5px solid var(--bt-border); border-radius:8px; font-size:0.88rem; font-family:inherit; background:#fff; box-sizing:border-box; }
+.bt-input:focus { outline:none; border-color:var(--bt-primary); }
+textarea.bt-input { resize:vertical; }
+</style>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('project-co', 'Project CO.');
+
+const PROJECTS_DATA = [];
+
+let projects = JSON.parse(localStorage.getItem('bt_co_projects') || 'null') || PROJECTS_DATA;
+
+function saveLocal() { localStorage.setItem('bt_co_projects', JSON.stringify(projects)); }
+
+function renderKPI() {
+  document.getElementById('kpi-total').textContent  = projects.length;
+  document.getElementById('kpi-active').textContent = projects.filter(p=>p.status==='Active').length;
+  document.getElementById('kpi-done').textContent   = projects.filter(p=>p.status==='Completed').length;
+  const total = projects.reduce((s,p)=>s+Number(p.budget||0),0);
+  document.getElementById('kpi-budget').textContent = (total/1000000).toFixed(2);
+}
+
+const STATUS_COLOR = { Active:'blue', Planning:'grey', 'On Hold':'orange', Completed:'green' };
+
+function renderTable(list) {
+  const tbody = document.getElementById('co-tbody');
+  if (!list.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#888;padding:40px">ไม่พบข้อมูล</td></tr>'; return; }
+  tbody.innerHTML = list.map((p,i) => `
+    <tr>
+      <td style="color:var(--bt-muted);font-size:0.8rem">${i+1}</td>
+      <td><strong>${p.name}</strong>${p.note?`<br><span style="font-size:0.75rem;color:var(--bt-muted)">${p.note}</span>`:''}</td>
+      <td>${p.dept}</td>
+      <td>${p.owner}</td>
+      <td>${Number(p.budget).toLocaleString()}</td>
+      <td style="font-size:0.82rem">${p.start||'-'}</td>
+      <td style="font-size:0.82rem">${p.end||'-'}</td>
+      <td style="min-width:100px">
+        <div class="bt-progress"><div class="bt-progress-bar ${p.progress>=100?'success':p.progress>=60?'':'warning'}" style="width:${p.progress}%"></div></div>
+        <span style="font-size:0.72rem;color:var(--bt-muted)">${p.progress}%</span>
+      </td>
+      <td><span class="bt-badge bt-badge-${STATUS_COLOR[p.status]||'grey'}">${p.status}</span></td>
+      <td>
+        <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="openModal('edit',${p.id})" style="padding:4px 10px;font-size:0.75rem">แก้ไข</button>
+        <button class="bt-btn bt-btn-sm" onclick="deleteProject(${p.id})" style="padding:4px 10px;font-size:0.75rem;background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;cursor:pointer;margin-left:4px">ลบ</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const s = document.getElementById('filter-status').value;
+  const list = projects.filter(p =>
+    (!q || p.name.toLowerCase().includes(q) || p.dept.toLowerCase().includes(q) || p.owner.toLowerCase().includes(q)) &&
+    (!s || p.status === s)
+  );
+  renderTable(list);
+}
+
+function openModal(mode, id) {
+  const modal = document.getElementById('co-modal');
+  document.getElementById('modal-title').textContent = mode==='edit' ? 'แก้ไขโครงการ' : 'เพิ่มโครงการใหม่';
+  if (mode === 'edit') {
+    const p = projects.find(x=>x.id===id);
+    if (!p) return;
+    document.getElementById('f-id').value       = p.id;
+    document.getElementById('f-name').value     = p.name;
+    document.getElementById('f-dept').value     = p.dept;
+    document.getElementById('f-owner').value    = p.owner;
+    document.getElementById('f-budget').value   = p.budget;
+    document.getElementById('f-status').value   = p.status;
+    document.getElementById('f-progress').value = p.progress;
+    document.getElementById('f-note').value     = p.note || '';
+  } else {
+    document.getElementById('co-form').reset();
+    document.getElementById('f-id').value = '';
+    document.getElementById('f-progress').value = 0;
+  }
+  modal.style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('co-modal').style.display = 'none'; }
+
+function saveProject(ev) {
+  ev.preventDefault();
+  const id = Number(document.getElementById('f-id').value || Date.now());
+  const item = {
+    id,
+    name: document.getElementById('f-name').value,
+    dept: document.getElementById('f-dept').value,
+    owner: document.getElementById('f-owner').value,
+    budget: Number(document.getElementById('f-budget').value),
+    status: document.getElementById('f-status').value,
+    progress: Number(document.getElementById('f-progress').value),
+    note: document.getElementById('f-note').value,
+  };
+  const idx = projects.findIndex(p => p.id === id);
+  if (idx >= 0) projects[idx] = item; else projects.unshift(item);
+  saveLocal();
+  closeModal();
+  renderKPI();
+  filterTable();
+}
+
+function deleteProject(id) {
+  if (!confirm('ยืนยันการลบโครงการนี้?')) return;
+  projects = projects.filter(p => p.id !== id);
+  saveLocal();
+  renderKPI();
+  filterTable();
+}
+
+renderKPI();
+filterTable();
+</script>
+</body>
+</html>

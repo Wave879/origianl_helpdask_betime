@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT Requests — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .req-grid { display:grid; grid-template-columns:400px 1fr; gap:20px; align-items:start; }
+    .ticket-item { border:1px solid var(--bt-border); border-radius:10px; padding:14px 16px; background:#fff; margin-bottom:10px; cursor:pointer; transition:box-shadow 0.15s; }
+    .ticket-item:hover { box-shadow:var(--bt-shadow); }
+    .ticket-item.selected { border-color:var(--bt-primary); box-shadow:0 0 0 2px rgba(234,88,12,0.15); }
+    .ticket-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+    .ticket-id { font-size:0.75rem; color:var(--bt-muted); font-weight:700; }
+    .ticket-ttl { font-size:0.9rem; font-weight:700; margin:4px 0 6px; }
+    .ticket-meta { font-size:0.78rem; color:var(--bt-muted); display:flex; gap:12px; flex-wrap:wrap; }
+    .detail-card { background:#fff; border:1px solid var(--bt-border); border-radius:var(--bt-radius); padding:20px; }
+    .detail-empty { text-align:center; padding:48px 20px; color:var(--bt-muted); font-size:0.9rem; }
+    .timeline { margin-top:16px; padding-top:16px; border-top:1px solid var(--bt-border); }
+    .tl-item { display:flex; gap:12px; margin-bottom:14px; }
+    .tl-dot { width:10px; height:10px; border-radius:50%; background:var(--bt-primary); flex-shrink:0; margin-top:5px; }
+    .tl-body { font-size:0.85rem; }
+    .tl-time { font-size:0.75rem; color:var(--bt-muted); }
+    .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .fc { padding:4px 12px; border-radius:999px; border:1px solid var(--bt-border); background:#fff; font-size:0.8rem; cursor:pointer; font-family:inherit; font-weight:600; color:var(--bt-muted); }
+    .fc.active { background:var(--bt-primary); color:#fff; border-color:var(--bt-primary); }
+    @media(max-width:900px){ .req-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-tools"></i> IT Requests</h2>
+      <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="showNewForm()"><i class="bi bi-plus-lg"></i> แจ้งปัญหาใหม่</button>
+    </div>
+
+    <!-- New Ticket Form (hidden by default) -->
+    <div id="new-form-wrap" style="display:none;margin-bottom:20px">
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-plus-circle" style="color:var(--bt-primary)"></i> แจ้งปัญหา IT</h2></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="bt-form-group" style="grid-column:1/-1">
+            <label class="bt-label">หัวข้อปัญหา <span class="reqd">*</span></label>
+            <input class="bt-input" id="nf-title" placeholder="อธิบายปัญหาโดยย่อ">
+          </div>
+          <div class="bt-form-group">
+            <label class="bt-label">หมวดหมู่</label>
+            <select class="bt-select" id="nf-cat">
+              <option>Hardware</option><option>Software</option><option>Network</option>
+              <option>Email</option><option>Account</option><option>อื่นๆ</option>
+            </select>
+          </div>
+          <div class="bt-form-group">
+            <label class="bt-label">ความเร่งด่วน</label>
+            <select class="bt-select" id="nf-priority">
+              <option value="low">ต่ำ — ไม่กระทบงาน</option>
+              <option value="medium" selected>กลาง — กระทบบางส่วน</option>
+              <option value="high">สูง — หยุดทำงาน</option>
+            </select>
+          </div>
+          <div class="bt-form-group" style="grid-column:1/-1">
+            <label class="bt-label">รายละเอียด</label>
+            <textarea class="bt-textarea" id="nf-detail" placeholder="อธิบายรายละเอียดของปัญหา เช่น error message, ขั้นตอนที่ทำ..." rows="3"></textarea>
+          </div>
+          <div class="bt-form-group">
+            <label class="bt-label">Asset ที่มีปัญหา (ถ้ามี)</label>
+            <input class="bt-input" id="nf-asset" placeholder="เช่น A001 / Dell Laptop">
+          </div>
+          <div class="bt-form-group">
+            <label class="bt-label">แผนก</label>
+            <select class="bt-select" id="nf-dept">
+              <option>IT</option><option>HR</option><option>Finance</option><option>Operations</option><option>Management</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="bt-btn bt-btn-primary" onclick="submitTicket()"><i class="bi bi-send"></i> ส่งคำร้อง</button>
+          <button class="bt-btn bt-btn-outline" onclick="document.getElementById('new-form-wrap').style.display='none'">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main layout -->
+    <div class="req-grid">
+      <!-- Left: ticket list -->
+      <div>
+        <div class="filter-bar">
+          <button class="fc active" onclick="setF('all',this)">ทั้งหมด</button>
+          <button class="fc" onclick="setF('open',this)">เปิดอยู่</button>
+          <button class="fc" onclick="setF('resolved',this)">แก้แล้ว</button>
+          <button class="fc" onclick="setF('pending',this)">รอดำเนินการ</button>
+        </div>
+        <div id="ticket-list"></div>
+      </div>
+
+      <!-- Right: ticket detail -->
+      <div class="detail-card" id="detail-panel">
+        <div class="detail-empty"><i class="bi bi-ticket" style="font-size:2.5rem;color:var(--bt-border)"></i><br>เลือก Ticket เพื่อดูรายละเอียด</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('it-requests.html', 'IT Support');
+
+  const token = () => localStorage.getItem('bt_token');
+  const apiReq = (path, opts={}) => fetch('/api'+path, {
+    headers: {'Authorization':'Bearer '+token(), 'Content-Type':'application/json'}, ...opts
+  });
+
+  let allTickets = [];
+  let filterVal = 'all';
+  let selectedId = null;
+
+  const priorityColor = { high:'var(--bt-danger)', medium:'var(--bt-warning)', low:'var(--bt-success)' };
+  const priorityLabel = { high:'สูง', medium:'กลาง', low:'ต่ำ' };
+  const statusLabel   = { open:'เปิดอยู่', resolved:'แก้แล้ว', pending:'รอดำเนินการ' };
+  const statusBadge   = { open:'bt-badge-orange', resolved:'bt-badge-green', pending:'bt-badge-blue' };
+
+  function setF(v, el) {
+    filterVal = v;
+    document.querySelectorAll('.fc').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderList();
+  }
+
+  function renderList() {
+    const filtered = filterVal === 'all' ? allTickets : allTickets.filter(t => t.status === filterVal);
+    document.getElementById('ticket-list').innerHTML = filtered.map(t => `
+      <div class="ticket-item ${selectedId===t.id?'selected':''}" onclick="selectTicket('${t.id}')">
+        <div class="ticket-top">
+          <span class="ticket-id">${t.ticket_no||t.id}</span>
+          <span class="bt-badge ${statusBadge[t.status]||'bt-badge-grey'}" style="font-size:0.72rem">${statusLabel[t.status]||t.status}</span>
+        </div>
+        <div class="ticket-ttl">${t.title}</div>
+        <div class="ticket-meta">
+          <span><i class="bi bi-person"></i> ${t.reporter_name||'-'}</span>
+          <span><i class="bi bi-tag"></i> ${t.category||'-'}</span>
+          <span style="color:${priorityColor[t.priority]}"><i class="bi bi-flag-fill"></i> ${priorityLabel[t.priority]||t.priority}</span>
+        </div>
+      </div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--bt-muted)">ไม่มี Ticket</div>';
+  }
+
+  function selectTicket(id) {
+    selectedId = id;
+    renderList();
+    const t = allTickets.find(x => x.id === id);
+    if (!t) return;
+    let timeline = t.timeline || [];
+    if (typeof timeline === 'string') { try { timeline = JSON.parse(timeline); } catch(e) { timeline = []; } }
+    const tl = timeline.map(l => `
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-body"><div>${l.msg}</div><div class="tl-time">${typeof l.time==='string'&&l.time.includes('T')?new Date(l.time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}):l.time}</div></div>
+      </div>`).join('');
+
+    document.getElementById('detail-panel').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:16px">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:var(--bt-muted)">${t.ticket_no||t.id}</div>
+          <h3 style="margin:4px 0 0;font-size:1.05rem">${t.title}</h3>
+        </div>
+        <span class="bt-badge ${statusBadge[t.status]||'bt-badge-grey'}">${statusLabel[t.status]||t.status}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.85rem;margin-bottom:14px">
+        <div><span style="color:var(--bt-muted)">ผู้แจ้ง</span><br><strong>${t.reporter_name||'-'}</strong></div>
+        <div><span style="color:var(--bt-muted)">แผนก</span><br><strong>${t.department||'-'}</strong></div>
+        <div><span style="color:var(--bt-muted)">หมวดหมู่</span><br><strong>${t.category||'-'}</strong></div>
+        <div><span style="color:var(--bt-muted)">ความเร่งด่วน</span><br><strong style="color:${priorityColor[t.priority]}">${priorityLabel[t.priority]||t.priority}</strong></div>
+        <div><span style="color:var(--bt-muted)">Asset</span><br><strong>${t.asset_code||'-'}</strong></div>
+        <div><span style="color:var(--bt-muted)">วันที่แจ้ง</span><br><strong>${t.created_at?new Date(t.created_at).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):'-'}</strong></div>
+      </div>
+      <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:0.88rem;margin-bottom:14px">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--bt-muted);margin-bottom:4px">รายละเอียด</div>
+        ${t.detail||'-'}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+        ${t.status!=='resolved'?`<button class="bt-btn bt-btn-primary bt-btn-sm" onclick="changeStatus('${t.id}','resolved')"><i class="bi bi-check-lg"></i> Mark Resolved</button>`:''}
+        ${t.status==='open'?`<button class="bt-btn bt-btn-outline bt-btn-sm" onclick="changeStatus('${t.id}','pending')"><i class="bi bi-clock"></i> รอดำเนินการ</button>`:''}
+      </div>
+      <div class="timeline">${tl || '<div style="color:var(--bt-muted);font-size:0.85rem">ยังไม่มี timeline</div>'}</div>`;
+  }
+
+  async function changeStatus(id, status) {
+    try {
+      const t = allTickets.find(x=>x.id===id);
+      const res = await apiReq('/it/requests/'+id, { method:'PUT', body: JSON.stringify({...t, status}) });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      BT.notify('อัปเดตสถานะเป็น '+status, 'success');
+      await loadTickets();
+    } catch(e) {
+      const t = allTickets.find(x=>x.id===id);
+      if (t) { t.status = status; renderList(); selectTicket(id); }
+      BT.notify('อัปเดตสถานะแล้ว', 'success');
+    }
+  }
+
+  function showNewForm() {
+    document.getElementById('new-form-wrap').style.display = 'block';
+    document.getElementById('nf-title').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function submitTicket() {
+    const title = document.getElementById('nf-title').value.trim();
+    if (!title) { BT.notify('กรุณากรอกหัวข้อปัญหา', 'warning'); return; }
+    const body = JSON.stringify({
+      title,
+      detail:     document.getElementById('nf-detail').value,
+      category:   document.getElementById('nf-cat').value,
+      priority:   document.getElementById('nf-priority').value,
+      asset_code: document.getElementById('nf-asset').value || '',
+      department: document.getElementById('nf-dept').value,
+    });
+    try {
+      const res = await apiReq('/it/requests', { method:'POST', body });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      document.getElementById('new-form-wrap').style.display = 'none';
+      BT.notify(`ส่งคำร้อง ${d.ticket_no} เรียบร้อยแล้ว`, 'success');
+      loadTickets();
+    } catch(e) {
+      BT.notify('เกิดข้อผิดพลาด: ' + e.message, 'danger');
+    }
+  }
+
+  async function loadTickets() {
+    try {
+      const res = await apiReq('/it/requests');
+      const d = await res.json();
+      allTickets = d.ok && Array.isArray(d.data) ? d.data : [];
+    } catch(e) {
+      allTickets = [];
+    }
+    renderList();
+    if (selectedId) selectTicket(selectedId);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadTickets);
+</script>
+</body>
+</html>

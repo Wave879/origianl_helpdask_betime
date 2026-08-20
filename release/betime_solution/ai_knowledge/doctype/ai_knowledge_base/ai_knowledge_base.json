@@ -1,0 +1,148 @@
+{
+ "actions": [],
+ "autoname": "format:BT-KB-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "AI Knowledge",
+ "name": "AI Knowledge Base",
+ "naming_rule": "Expression",
+ "title_field": "title",
+ "search_fields": "title,category,tags",
+ "track_changes": 1,
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "หัวข้อ (Title)",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "label": "ประเภท (Category)",
+   "options": "TOR\nContract\nSOP\nFAQ\nLesson Learned\nPolicy\nMeeting Knowledge\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source_type",
+   "fieldtype": "Select",
+   "label": "แหล่งที่มา",
+   "options": "Manual\nSharePoint\nMeeting MOM\nAI Generated\nOCR Document",
+   "default": "Manual",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Active",
+   "default": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sec_content",
+   "fieldtype": "Section Break",
+   "label": "เนื้อหา"
+  },
+  {
+   "fieldname": "content",
+   "fieldtype": "Text Editor",
+   "label": "เนื้อหา (Content)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_meta",
+   "fieldtype": "Section Break",
+   "label": "Metadata"
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "โครงการที่เกี่ยวข้อง",
+   "options": "Project Master"
+  },
+  {
+   "fieldname": "source_link",
+   "fieldtype": "Data",
+   "label": "ลิงก์แหล่งที่มา (SharePoint URL)"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Data",
+   "label": "Tags (คั่นด้วย comma)"
+  },
+  {
+   "fieldname": "sec_embedding",
+   "fieldtype": "Section Break",
+   "label": "Vector Embedding (Azure AI Search)"
+  },
+  {
+   "fieldname": "embedding_status",
+   "fieldtype": "Select",
+   "label": "สถานะ Embedding",
+   "options": "Pending\nProcessing\nCompleted\nFailed",
+   "default": "Pending",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "last_embedded",
+   "fieldtype": "Datetime",
+   "label": "Embedded ล่าสุด",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "chunk_count",
+   "fieldtype": "Int",
+   "label": "จำนวน Chunks",
+   "read_only": 1,
+   "default": "0"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 1, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 0, "export": 0, "share": 0, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "share": 1, "print": 1, "email": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "links": [],
+ "states": []
+}

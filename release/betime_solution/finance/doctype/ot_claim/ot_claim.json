@@ -1,0 +1,176 @@
+{
+ "actions": [],
+ "autoname": "format:BT-OT-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "Finance",
+ "name": "OT Claim",
+ "naming_rule": "Expression",
+ "title_field": "employee_name",
+ "search_fields": "employee,employee_name,status",
+ "track_changes": 1,
+ "is_submittable": 1,
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "พนักงาน (Employee)",
+   "options": "Employee Profile",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "ชื่อพนักงาน",
+   "fetch_from": "employee.full_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "วันที่ทำ OT",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "สถานะ",
+   "options": "Draft\nSubmitted\nApproved\nRejected\nPaid",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sec_ot_detail",
+   "fieldtype": "Section Break",
+   "label": "รายละเอียด OT"
+  },
+  {
+   "fieldname": "ot_hours",
+   "fieldtype": "Float",
+   "label": "ชั่วโมง OT",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "ot_rate",
+   "fieldtype": "Currency",
+   "label": "อัตรา OT ต่อชั่วโมง"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "จำนวนเงิน OT",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Data",
+   "label": "เหตุผลการทำ OT",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_links",
+   "fieldtype": "Section Break",
+   "label": "อ้างอิง"
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "โครงการ",
+   "options": "Project Master"
+  },
+  {
+   "fieldname": "linked_calendar",
+   "fieldtype": "Link",
+   "label": "กิจกรรมที่เกี่ยวข้อง",
+   "options": "Smart Calendar"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "auto_created",
+   "fieldtype": "Check",
+   "label": "สร้างอัตโนมัติ",
+   "default": 0,
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_approval",
+   "fieldtype": "Section Break",
+   "label": "การอนุมัติ"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "อนุมัติโดย",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_date",
+   "fieldtype": "Date",
+   "label": "วันที่อนุมัติ",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rejection_reason",
+   "fieldtype": "Small Text",
+   "label": "เหตุผลการปฏิเสธ",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "หมายเหตุ"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1, "cancel": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Finance",
+   "read": 1, "write": 1, "create": 1, "delete": 0, "submit": 0, "cancel": 1,
+   "report": 1, "export": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 1, "create": 0, "delete": 0, "submit": 0, "cancel": 0,
+   "report": 1, "export": 1, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 1, "create": 1, "delete": 0, "submit": 1, "cancel": 0,
+   "report": 0, "export": 0, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1, "cancel": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  }
+ ],
+ "sort_field": "date",
+ "sort_order": "DESC",
+ "links": [],
+ "states": []
+}

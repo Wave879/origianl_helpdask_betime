@@ -1,0 +1,189 @@
+{% extends "templates/web.html" %}
+{% block title %}Submit OT — Betime{% endblock %}
+{% block head_include %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
+<div class="betime-portal">
+
+  <nav class="bt-topbar">
+    <a href="/betime" class="bt-logo">🏢 Betime Solution</a>
+    <div class="bt-nav">
+      <a href="/betime">หน้าหลัก</a>
+      <a href="/betime/my-tasks">My Workspace</a>
+      <a href="/betime/submit-ot" class="active">⏱ Submit OT</a>
+      <span class="bt-user-badge">👤 {{ user_name }}</span>
+    </div>
+  </nav>
+
+  <div class="bt-container" style="padding-top:28px; padding-bottom:40px; max-width:640px;">
+
+    <h1 style="font-size:1.5rem; font-weight:700; color:var(--bt-primary); margin:0 0 24px;">
+      ⏱ ยื่นคำขอ OT
+    </h1>
+
+    {% if not employee %}
+    <div class="bt-alert bt-alert-warning">
+      <span>⚠</span>
+      <span>ไม่พบข้อมูลพนักงานของคุณ กรุณาติดต่อ HR เพื่อสร้าง Employee Profile</span>
+    </div>
+    {% else %}
+
+    <div class="bt-card">
+      <div class="bt-form-group">
+        <label class="bt-label">พนักงาน</label>
+        <input class="bt-input" type="text" value="{{ employee_name }}" disabled>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="bt-form-group">
+          <label class="bt-label">วันที่ทำ OT <span class="reqd">*</span></label>
+          <input class="bt-input" id="inp-date" type="date" required
+                 max="{{ frappe.utils.today() }}" value="{{ frappe.utils.today() }}">
+        </div>
+        <div class="bt-form-group">
+          <label class="bt-label">ชั่วโมง OT <span class="reqd">*</span></label>
+          <input class="bt-input" id="inp-hours" type="number" min="0.5" max="12" step="0.5"
+                 placeholder="เช่น 2.5">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="bt-form-group">
+          <label class="bt-label">อัตรา OT ต่อชั่วโมง (บาท)</label>
+          <input class="bt-input" id="inp-rate" type="number" placeholder="เช่น 150">
+        </div>
+        <div class="bt-form-group">
+          <label class="bt-label">จำนวนเงิน OT (คำนวณอัตโนมัติ)</label>
+          <input class="bt-input" id="inp-amount" type="text" disabled placeholder="—">
+        </div>
+      </div>
+
+      <div class="bt-form-group">
+        <label class="bt-label">เหตุผลการทำ OT <span class="reqd">*</span></label>
+        <input class="bt-input" id="inp-reason" type="text" placeholder="เช่น ประชุมกับลูกค้านอกเวลางาน">
+      </div>
+
+      <div class="bt-form-group">
+        <label class="bt-label">โครงการที่เกี่ยวข้อง</label>
+        <select class="bt-select" id="sel-project">
+          <option value="">— เลือกโครงการ (ถ้ามี) —</option>
+          {% for p in projects %}
+          <option value="{{ p.name }}">{{ p.project_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="bt-form-group">
+        <label class="bt-label">หมายเหตุเพิ่มเติม</label>
+        <textarea class="bt-textarea" id="inp-notes" rows="3" placeholder="ข้อมูลเพิ่มเติม..."></textarea>
+      </div>
+
+      <div id="submit-alert" style="display:none;" class="bt-alert bt-alert-info"></div>
+
+      <button class="bt-btn bt-btn-primary" id="btn-submit" style="width:100%;justify-content:center;">
+        📤 ยื่นคำขอ OT
+      </button>
+    </div>
+
+    <!-- Recent OT Claims -->
+    <div class="bt-section-header" style="margin-top:28px;">
+      <h2>📋 OT ที่ยื่นล่าสุด</h2>
+    </div>
+    <div id="recent-ot">
+      <div class="bt-spinner" style="display:block;margin:20px auto;"></div>
+    </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+const employeeName = '{{ employee }}';
+const fmt = new Intl.NumberFormat('th-TH');
+
+// Auto-calculate amount
+['inp-hours','inp-rate'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    const hours = parseFloat(document.getElementById('inp-hours')?.value) || 0;
+    const rate  = parseFloat(document.getElementById('inp-rate')?.value)  || 0;
+    const amount = hours * rate;
+    const amountEl = document.getElementById('inp-amount');
+    if (amountEl) amountEl.value = amount > 0 ? fmt.format(amount) + ' บาท' : '—';
+  });
+});
+
+// Submit
+document.getElementById('btn-submit')?.addEventListener('click', async () => {
+  const date    = document.getElementById('inp-date').value;
+  const hours   = document.getElementById('inp-hours').value;
+  const reason  = document.getElementById('inp-reason').value.trim();
+  const rate    = document.getElementById('inp-rate').value;
+  const project = document.getElementById('sel-project').value;
+  const notes   = document.getElementById('inp-notes').value.trim();
+
+  if (!date || !hours || !reason) {
+    showAlert('⚠ กรุณากรอกข้อมูลที่จำเป็น: วันที่, ชั่วโมง, เหตุผล', 'warning');
+    return;
+  }
+  document.getElementById('btn-submit').disabled = true;
+
+  try {
+    const result = await BT.call('betime_solution.api.portal.submit_ot_claim', {
+      employee: employeeName,
+      date, ot_hours: hours, ot_rate: rate,
+      reason, project, notes
+    });
+    showAlert('✅ ยื่น OT สำเร็จ! เลขที่: ' + result.name + ' — รอผู้จัดการอนุมัติ', 'success');
+    loadRecentOT();
+  } catch(e) {
+    showAlert('❌ เกิดข้อผิดพลาด: ' + e.message, 'danger');
+  }
+  document.getElementById('btn-submit').disabled = false;
+});
+
+function showAlert(msg, type) {
+  const el = document.getElementById('submit-alert');
+  el.className = 'bt-alert bt-alert-' + type;
+  el.innerHTML = msg;
+  el.style.display = 'flex';
+  setTimeout(() => el.style.display = 'none', 6000);
+}
+
+async function loadRecentOT() {
+  const el = document.getElementById('recent-ot');
+  try {
+    const list = await BT.call('frappe.client.get_list', {
+      doctype: 'OT Claim',
+      filters: {employee: employeeName},
+      fields: ['name','date','ot_hours','reason','status'],
+      order_by: 'date desc',
+      limit_page_length: 5,
+    });
+    if (!list || !list.length) {
+      el.innerHTML = '<p style="color:var(--bt-muted);text-align:center;">ยังไม่มีการยื่น OT</p>';
+      return;
+    }
+    const statColor = {Draft:'grey',Submitted:'orange',Approved:'green',Rejected:'red',Paid:'blue'};
+    el.innerHTML = `<div class="bt-card" style="padding:0;overflow:hidden;">
+      <table class="bt-table">
+        <thead><tr><th>วันที่</th><th>เหตุผล</th><th>ชั่วโมง</th><th>สถานะ</th></tr></thead>
+        <tbody>${list.map(ot => `<tr>
+          <td>${ot.date}</td>
+          <td><a href="/app/ot-claim/${ot.name}" style="color:var(--bt-primary)">${ot.reason||'-'}</a></td>
+          <td>${ot.ot_hours} ชม.</td>
+          <td><span class="bt-badge bt-badge-${statColor[ot.status]||'grey'}">${ot.status}</span></td>
+        </tr>`).join('')}</tbody>
+      </table></div>`;
+  } catch(e) {
+    el.innerHTML = '';
+  }
+}
+
+loadRecentOT();
+</script>
+{% endblock %}

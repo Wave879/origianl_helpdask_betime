@@ -1,0 +1,40 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Tasks - Betime Solution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head><body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+<main class="bt-main-content">
+<div class="bt-page-header"><h2>Team Tasks</h2>
+  <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="showAddTask()">+ ????????</button>
+</div>
+<div class="bt-kpi-grid">
+  <div class="bt-card"><div class="bt-card-title">??????????</div><div class="bt-card-value" id="team-kpi-total">0</div><div class="bt-card-sub">??????</div></div>
+  <div class="bt-card"><div class="bt-card-title">??????????????</div><div class="bt-card-value" id="team-kpi-progress" style="color:var(--bt-accent)">0</div><div class="bt-card-sub">??????</div></div>
+  <div class="bt-card"><div class="bt-card-title">?????????</div><div class="bt-card-value" id="team-kpi-overdue" style="color:var(--bt-danger)">0</div><div class="bt-card-sub">??????</div></div>
+  <div class="bt-card"><div class="bt-card-title">?????????</div><div class="bt-card-value" id="team-kpi-done" style="color:var(--bt-success)">0</div><div class="bt-card-sub">??????</div></div>
+</div>
+<div class="bt-card">
+  <div class="bt-section-header"><h2>?????????</h2>
+    <div style="display:flex;gap:8px">
+      <select class="bt-select" style="width:auto;padding:5px 10px;font-size:0.82rem">
+        <option>??? Priority</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+      </select>
+      <select class="bt-select" style="width:auto;padding:5px 10px;font-size:0.82rem">
+        <option>????????</option><option>Open</option><option>In Progress</option><option>Completed</option>
+      </select>
+    </div>
+  </div>
+  <div class="bt-table-wrap"><table class="bt-table"><thead><tr><th>???</th><th>???????</th><th>????????????</th><th>Priority</th><th>?????</th><th>?????</th></tr></thead><tbody id="team-task-body">
+    <tr><td colspan="6" style="text-align:center;color:var(--bt-muted);padding:24px">????????????????????</td></tr>
+  </tbody></table></div>
+</div>
+</main></div>
+<script src="/config.js"></script><script src="/shared.js"></script><script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('team-tasks.html','Team Tasks');
+function showAddTask(){ BT.notify('????????????????????????????????', 'warning'); }
+</script>
+</body></html>

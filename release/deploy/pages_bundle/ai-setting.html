@@ -1,0 +1,1564 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Setting - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .ai-shell {
+      display: grid;
+      gap: 20px;
+    }
+    .ai-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: max-content;
+      max-width: 100%;
+      padding: 4px;
+      margin: 0 0 16px;
+      border: 1px solid var(--bt-border);
+      border-radius: 8px;
+      background: #fff;
+      overflow-x: auto;
+      box-sizing: border-box;
+    }
+    .ai-tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #64748b;
+      font: inherit;
+      font-size: .86rem;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .ai-tab.is-active {
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 3px 8px rgba(37, 99, 235, .2);
+    }
+    .ai-tab-panel[hidden] { display: none !important; }
+    .ai-hero {
+      background:
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 28%),
+        linear-gradient(135deg, #eff6ff 0%, #ffffff 48%, #fff7ed 100%);
+      border: 1px solid var(--bt-border);
+      border-radius: 22px;
+      padding: 22px 24px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.06);
+    }
+    .ai-hero h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--bt-text);
+    }
+    .ai-hero p {
+      margin: 8px 0 0;
+      color: var(--bt-muted);
+      line-height: 1.8;
+      max-width: 980px;
+    }
+    .ai-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 18px;
+    }
+    .ai-card {
+      background: #fff;
+      border: 1px solid var(--bt-border);
+      border-radius: 20px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.06);
+      padding: 20px;
+    }
+    .ai-card h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--bt-text);
+    }
+    .ai-sub {
+      color: var(--bt-muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .ai-rule-list {
+      display: grid;
+      gap: 12px;
+    }
+    .ai-rule {
+      border: 1px solid var(--bt-border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+    .ai-rule strong {
+      display: block;
+      font-size: 0.96rem;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+    .ai-rule span {
+      color: var(--bt-muted);
+      line-height: 1.7;
+      font-size: 0.88rem;
+    }
+    .ai-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .ai-badge small {
+      color: #64748b;
+      font-weight: 700;
+    }
+    .ai-form {
+      display: grid;
+      gap: 12px;
+    }
+    .ai-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+    }
+    .ai-textarea,
+    .ai-select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1.5px solid #dbe2ec;
+      background: #fff;
+      color: var(--bt-text);
+      font: inherit;
+      box-sizing: border-box;
+    }
+    .ai-textarea {
+      min-height: 180px;
+      padding: 14px 16px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+    .ai-select {
+      padding: 12px 14px;
+    }
+    .ai-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .ai-result {
+      margin-top: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--bt-border);
+      background: linear-gradient(180deg, #fff8f1 0%, #ffffff 100%);
+      padding: 16px;
+    }
+    .ai-result .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .ai-result .title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--bt-text);
+    }
+    .ai-result .desc {
+      color: var(--bt-muted);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .ai-result ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--bt-text);
+      line-height: 1.7;
+    }
+    .ai-mini {
+      display: grid;
+      gap: 12px;
+    }
+    .ai-mini-box {
+      border: 1px solid var(--bt-border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fbfdff;
+    }
+    .ai-mini-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+    .ai-mini-box p {
+      margin: 0;
+      color: var(--bt-muted);
+      line-height: 1.7;
+    }
+    .ai-rule.is-clickable {
+      cursor: pointer;
+      transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .ai-rule.is-clickable:hover {
+      transform: translateY(-1px);
+      border-color: #93c5fd;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.10);
+    }
+    .ai-rule-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .ai-rule-btn {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .ai-editor {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--bt-border);
+      display: grid;
+      gap: 12px;
+    }
+    .ai-editor-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .ai-editor-head strong {
+      font-size: 0.98rem;
+      color: var(--bt-text);
+    }
+    .ai-editor-head span {
+      color: var(--bt-muted);
+      font-size: 0.82rem;
+    }
+    .ai-editor-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .ai-input {
+      width: 100%;
+      border-radius: 14px;
+      border: 1.5px solid #dbe2ec;
+      background: #fff;
+      color: var(--bt-text);
+      font: inherit;
+      box-sizing: border-box;
+      padding: 12px 14px;
+    }
+    .ai-input:focus,
+    .ai-textarea:focus,
+    .ai-select:focus {
+      outline: none;
+      border-color: var(--bt-primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    }
+    .ai-rule-hint {
+      color: var(--bt-muted);
+      font-size: 0.8rem;
+      line-height: 1.7;
+    }
+    .ai-project-panel {
+      display: grid;
+      padding: 0;
+    }
+    .ai-project-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+      gap: 16px;
+      align-items: start;
+      min-width: 0;
+    }
+    .ai-project-main,
+    .ai-document-panel {
+      border: 1px solid var(--bt-border);
+      border-radius: 16px;
+      background: #fff;
+    }
+    .ai-project-main { min-height: 0; overflow: hidden; }
+    .ai-project-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 16px;
+      border-bottom: 1px solid #edf1f6;
+    }
+    .ai-project-count {
+      color: #64748b;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+    .ai-project-table-wrap { overflow-x: auto; background: #fff; }
+    .ai-project-table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+    }
+    .ai-project-table th,
+    .ai-project-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid #edf1f6;
+      text-align: left;
+      vertical-align: middle;
+      font-size: .84rem;
+    }
+    .ai-project-table th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .ai-project-table th:nth-child(2), .ai-project-table th:nth-child(3), .ai-project-table td:nth-child(2), .ai-project-table td:nth-child(3) { text-align: center; }
+    .ai-project-table th:last-child, .ai-project-table td:last-child { width: 1%; padding-right: 18px; white-space: nowrap; }
+    .ai-project-table tr:last-child td { border-bottom: 0; }
+    .ai-project-table tbody tr { cursor: pointer; transition: background .16s ease, box-shadow .16s ease; }
+    .ai-project-table tbody tr:hover td { background: #f8fbff; }
+    .ai-project-table tr.is-selected td { background: #eff6ff; border-bottom-color: #bfdbfe; }
+    .ai-project-table tr.is-selected td:first-child { box-shadow: inset 3px 0 0 #2563eb; }
+    .ai-project-title { display: flex; align-items: center; gap: 10px; min-width: 220px; }
+    .ai-project-icon { display: inline-grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; border: 1px solid #dbeafe; border-radius: 7px; background: #eff6ff; color: #2563eb; font-size: .95rem; }
+    .is-selected .ai-project-icon { border-color: #93c5fd; background: #dbeafe; }
+    .ai-project-name { color: #0f172a; font-weight: 800; }
+    .ai-project-code { margin-top: 3px; color: #64748b; font-size: .72rem; font-weight: 700; }
+    .ai-project-metric { display: inline-grid; min-width: 38px; gap: 1px; text-align: center; }
+    .ai-project-metric strong { color: #1e293b; font-size: .98rem; line-height: 1; }
+    .ai-project-metric span { color: #94a3b8; font-size: .64rem; font-weight: 700; }
+    .ai-project-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: .74rem;
+      font-weight: 800;
+    }
+    .ai-project-select {
+      min-width: 68px;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      background: #fff;
+      color: #1d4ed8;
+      font: inherit;
+      font-size: .74rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .ai-project-select.is-selected { border-color: #2563eb; background: #2563eb; color: #fff; }
+    .ai-project-select:hover { border-color: #2563eb; background: #eff6ff; }
+    .ai-project-select.is-selected:hover { background: #1d4ed8; }
+    .ai-project-empty {
+      padding: 30px 16px;
+      color: #64748b;
+      font-weight: 700;
+      text-align: center;
+    }
+    .ai-project-docs {
+      display: grid;
+      grid-template-rows: auto auto;
+      align-content: start;
+      gap: 16px;
+      min-height: 0;
+      min-width: 0;
+    }
+    .ai-upload-zone {
+      position: relative;
+      display: grid;
+      place-content: center;
+      gap: 8px;
+      min-height: 190px;
+      padding: 20px;
+      border: 2px dashed #9ca3af;
+      border-radius: 16px;
+      background: #fff;
+      color: #64748b;
+      text-align: center;
+      cursor: pointer;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+    .ai-project-file-input { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .ai-project-file-choose { display: inline-flex; min-height: 32px; width: fit-content; max-width: 100%; align-items: center; justify-content: center; gap: 6px; margin: 2px auto 0; padding: 0 10px; border: 1px solid #bfdbfe; border-radius: 6px; background: #eff6ff; color: #1d4ed8; font-size: .78rem; font-weight: 800; cursor: pointer; }
+    .ai-project-file-choose i { font-size: .9rem; }
+    .ai-project-file-choose:hover { border-color: #2563eb; background: #dbeafe; }
+    .ai-project-file-choose.is-disabled { border-color: #d1d5db; background: #f8fafc; color: #94a3b8; cursor: not-allowed; pointer-events: none; }
+    .ai-upload-actions { display: flex; width: min(100%, 260px); min-width: 0; max-width: 100%; align-items: center; justify-content: space-between; gap: 8px; margin: 2px auto 0; }
+    .ai-upload-file-name { min-width: 0; overflow: hidden; color: #64748b; font-size: .75rem; font-weight: 700; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+    .ai-upload-submit { flex: 0 0 auto; border: 0; border-radius: 6px; padding: 7px 10px; background: #2563eb; color: #fff; font: inherit; font-size: .78rem; font-weight: 800; cursor: pointer; }
+    .ai-upload-submit:disabled { background: #cbd5e1; cursor: not-allowed; }
+    .ai-upload-zone:hover,
+    .ai-upload-zone.is-over {
+      border-color: #2563eb;
+      background: #f8fbff;
+      color: #1d4ed8;
+    }
+    .ai-upload-zone.is-over { transform: scale(1.01); box-shadow: 0 0 0 4px rgba(37, 99, 235, .10); }
+    .ai-upload-zone.is-uploading { border-color: #2563eb; background: #f8fbff; cursor: wait; }
+    .ai-upload-zone.is-disabled { border-color: #d1d5db; background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+    .ai-upload-zone.is-disabled strong { color: #94a3b8; }
+    .ai-upload-zone i { font-size: 2.35rem; line-height: 1; }
+    .ai-upload-zone strong { color: #475569; font-size: 1rem; }
+    .ai-upload-zone span { font-size: .78rem; font-weight: 700; }
+    .ai-upload-progress { display: flex; width: min(100%, 260px); align-items: center; gap: 7px; margin: 2px auto 0; color: #2563eb; font-size: .76rem; font-weight: 800; }
+    .ai-upload-progress[hidden] { display: none !important; }
+    .ai-upload-spinner { width: 15px; height: 15px; box-sizing: border-box; border: 2px solid #bfdbfe; border-top-color: #2563eb; border-radius: 50%; animation: ai-upload-spin .7s linear infinite; }
+    .ai-upload-progress-track { flex: 1; height: 4px; overflow: hidden; border-radius: 999px; background: #dbeafe; }
+    .ai-upload-progress-track::after { display: block; width: 45%; height: 100%; border-radius: inherit; background: #2563eb; content: ''; animation: ai-upload-slide 1.1s ease-in-out infinite; }
+    @keyframes ai-upload-spin { to { transform: rotate(360deg); } }
+    @keyframes ai-upload-slide { from { transform: translateX(-120%); } to { transform: translateX(260%); } }
+    .ai-document-panel { min-height: 0; padding: 14px; }
+    .ai-document-panel h3 { margin: 0 0 10px; font-size: .94rem; }
+    .ai-document-scope { margin: -5px 0 10px; color: #64748b; font-size: .74rem; font-weight: 700; }
+    .ai-document-list { display: grid; min-width: 0; max-width: 100%; gap: 8px; }
+    .ai-document-item { position: relative; min-width: 0; max-width: 100%; }
+    .ai-document-row {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      align-items: center;
+      gap: 9px;
+      padding: 9px;
+      border: 1px solid #dbe2ec;
+      border-radius: 8px;
+      background: #fff;
+      color: #334155;
+      font: inherit;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .ai-document-row:hover { border-color: #93c5fd; background: #f8fbff; }
+    .ai-document-row i { color: #dc2626; font-size: 1.05rem; }
+    .ai-document-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8rem; font-weight: 800; }
+    .ai-document-size { color: #64748b; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+    .ai-document-menu-icon { color: #64748b !important; font-size: 1rem !important; }
+    .ai-document-actions { position: absolute; z-index: 5; top: calc(100% + 5px); right: 0; display: flex; gap: 5px; padding: 6px; border: 1px solid #dbe2ec; border-radius: 7px; background: #fff; box-shadow: 0 8px 20px rgba(15, 23, 42, .14); }
+    .ai-document-actions[hidden] { display: none; }
+    .ai-document-action { min-height: 29px; border: 1px solid #dbe2ec; border-radius: 5px; background: #fff; color: #334155; font: inherit; font-size: .73rem; font-weight: 800; padding: 0 9px; cursor: pointer; }
+    .ai-document-action:hover { border-color: #93c5fd; background: #eff6ff; color: #1d4ed8; }
+    .ai-document-action.is-danger { border-color: #fecaca; color: #dc2626; }
+    .ai-document-action.is-danger:hover { background: #fef2f2; border-color: #fca5a5; }
+    .ai-project-knowledge { display: grid; gap: 9px; }
+    .ai-knowledge-label { color: #64748b; font-size: .72rem; font-weight: 800; }
+    .ai-knowledge-input,
+    .ai-knowledge-textarea {
+      width: 100%;
+      border: 1px solid #dbe2ec;
+      border-radius: 7px;
+      box-sizing: border-box;
+      color: #0f172a;
+      font: inherit;
+      font-size: .82rem;
+      padding: 9px 10px;
+    }
+    .ai-knowledge-textarea { min-height: 118px; resize: vertical; line-height: 1.55; }
+    .ai-knowledge-input:focus,
+    .ai-knowledge-textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .1); }
+    .ai-knowledge-input:disabled,
+    .ai-knowledge-textarea:disabled { background: #f8fafc; color: #94a3b8; }
+    .ai-knowledge-status { min-height: 18px; color: #64748b; font-size: .73rem; font-weight: 700; }
+    .ai-knowledge-list { display: grid; gap: 7px; }
+    .ai-knowledge-row { padding: 8px 9px; border-left: 3px solid #2563eb; background: #f8fbff; }
+    .ai-knowledge-row strong { display: block; color: #1e293b; font-size: .78rem; }
+    .ai-knowledge-row span { display: block; margin-top: 3px; color: #64748b; font-size: .73rem; line-height: 1.45; }
+    @media (max-width: 980px) {
+      .ai-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .ai-tabs { width: 100%; }
+      .ai-tab { flex: 1 0 auto; padding: 0 11px; font-size: .8rem; }
+    }
+    @media (max-width: 980px) {
+      .ai-project-layout { grid-template-columns: 1fr; }
+      .ai-project-main, .ai-project-docs { min-height: auto; }
+      .ai-project-docs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; }
+    }
+    @media (max-width: 640px) {
+      .ai-project-docs { grid-template-columns: 1fr; }
+      .ai-project-main { border-radius: 8px; }
+      .ai-project-toolbar { padding: 13px; }
+      .ai-project-table th, .ai-project-table td { padding: 11px 12px; }
+      .ai-upload-zone, .ai-document-panel { border-radius: 8px; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-sliders2"></i> AI Setting</h2>
+    </div>
+
+    <div class="ai-tabs" role="tablist" aria-label="AI Setting">
+      <button class="ai-tab is-active" id="aiTabRules" type="button" role="tab" aria-selected="true" aria-controls="aiPanelRules" data-ai-tab="rules">กติกาการจับประเภท</button>
+      <button class="ai-tab" id="aiTabProjects" type="button" role="tab" aria-selected="false" aria-controls="aiPanelProjects" data-ai-tab="projects">ข้อมูลโครงการ</button>
+    </div>
+
+    <section class="ai-shell">
+      <div id="aiPanelRules" class="ai-tab-panel" role="tabpanel" aria-labelledby="aiTabRules">
+      <div class="ai-hero">
+        <h2>หมวดหมู่ AI รับแจ้ง สำหรับ IT Support</h2>
+        <p>
+          ใช้กติกาแบบสั้นเพื่อให้ AI จับประเภทปัญหาได้เร็วและสม่ำเสมอ โดยอิงจากข้อความที่ผู้แจ้งพิมพ์เข้ามา
+          แล้วบังคับผลลัพธ์ให้อยู่ใน 7 หมวดมาตรฐานของงาน Support
+        </p>
+        <div class="ai-badges">
+          <span class="ai-badge">ระบบเดาเองจากข้อความ <small>keyword + context</small></span>
+          <span class="ai-badge">อิง ticket ปี 2026 <small>เฉพาะประวัติจริง</small></span>
+          <span class="ai-badge">ล็อก 7 หมวด <small>ลดความหลากหลายของชื่อ</small></span>
+        </div>
+      </div>
+
+      <div class="ai-grid">
+        <section class="ai-card">
+          <h3>กติกาการจับประเภท</h3>
+          <div class="ai-sub">สรุปแบบสั้นตาม logic ที่ใช้ในหน้า Chat V2</div>
+          <div class="ai-rule-list">
+            <div class="ai-rule">
+              <strong>Human error</strong>
+              <span>ถ้าข้อความมีแนว กดผิด / ลงผิด / คืนเลข / ลบลำดับ / กรอกผิด / พิมพ์ผิด</span>
+            </div>
+            <div class="ai-rule">
+              <strong>system error</strong>
+              <span>ถ้ามี ล่ม / ค้าง / error / บันทึกไม่ได้ / timeout / server error / 500</span>
+            </div>
+            <div class="ai-rule">
+              <strong>System Bug</strong>
+              <span>ถ้าเป็นบั๊กของหน้าจอ / แสดงผลผิด / logic ผิด / ข้อมูลซ้ำ / behavior ผิดปกติ</span>
+            </div>
+            <div class="ai-rule">
+              <strong>Change Request</strong>
+              <span>ถ้าเป็นคำขอเพิ่ม / ขอเปลี่ยน / ปรับปรุง / feature request / enhancement</span>
+            </div>
+            <div class="ai-rule">
+              <strong>Software</strong>
+              <span>ถ้าเกี่ยวกับสิทธิ์ / login / API / mapping / data / integration / auth / session</span>
+            </div>
+            <div class="ai-rule">
+              <strong>network</strong>
+              <span>ถ้าเกี่ยวกับเน็ต / wifi / vpn / lan / connection / สัญญาณ / เชื่อมต่อไม่ได้</span>
+            </div>
+            <div class="ai-rule">
+              <strong>hardware</strong>
+              <span>ถ้าเกี่ยวกับอุปกรณ์ / printer / scanner / keyboard / mouse / monitor / เครื่อง</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-card">
+          <h3>Knowledge Test / Preview</h3>
+          <div class="ai-sub">วางข้อความแจ้งปัญหา แล้วทดลองดูว่าฐานความรู้และ ticket เดิมชี้ไปหมวดไหน</div>
+          <div class="ai-form">
+            <div>
+              <label class="ai-label" for="aiProject">หมวดงาน</label>
+              <select id="aiProject" class="ai-select">
+                <option value="it_support">IT Support</option>
+                <option value="knowledge_center">Knowledge Center</option>
+              </select>
+            </div>
+            <div>
+              <label class="ai-label" for="aiText">ข้อความแจ้งปัญหา</label>
+              <textarea id="aiText" class="ai-textarea" placeholder="เช่น กดบันทึกไม่ได้ ขึ้น error / ลบลำดับผิด / ขอเพิ่ม field ใหม่"></textarea>
+            </div>
+            <div class="ai-actions">
+              <button class="bt-btn bt-btn-primary" type="button" onclick="classifyNow()"><i class="bi bi-magic"></i> จัดหมวดทันที</button>
+              <button class="bt-btn bt-btn-outline" type="button" onclick="fillExample()"><i class="bi bi-lightning"></i> ใส่ตัวอย่าง</button>
+              <button class="bt-btn bt-btn-outline" type="button" onclick="clearExample()"><i class="bi bi-x-circle"></i> ล้าง</button>
+            </div>
+          </div>
+          <div id="aiResult" class="ai-result" style="display:none"></div>
+        </section>
+      </div>
+
+      <section class="ai-card">
+        <h3>สิ่งที่ Knowledge จะจับจากข้อความ</h3>
+        <div class="ai-mini">
+          <div class="ai-mini-box">
+            <strong>1. เคสที่คล้ายในฐาน</strong>
+            <p>ระบบจะหา ticket หรือบทความ knowledge ที่มีเรื่องใกล้เคียงก่อน เพื่อใช้เป็นตัวตั้งของหมวด</p>
+          </div>
+          <div class="ai-mini-box">
+            <strong>2. ความหมายรวมของประโยค</strong>
+            <p>ถ้ายังไม่เจอเคสตรงตัว ระบบจะดูบริบทของข้อความเพื่อเทียบกับหมวดที่ฐานใช้จริง</p>
+          </div>
+          <div class="ai-mini-box">
+            <strong>3. แนวโน้มจาก ticket เดิม</strong>
+            <p>ถ้า knowledge ยังไม่พอ ระบบจะใช้ ticket เดิมช่วยยืนยันผลสุดท้ายแบบไม่เดาสุ่ม</p>
+          </div>
+        </div>
+      </section>
+      </div>
+
+      <section id="aiPanelProjects" class="ai-tab-panel ai-project-panel" role="tabpanel" aria-labelledby="aiTabProjects" hidden>
+        <div class="ai-project-layout">
+          <div class="ai-project-main">
+            <div class="ai-project-toolbar">
+              <div>
+                <h3>ข้อมูลโครงการ</h3>
+                <div class="ai-project-count" id="aiProjectCount">กำลังโหลดข้อมูลโครงการ...</div>
+              </div>
+              <button id="refreshProjectData" class="bt-btn bt-btn-outline" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> รีเฟรช</button>
+            </div>
+            <div class="ai-project-table-wrap" id="aiProjectData">
+              <div class="ai-project-empty">กำลังโหลด...</div>
+            </div>
+          </div>
+          <aside class="ai-project-docs" aria-label="เอกสารโครงการ">
+            <section id="projectDocUpload" class="ai-upload-zone" aria-label="อัปโหลดเอกสารโครงการ">
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              <strong>อัปโหลดเอกสาร</strong>
+              <span>เลือกหรือลากไฟล์ PDF มาวาง</span>
+              <input id="projectDocInput" class="ai-project-file-input" type="file" accept="application/pdf,.pdf" disabled>
+              <label id="projectDocChoose" class="ai-project-file-choose is-disabled" for="projectDocInput"><i class="bi bi-folder2-open" aria-hidden="true"></i> เลือกไฟล์ PDF</label>
+              <div class="ai-upload-actions">
+                <span id="projectDocFileName" class="ai-upload-file-name">เลือกโครงการก่อน</span>
+                <button id="projectDocSubmit" class="ai-upload-submit" type="button" disabled>อัปโหลด</button>
+              </div>
+              <div id="projectDocProgress" class="ai-upload-progress" hidden aria-live="polite"><i class="ai-upload-spinner" aria-hidden="true"></i><span>กำลังอัปโหลด</span><span class="ai-upload-progress-track" aria-hidden="true"></span></div>
+            </section>
+            <section class="ai-document-panel">
+              <h3>เอกสารที่เคยอัปโหลด</h3>
+              <div class="ai-document-scope" id="projectDocumentScope">เลือกโครงการก่อน</div>
+              <div class="ai-document-list" id="projectDocumentList"><div class="ai-project-empty">กำลังโหลด...</div></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('ai-setting.html', 'IT Support');
+
+  const ISSUE_TYPE_LABELS = [
+    'system error',
+    'System Bug',
+    'Human error',
+    'hardware',
+    'Software',
+    'network',
+    'Change Request',
+  ];
+
+  const AI_RULE_STORAGE_KEY = 'ai_setting_rules_v1';
+  const DEFAULT_AI_RULES = [
+    {
+      id: 'human_error',
+      label: 'Human error',
+      description: 'ถ้าข้อความมีแนว กดผิด / ลงผิด / คืนเลข / ลบลำดับ / กรอกผิด / พิมพ์ผิด',
+      keywords: ['กดผิด', 'ลงผิด', 'คืนเลข', 'ลบลำดับ', 'กรอกผิด', 'พิมพ์ผิด'],
+    },
+    {
+      id: 'system_error',
+      label: 'system error',
+      description: 'ถ้ามี ล่ม / ค้าง / error / บันทึกไม่ได้ / timeout / server error / 500',
+      keywords: ['ล่ม', 'ค้าง', 'error', 'บันทึกไม่ได้', 'timeout', 'server error', '500'],
+    },
+    {
+      id: 'system_bug',
+      label: 'System Bug',
+      description: 'ถ้าเป็นบั๊กของหน้าจอ / แสดงผลผิด / logic ผิด / ข้อมูลซ้ำ / behavior ผิดปกติ',
+      keywords: ['บั๊ก', 'แสดงผลผิด', 'logic ผิด', 'ข้อมูลซ้ำ', 'behavior', 'หน้าจอ'],
+    },
+    {
+      id: 'change_request',
+      label: 'Change Request',
+      description: 'ถ้าเป็นคำขอเพิ่ม / ขอเปลี่ยน / ปรับปรุง / feature request / enhancement',
+      keywords: ['คำขอเพิ่ม', 'ขอเปลี่ยน', 'ปรับปรุง', 'feature request', 'enhancement'],
+    },
+    {
+      id: 'software',
+      label: 'Software',
+      description: 'ถ้าเกี่ยวกับสิทธิ์ / login / API / mapping / data / integration / auth / session',
+      keywords: ['สิทธิ์', 'login', 'api', 'mapping', 'data', 'integration', 'auth', 'session'],
+    },
+    {
+      id: 'network',
+      label: 'network',
+      description: 'ถ้าเกี่ยวกับเน็ต / wifi / vpn / lan / connection / สัญญาณ / เชื่อมต่อไม่ได้',
+      keywords: ['เน็ต', 'wifi', 'vpn', 'lan', 'connection', 'สัญญาณ', 'เชื่อมต่อไม่ได้'],
+    },
+    {
+      id: 'hardware',
+      label: 'hardware',
+      description: 'ถ้าเกี่ยวกับอุปกรณ์ / printer / scanner / keyboard / mouse / monitor / เครื่อง',
+      keywords: ['อุปกรณ์', 'printer', 'scanner', 'keyboard', 'mouse', 'monitor', 'เครื่อง'],
+    },
+  ];
+  let aiRules = loadAiRules();
+  let selectedRuleId = aiRules[0]?.id || '';
+
+  function loadAiRules() {
+    try {
+      const raw = localStorage.getItem(AI_RULE_STORAGE_KEY);
+      if (!raw) return DEFAULT_AI_RULES.map((rule) => ({ ...rule }));
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return DEFAULT_AI_RULES.map((rule) => ({ ...rule }));
+      return DEFAULT_AI_RULES.map((fallbackRule, index) => {
+        const saved = parsed[index] || {};
+        return {
+          id: fallbackRule.id,
+          label: String(saved.label || fallbackRule.label).trim() || fallbackRule.label,
+          description: String(saved.description || fallbackRule.description).trim() || fallbackRule.description,
+          keywords: Array.isArray(saved.keywords)
+            ? saved.keywords.map((keyword) => String(keyword).trim()).filter(Boolean)
+            : fallbackRule.keywords.slice(),
+        };
+      });
+    } catch {
+      return DEFAULT_AI_RULES.map((rule) => ({ ...rule }));
+    }
+  }
+
+  function saveAiRules() {
+    localStorage.setItem(AI_RULE_STORAGE_KEY, JSON.stringify(aiRules));
+  }
+
+  function esc(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function renderAiRules() {
+    const list = document.querySelector('.ai-rule-list');
+    if (!list) return;
+    list.innerHTML = aiRules.map((rule) => `
+      <div class="ai-rule is-clickable" data-rule-id="${esc(rule.id)}">
+        <div class="ai-rule-head">
+          <strong>${esc(rule.label)}</strong>
+          <button class="ai-rule-btn" type="button" data-rule-edit="${esc(rule.id)}">แก้ไข</button>
+        </div>
+        <span>${esc(rule.description)}</span>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-rule-edit]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openRuleEditor(button.dataset.ruleEdit);
+      });
+    });
+    list.querySelectorAll('[data-rule-id]').forEach((card) => {
+      card.addEventListener('click', () => openRuleEditor(card.dataset.ruleId));
+    });
+  }
+
+  function getRuleById(ruleId) {
+    return aiRules.find((rule) => rule.id === ruleId) || null;
+  }
+
+  function openRuleEditor(ruleId) {
+    const rule = getRuleById(ruleId) || aiRules[0];
+    if (!rule) return;
+    selectedRuleId = rule.id;
+    const editor = document.getElementById('ruleEditor');
+    const title = document.getElementById('editorTitle');
+    const status = document.getElementById('editorStatus');
+    const label = document.getElementById('editorLabel');
+    const desc = document.getElementById('editorDescription');
+    const keywords = document.getElementById('editorKeywords');
+    if (editor) editor.hidden = false;
+    if (title) title.textContent = `แก้ไข: ${rule.label}`;
+    if (status) status.textContent = 'แก้ไขเสร็จแล้วกดบันทึกเพื่ออัปเดตการ์ด';
+    if (label) label.value = rule.label;
+    if (desc) desc.value = rule.description;
+    if (keywords) keywords.value = rule.keywords.join(' / ');
+  }
+
+  function resetRuleEdit() {
+    const rule = getRuleById(selectedRuleId) || aiRules[0];
+    if (!rule) return;
+    openRuleEditor(rule.id);
+  }
+
+  function saveRuleEdit() {
+    const label = document.getElementById('editorLabel')?.value.trim();
+    const description = document.getElementById('editorDescription')?.value.trim();
+    const keywordText = document.getElementById('editorKeywords')?.value || '';
+    const ruleIndex = aiRules.findIndex((rule) => rule.id === selectedRuleId);
+    if (ruleIndex < 0) return;
+    const keywords = keywordText
+      .split('/')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    aiRules[ruleIndex] = {
+      ...aiRules[ruleIndex],
+      label: label || aiRules[ruleIndex].label,
+      description: description || aiRules[ruleIndex].description,
+      keywords: keywords.length ? keywords : aiRules[ruleIndex].keywords,
+    };
+    saveAiRules();
+    renderAiRules();
+    openRuleEditor(aiRules[ruleIndex].id);
+    BT.toast('บันทึกกติกาแล้ว', 'success');
+  }
+
+  function matchRule(rule, text) {
+    const haystack = String(text || '').toLowerCase();
+    return (rule.keywords || []).some((keyword) => haystack.includes(String(keyword || '').toLowerCase()));
+  }
+
+  function extractKnowledgeCaseType(content) {
+    const text = String(content || '');
+    const match = text.match(/Case Type:\s*([^\n]+)/i);
+    return String(match?.[1] || '').trim().toLowerCase();
+  }
+
+  function knowledgeCaseTypeToLabel(caseType) {
+    const value = String(caseType || '').trim().toLowerCase();
+    if (!value) return '';
+    if (value.includes('human')) return 'Human error';
+    if (value.includes('system bug')) return 'System Bug';
+    if (value.includes('system error')) return 'system error';
+    if (value.includes('change')) return 'Change Request';
+    if (value.includes('hardware')) return 'hardware';
+    if (value.includes('network')) return 'network';
+    if (value.includes('software')) return 'Software';
+    return '';
+  }
+
+  function ticketBugTypeToLabel(bugType) {
+    const value = String(bugType || '').trim().toLowerCase();
+    if (!value) return '';
+    if (value.includes('human')) return 'Human error';
+    if (value.includes('system bug')) return 'System Bug';
+    if (value.includes('system error')) return 'system error';
+    if (value.includes('change')) return 'Change Request';
+    if (value.includes('hardware')) return 'hardware';
+    if (value.includes('network')) return 'network';
+    if (value.includes('software')) return 'Software';
+    return '';
+  }
+
+  function scoreTicketRow(row, terms) {
+    const title = String(row.title || '').toLowerCase();
+    const description = String(row.description || '').toLowerCase();
+    const project = String(row.project || '').toLowerCase();
+    const bugType = String(row.bug_type || '').toLowerCase();
+    const extra = JSON.stringify(row.extra || '').toLowerCase();
+    const haystack = `${title}\n${description}\n${project}\n${bugType}\n${extra}`;
+    let score = 0;
+    for (const term of terms) {
+      if (!term) continue;
+      if (title.includes(term)) score += 5;
+      if (description.includes(term)) score += 4;
+      if (project.includes(term)) score += 3;
+      if (bugType.includes(term)) score += 3;
+      if (extra.includes(term)) score += 2;
+      if (haystack.includes(term)) score += 1;
+    }
+    return score;
+  }
+
+  async function fetchKnowledgeMatches(query) {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    const res = await fetch(`/helpdeck-knowledge?${params.toString()}`, {
+      headers: authHeaders(),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok || !Array.isArray(data.data)) return [];
+    return data.data;
+  }
+
+    async function fetchTicketMatches(query) {
+      const res = await fetch('/helpdesk/tickets', {
+        headers: authHeaders(),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok || !Array.isArray(data.data)) return [];
+    const terms = String(query || '')
+      .toLowerCase()
+      .split(/[\s,./\\|()\[\]{}<>:;'"'"'"!?~`@#$%^&*-]+/g)
+      .map((item) => item.trim())
+      .filter((item) => item.length >= 2)
+      .slice(0, 12);
+      return data.data
+        .map((row) => ({ ...row, _score: scoreTicketRow(row, terms) }))
+        .sort((a, b) => {
+          if (b._score !== a._score) return b._score - a._score;
+          const left = String(b.updated_at || b.created_at || '');
+          const right = String(a.updated_at || a.created_at || '');
+          return left.localeCompare(right);
+        })
+        .slice(0, terms.length ? 12 : 8);
+    }
+
+    async function fetchTicketContextRows(query) {
+      const res = await fetch('/helpdesk/tickets', {
+        headers: authHeaders(),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok || !Array.isArray(data.data)) return [];
+      const terms = String(query || '')
+        .toLowerCase()
+        .split(/[\s,./\\|()\[\]{}<>:;'"'"'"!?~`@#$%^&*-]+/g)
+        .map((item) => item.trim())
+        .filter((item) => item.length >= 2)
+        .slice(0, 16);
+      const scored = data.data
+        .map((row) => ({ ...row, _score: scoreTicketRow(row, terms) }))
+        .sort((a, b) => {
+          if (b._score !== a._score) return b._score - a._score;
+          const left = String(b.updated_at || b.created_at || '');
+          const right = String(a.updated_at || a.created_at || '');
+          return left.localeCompare(right);
+        })
+        .slice(0, terms.length ? 12 : 8);
+      const matched = scored.filter((row) => Number(row._score || 0) > 0);
+      return matched.length ? matched : scored;
+    }
+
+  async function normalizeIssueTypeLabel(rawValue, ticket = {}) {
+    const text = [
+      rawValue || '',
+      ticket.title || '',
+      ticket.description || '',
+      ticket.project || '',
+      ticket.extra || '',
+    ].join(' ').toLowerCase();
+
+    const ticketRows = await fetchTicketMatches(text);
+    const ticketLabels = ticketRows
+      .map((row) => ticketBugTypeToLabel(row.bug_type))
+      .filter(Boolean);
+    if (ticketLabels.length) {
+      const counts = {};
+      let best = ticketLabels[0];
+      let bestCount = 0;
+      for (const label of ticketLabels) {
+        counts[label] = (counts[label] || 0) + 1;
+        if (counts[label] > bestCount) {
+          best = label;
+          bestCount = counts[label];
+        }
+      }
+      return { label: best, ticketRows };
+    }
+
+    const knowledgeRows = await fetchKnowledgeMatches(text);
+    const knowledgeLabels = knowledgeRows
+      .map((row) => knowledgeCaseTypeToLabel(extractKnowledgeCaseType(row.content)))
+      .filter(Boolean);
+      if (knowledgeLabels.length) {
+        const counts = {};
+        let best = knowledgeLabels[0];
+        let bestCount = 0;
+        for (const label of knowledgeLabels) {
+        counts[label] = (counts[label] || 0) + 1;
+        if (counts[label] > bestCount) {
+          best = label;
+          bestCount = counts[label];
+        }
+        }
+        return { label: best, ticketRows, knowledgeRows };
+      }
+
+      const localVote = detectIssueTypeFromText(text);
+      if (localVote) return { label: localVote, ticketRows, knowledgeRows };
+
+      for (const rule of aiRules) {
+        if (matchRule(rule, text)) return { label: rule.label, ticketRows, knowledgeRows };
+      }
+      return { label: 'Software', ticketRows, knowledgeRows };
+    }
+
+    function detectIssueTypeFromText(text) {
+      const value = String(text || '').toLowerCase();
+      if (/(เลขรับ|ทะเบียนรับ|ลงรับ|เส้นทางหนังสือ|สารบรรณ|ยกเลิกเลขรับ|คืนเลขรับ|หนังสือ|กดรับผิดเรื่อง)/i.test(value)) return 'Human error';
+      if (/(server error|timeout|500|ล่ม|ค้าง|ขัดข้อง|connection refused|failed to fetch)/i.test(value)) return 'system error';
+      if (/(bug|logic ผิด|logic|behavior|ผิดปกติ|unexpected|crash|exception)/i.test(value)) return 'System Bug';
+      if (/(feature request|ขอเพิ่ม|ขอปรับ|enhancement|ปรับปรุง|เพิ่ม field|เพิ่ม dropdown)/i.test(value)) return 'Change Request';
+      if (/(network|wifi|vpn|lan|connection|เชื่อมต่อไม่ได้)/i.test(value)) return 'network';
+      if (/(hardware|printer|scanner|keyboard|mouse|monitor|เครื่อง|อุปกรณ์)/i.test(value)) return 'hardware';
+      if (/(login|signin|sign in|ล็อกอิน|เข้าไม่ได้|password|otp|รหัสผ่าน|auth)/i.test(value)) return 'Software';
+      return '';
+    }
+
+    function buildTicketContextText(rows) {
+      return (Array.isArray(rows) ? rows : [])
+        .slice(0, 8)
+        .map((row, index) => {
+          const snippet = String(row.description || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+          return [
+            `Ticket ${index + 1}: ${String(row.title || '').trim() || '-'}`,
+            `Bug Type: ${String(row.bug_type || '').trim() || '-'}`,
+            `Project: ${String(row.project || '').trim() || '-'}`,
+            snippet ? `Description: ${snippet}` : '',
+          ].filter(Boolean).join(' | ');
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    function buildKnowledgeContextText(rows) {
+      return (Array.isArray(rows) ? rows : [])
+        .slice(0, 6)
+        .map((row, index) => {
+          const snippet = String(row.content || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+          return [
+            `Knowledge ${index + 1}: ${String(row.title || '').trim() || '-'}`,
+            `Tags: ${String(row.tags || '').trim() || '-'}`,
+            snippet ? `Content: ${snippet}` : '',
+          ].filter(Boolean).join(' | ');
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    async function fetch4oLabel(text, ticketRows = [], knowledgeRows = []) {
+      const ticketContext = buildTicketContextText(ticketRows);
+      const knowledgeContext = buildKnowledgeContextText(knowledgeRows);
+      const payload = {
+        projectCode: 'IT Support',
+        projectName: 'IT Support',
+        subprojectCode: '',
+        subprojectName: '',
+        issueTitle: text,
+        requester: '',
+        reportedAt: '',
+        department: '',
+        contentLines: [text, ticketContext, knowledgeContext].filter(Boolean),
+        contentText: [text, ticketContext, knowledgeContext].filter(Boolean).join('\n\n'),
+        urls: [],
+        description: text,
+      };
+    const res = await fetch('/api/helpdesk/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok || !data.analysis) return detectIssueTypeFromText(text) || 'Software';
+      return String(data.analysis.problem_type || '').trim() || detectIssueTypeFromText(text) || 'Software';
+  }
+
+  function renderResult(type, text, meta = {}) {
+    const result = document.getElementById('aiResult');
+    const title = type || 'ยังไม่ชัดเจน';
+    const description = {
+      'system error': 'ระบบ / server มีข้อผิดพลาดจริง จนใช้งานต่อไม่ได้',
+      'System Bug': 'เป็นความผิดพลาดของตัวฟังก์ชันหรือหน้าจอในระบบ',
+      'Human error': 'ข้อมูลหรือคำสั่งที่ผู้ใช้กรอกมีลักษณะกดผิด / ลงผิด',
+      'hardware': 'เกี่ยวข้องกับอุปกรณ์หรือเครื่องมือทางกายภาพ',
+      'Software': 'เกี่ยวข้องกับสิทธิ์ / login / API / mapping / data / integration',
+      'network': 'เกี่ยวข้องกับการเชื่อมต่อเครือข่ายหรืออินเทอร์เน็ต',
+      'Change Request': 'เป็นคำขอเพิ่มเติมหรือการปรับปรุงระบบ',
+      'ยังไม่ชัดเจน': 'ยังไม่พบ knowledge ที่ชี้ไปหมวดที่แน่ชัด',
+      '4o': 'ใช้ผลวิเคราะห์จาก 4o เมื่อ knowledge ไม่พอ',
+    }[title] || '';
+    const ticketRows = Array.isArray(meta.ticketRows) ? meta.ticketRows : [];
+    const knowledgeRows = Array.isArray(meta.knowledgeRows) ? meta.knowledgeRows : [];
+    const source = meta.source || 'ticket history';
+    const ticketHtml = ticketRows.length
+      ? ticketRows.slice(0, 3).map((row) => `<span class="ai-badge" style="margin-right:6px;margin-bottom:6px">${esc(row.title || row.bug_type || 'Ticket')}</span>`).join('')
+      : '<span class="ai-badge" style="margin-right:6px;margin-bottom:6px">No matching ticket history</span>';
+    const knowledgeHtml = knowledgeRows.length
+      ? knowledgeRows.slice(0, 3).map((row) => `<span class="ai-badge" style="margin-right:6px;margin-bottom:6px">${esc(row.title || row.tags || 'Knowledge')}</span>`).join('')
+      : '<span class="ai-badge" style="margin-right:6px;margin-bottom:6px">No matching knowledge</span>';
+
+    result.style.display = 'block';
+    result.innerHTML = `
+      <div class="top">
+        <div class="title">${title}</div>
+        <span class="ai-badge"><small>matched by</small> ${esc(source)}</span>
+      </div>
+      <div class="desc">${description}</div>
+      <div style="margin:10px 0 8px;font-size:12px;color:#667085;font-weight:700">Ticket history matches</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${ticketHtml}</div>
+      <div style="margin:10px 0 8px;font-size:12px;color:#667085;font-weight:700">Knowledge matches</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${knowledgeHtml}</div>
+      <ul>
+        <li><b>ข้อความ:</b> ${text || '-'}</li>
+        <li><b>หมวดที่แนะนำ:</b> ${title}</li>
+        <li><b>หัวข้อ:</b> IT Support</li>
+      </ul>
+    `;
+  }
+
+    function classifyNow() {
+      const text = document.getElementById('aiText').value.trim();
+      if (!text) {
+        BT.toast('กรอกข้อความก่อน', 'warning');
+        return;
+    }
+    normalizeIssueTypeLabel(text, { title: text, description: text })
+      .then(async (resultData) => {
+          if (resultData.label && resultData.label !== 'ยังไม่ชัดเจน') {
+            renderResult(resultData.label, text, {
+              ticketRows: resultData.ticketRows,
+              knowledgeRows: resultData.knowledgeRows,
+              source: resultData.ticketRows && resultData.ticketRows.length ? 'ticket history' : 'knowledge',
+            });
+            return;
+          }
+          const ticketContextRows = await fetchTicketContextRows(text);
+          const label4o = await fetch4oLabel(text, ticketContextRows, resultData.knowledgeRows);
+          renderResult(label4o, text, {
+            ticketRows: ticketContextRows,
+            knowledgeRows: resultData.knowledgeRows,
+            source: ticketContextRows.length ? '4o + ticket history' : '4o',
+          });
+        })
+        .catch(() => renderResult(detectIssueTypeFromText(text) || 'Software', text, { ticketRows: [], knowledgeRows: [], source: 'ticket history' }));
+    }
+
+  function fillExample() {
+    document.getElementById('aiText').value = 'กดบันทึกไม่ได้ ขึ้น error / ขอเพิ่ม dropdown รายชื่อ / wifi หลุดบ่อย';
+    document.getElementById('aiResult').style.display = 'none';
+  }
+
+  function clearExample() {
+    document.getElementById('aiText').value = '';
+    document.getElementById('aiResult').style.display = 'none';
+  }
+
+  function aiAuthHeaders() {
+    const token = localStorage.getItem('bt_token') || '';
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  function aiApiUrl(path) {
+    return window.BT?.apiUrl ? BT.apiUrl(path) : `/api${String(path || '').startsWith('/') ? path : `/${path}`}`;
+  }
+
+  function formatFileSize(value) {
+    const bytes = Number(value || 0);
+    if (!Number.isFinite(bytes) || bytes <= 0) return '';
+    if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1).replace('.0', '')} MB`;
+  }
+
+  function projectExtra(row) {
+    if (row?.extra && typeof row.extra === 'object') return row.extra;
+    try { return JSON.parse(row?.extra || '{}'); } catch { return {}; }
+  }
+
+  function projectReferences(row) {
+    const extra = projectExtra(row);
+    return [row?.id, row?.code, row?.name, extra.source_id, extra.project_id, extra.service_id, extra.project_code]
+      .map((value) => String(value || '').trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  function linkedToProject(row, project) {
+    const projectRefs = projectReferences(project);
+    const extra = projectExtra(row);
+    const refs = [
+      row?.project_id, row?.project_code, row?.project, row?.service_id,
+      extra.parent_project, extra.parent_project_id, extra.project_id, extra.project_code,
+      extra.project_ref, extra.service_id, extra.service_code,
+    ].map((value) => String(value || '').trim().toLowerCase()).filter(Boolean);
+    return refs.some((ref) => projectRefs.includes(ref));
+  }
+
+  function isInactive(row) {
+    return row?.active === false || row?.active === 0 || String(row?.active || '').toLowerCase() === 'false';
+  }
+
+  let projectContext = null;
+  let projectDocuments = [];
+  let selectedProject = null;
+  let pendingProjectDocument = null;
+
+  function setProjectUploadProgress(uploading) {
+    const zone = document.getElementById('projectDocUpload');
+    const progress = document.getElementById('projectDocProgress');
+    zone?.classList.toggle('is-uploading', Boolean(uploading));
+    if (progress) progress.hidden = !uploading;
+  }
+
+  function setPendingProjectDocument(file) {
+    if (!file) return;
+    if (!selectedProject) {
+      BT.toast('กรุณาเลือกโครงการก่อนอัปโหลดเอกสาร', 'error');
+      return;
+    }
+    if (!/\.pdf$/i.test(file.name || '') && file.type !== 'application/pdf') {
+      BT.toast('อัปโหลดได้เฉพาะไฟล์ PDF', 'error');
+      return;
+    }
+    pendingProjectDocument = file;
+    renderProjectDocuments(projectDocuments);
+  }
+
+  function selectedProjectId() {
+    return String(selectedProject?.id || '').trim();
+  }
+
+  function setSelectedProject(projectId) {
+    const projects = Array.isArray(projectContext?.projects) ? projectContext.projects : (projectContext?.tables?.hd_projects || []);
+    selectedProject = projects.find((project) => String(project.id || '') === String(projectId || '')) || null;
+    renderProjectData(projectContext);
+    renderProjectDocuments(projectDocuments);
+  }
+
+  function renderProjectData(context) {
+    const projects = Array.isArray(context?.projects) ? context.projects : (context?.tables?.hd_projects || []);
+    const subProjects = Array.isArray(context?.sub_projects) ? context.sub_projects : (context?.tables?.hd_sub_projects || []);
+    const projectDevs = Array.isArray(context?.project_devs) ? context.project_devs : (context?.tables?.hd_projects_dev || []);
+    const host = document.getElementById('aiProjectData');
+    const count = document.getElementById('aiProjectCount');
+    if (!host || !count) return;
+    const visibleProjects = projects.filter((project) => !isInactive(project));
+    if (selectedProject && !visibleProjects.some((project) => String(project.id) === selectedProjectId())) selectedProject = null;
+    count.textContent = `โครงการ ${visibleProjects.length} รายการ | Sub Project ${subProjects.filter((row) => !isInactive(row)).length} รายการ`;
+    if (!visibleProjects.length) {
+      host.innerHTML = '<div class="ai-project-empty">ไม่พบข้อมูลโครงการ</div>';
+      return;
+    }
+    host.innerHTML = `<table class="ai-project-table">
+      <thead><tr><th>โครงการ</th><th>Sub Project</th><th>Dev ในทีม</th><th>สถานะ</th><th></th></tr></thead>
+      <tbody>${visibleProjects.map((project) => {
+        const subCount = subProjects.filter((row) => !isInactive(row) && linkedToProject(row, project)).length;
+        const devCount = projectDevs.filter((row) => !isInactive(row) && linkedToProject(row, project)).length;
+        const name = String(project.name || project.code || '-').trim();
+        const code = String(project.code || '').trim();
+        const selected = String(project.id || '') === selectedProjectId();
+        return `<tr class="${selected ? 'is-selected' : ''}" data-project-row="${esc(project.id)}">
+          <td><div class="ai-project-title"><span class="ai-project-icon"><i class="bi bi-diagram-3" aria-hidden="true"></i></span><div><div class="ai-project-name">${esc(name)}</div>${code && code !== name ? `<div class="ai-project-code">${esc(code)}</div>` : ''}</div></div></td>
+          <td><span class="ai-project-metric"><strong>${subCount}</strong><span>รายการ</span></span></td>
+          <td><span class="ai-project-metric"><strong>${devCount}</strong><span>คน</span></span></td>
+          <td><span class="ai-project-pill">ใช้งาน</span></td>
+          <td><button class="ai-project-select ${selected ? 'is-selected' : ''}" type="button" data-project-select="${esc(project.id)}">${selected ? 'เลือกแล้ว' : 'เลือก'}</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+    host.querySelectorAll('[data-project-row]').forEach((row) => {
+      row.addEventListener('click', () => setSelectedProject(row.dataset.projectRow));
+    });
+    host.querySelectorAll('[data-project-select]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setSelectedProject(button.dataset.projectSelect);
+      });
+    });
+  }
+
+  function renderProjectDocuments(rows) {
+    const host = document.getElementById('projectDocumentList');
+    const scope = document.getElementById('projectDocumentScope');
+    const uploadButton = document.getElementById('projectDocUpload');
+    const uploadInput = document.getElementById('projectDocInput');
+    const uploadChoose = document.getElementById('projectDocChoose');
+    const uploadSubmit = document.getElementById('projectDocSubmit');
+    const uploadFileName = document.getElementById('projectDocFileName');
+    if (!host) return;
+    if (!selectedProject) {
+      if (scope) scope.textContent = 'เลือกโครงการก่อนอัปโหลดหรือดูเอกสาร';
+      pendingProjectDocument = null;
+      if (uploadInput) { uploadInput.disabled = true; uploadInput.value = ''; }
+      uploadChoose?.classList.add('is-disabled');
+      if (uploadSubmit) uploadSubmit.disabled = true;
+      if (uploadFileName) uploadFileName.textContent = 'เลือกโครงการก่อน';
+      if (uploadButton) uploadButton.classList.add('is-disabled');
+      if (uploadButton?.querySelector('strong')) uploadButton.querySelector('strong').textContent = 'เลือกโครงการก่อน';
+      if (uploadButton?.querySelector('span')) uploadButton.querySelector('span').textContent = 'เลือกจากตารางด้านซ้าย';
+      host.innerHTML = '<div class="ai-project-empty">เลือกโครงการจากตารางด้านซ้าย</div>';
+      return;
+    }
+    const selectedRefs = projectReferences(selectedProject);
+    const selectedId = selectedProjectId();
+    const filteredRows = rows.filter((row) => {
+      const extra = projectExtra(row);
+      const refs = [row.related_id, extra.project_id, extra.project_code, extra.project_name]
+        .map((value) => String(value || '').trim().toLowerCase())
+        .filter(Boolean);
+      return refs.some((ref) => ref === selectedId.toLowerCase() || selectedRefs.includes(ref));
+    });
+    if (scope) scope.textContent = `โครงการ: ${String(selectedProject.name || selectedProject.code || '-').trim()}`;
+    if (uploadInput) uploadInput.disabled = false;
+    uploadChoose?.classList.remove('is-disabled');
+    if (uploadSubmit) uploadSubmit.disabled = !pendingProjectDocument;
+    if (uploadFileName) uploadFileName.textContent = pendingProjectDocument?.name || 'ยังไม่ได้เลือกไฟล์';
+    if (uploadButton) uploadButton.classList.remove('is-disabled');
+    if (uploadButton?.querySelector('strong')) uploadButton.querySelector('strong').textContent = 'อัปโหลดเอกสาร';
+    if (uploadButton?.querySelector('span')) uploadButton.querySelector('span').textContent = 'เลือกหรือลากไฟล์ PDF มาวาง';
+    if (!filteredRows.length) {
+      host.innerHTML = '<div class="ai-project-empty">ยังไม่มีเอกสาร</div>';
+      return;
+    }
+    host.innerHTML = filteredRows.map((row) => {
+      const extra = projectExtra(row);
+      const name = String(extra.file_name || row.name || row.code || 'เอกสาร PDF').trim();
+      const size = formatFileSize(extra.file_size);
+      const content = `<i class="bi bi-file-earmark-pdf" aria-hidden="true"></i><span class="ai-document-name">${esc(name)}</span>${size ? `<span class="ai-document-size">${esc(size)}</span>` : ''}<i class="bi bi-three-dots-vertical ai-document-menu-icon" aria-hidden="true"></i>`;
+      return `<div class="ai-document-item">
+        <button class="ai-document-row" type="button" data-project-document-menu="${esc(row.id)}" aria-expanded="false">${content}</button>
+        <div class="ai-document-actions" data-project-document-actions="${esc(row.id)}" hidden>
+          <button class="ai-document-action" type="button" data-project-document-view="${esc(row.id)}">ดูไฟล์</button>
+          <button class="ai-document-action is-danger" type="button" data-project-document-delete="${esc(row.id)}">ลบ</button>
+        </div>
+      </div>`;
+    }).join('');
+    host.querySelectorAll('[data-project-document-menu]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.projectDocumentMenu;
+        const menu = Array.from(host.querySelectorAll('[data-project-document-actions]')).find((item) => item.dataset.projectDocumentActions === id);
+        const open = Boolean(menu?.hidden);
+        host.querySelectorAll('[data-project-document-actions]').forEach((item) => { item.hidden = true; });
+        host.querySelectorAll('[data-project-document-menu]').forEach((item) => item.setAttribute('aria-expanded', 'false'));
+        if (menu) menu.hidden = !open;
+        button.setAttribute('aria-expanded', String(open));
+      });
+    });
+    host.querySelectorAll('[data-project-document-view]').forEach((button) => button.addEventListener('click', () => viewProjectDocument(button.dataset.projectDocumentView)));
+    host.querySelectorAll('[data-project-document-delete]').forEach((button) => button.addEventListener('click', () => deleteProjectDocument(button.dataset.projectDocumentDelete)));
+  }
+
+  async function viewProjectDocument(rowId) {
+    const row = projectDocuments.find((item) => String(item.id) === String(rowId));
+    const extra = projectExtra(row);
+    const rawUrl = String(extra.file_url || '').trim();
+    if (!rawUrl) {
+      BT.toast('ไม่พบไฟล์เอกสาร', 'error');
+      return;
+    }
+    const viewer = window.open('', '_blank');
+    if (viewer) viewer.opener = null;
+    try {
+      const url = window.BT?.url ? BT.url(rawUrl) : rawUrl;
+      const response = await fetch(url, { headers: aiAuthHeaders(), cache: 'no-store' });
+      if (!response.ok) throw new Error('เปิดไฟล์ไม่สำเร็จ');
+      const blobUrl = URL.createObjectURL(await response.blob());
+      if (viewer) viewer.location.replace(blobUrl);
+      else window.open(blobUrl, '_blank');
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 300000);
+    } catch (error) {
+      viewer?.close();
+      BT.toast(error.message || 'เปิดไฟล์ไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function deleteProjectDocument(rowId) {
+    const row = projectDocuments.find((item) => String(item.id) === String(rowId));
+    if (!row) return;
+    const extra = projectExtra(row);
+    const name = String(extra.file_name || row.name || 'เอกสารนี้').trim();
+    if (!window.confirm(`ลบ ${name} ใช่หรือไม่`)) return;
+    try {
+      const fileId = String(extra.file_id || '').trim();
+      if (fileId) {
+        const fileResponse = await fetch(aiApiUrl(`/files/${encodeURIComponent(fileId)}`), { method: 'DELETE', headers: aiAuthHeaders() });
+        const fileData = await fileResponse.json().catch(() => ({}));
+        if (!fileResponse.ok || !fileData.ok) throw new Error(fileData.error || 'ลบไฟล์ไม่สำเร็จ');
+      }
+      const metadataResponse = await fetch(aiApiUrl(`/hd-master/${encodeURIComponent(row.id)}`), { method: 'DELETE', headers: aiAuthHeaders() });
+      const metadataData = await metadataResponse.json().catch(() => ({}));
+      if (!metadataResponse.ok || !metadataData.ok) throw new Error(metadataData.error || 'ลบรายการเอกสารไม่สำเร็จ');
+      projectDocuments = projectDocuments.filter((item) => String(item.id) !== String(row.id));
+      renderProjectDocuments(projectDocuments);
+      BT.toast('ลบเอกสารแล้ว', 'success');
+    } catch (error) {
+      await loadProjectDocuments();
+      BT.toast(error.message || 'ลบเอกสารไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function loadProjectDocuments() {
+    const host = document.getElementById('projectDocumentList');
+    if (host) host.innerHTML = '<div class="ai-project-empty">กำลังโหลด...</div>';
+    try {
+      const response = await fetch(aiApiUrl('/hd-master?table=hd_project_info_pdf'), { headers: aiAuthHeaders(), cache: 'no-store' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || 'โหลดเอกสารไม่สำเร็จ');
+      projectDocuments = (Array.isArray(data.data) ? data.data : []).filter((row) => !isInactive(row));
+      renderProjectDocuments(projectDocuments);
+    } catch (error) {
+      if (host) host.innerHTML = `<div class="ai-project-empty">${esc(error.message || 'โหลดเอกสารไม่สำเร็จ')}</div>`;
+    }
+  }
+
+  async function uploadProjectDocument(file) {
+    if (!file) return false;
+    if (!selectedProject) {
+      BT.toast('กรุณาเลือกโครงการก่อนอัปโหลดเอกสาร', 'error');
+      return false;
+    }
+    if (!/\.pdf$/i.test(file.name || '') && file.type !== 'application/pdf') {
+      BT.toast('อัปโหลดได้เฉพาะไฟล์ PDF', 'error');
+      return false;
+    }
+    const uploadButton = document.getElementById('projectDocUpload');
+    const uploadInput = document.getElementById('projectDocInput');
+    const uploadChoose = document.getElementById('projectDocChoose');
+    const uploadSubmit = document.getElementById('projectDocSubmit');
+    if (uploadInput) uploadInput.disabled = true;
+    uploadChoose?.classList.add('is-disabled');
+    if (uploadSubmit) uploadSubmit.disabled = true;
+    uploadButton?.classList.add('is-over');
+    setProjectUploadProgress(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('related_type', 'hd_project_info_pdf');
+      form.append('related_id', selectedProjectId());
+      const uploadResponse = await fetch(aiApiUrl('/upload'), { method: 'POST', headers: aiAuthHeaders(), body: form });
+      const uploadData = await uploadResponse.json().catch(() => ({}));
+      if (!uploadResponse.ok || !uploadData.ok) throw new Error(uploadData.error || 'อัปโหลดเอกสารไม่สำเร็จ');
+      const baseName = String(file.name || 'เอกสาร PDF').replace(/\.[^.]+$/, '') || 'เอกสาร PDF';
+      const saveResponse = await fetch(aiApiUrl('/hd-master?table=hd_project_info_pdf'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...aiAuthHeaders() },
+        body: JSON.stringify({
+          code: baseName,
+          name: baseName,
+          active: true,
+          extra: {
+            file_id: uploadData.id || '',
+            file_url: uploadData.url || '',
+            file_name: file.name || baseName,
+            content_type: file.type || 'application/pdf',
+            file_size: file.size || 0,
+            project_id: selectedProjectId(),
+            project_code: String(selectedProject.code || '').trim(),
+            project_name: String(selectedProject.name || selectedProject.code || '').trim(),
+            source: 'upload',
+          },
+        }),
+      });
+      const saveData = await saveResponse.json().catch(() => ({}));
+      if (!saveResponse.ok || !saveData.ok) throw new Error(saveData.error || 'บันทึกข้อมูลเอกสารไม่สำเร็จ');
+      await loadProjectDocuments();
+      BT.toast('อัปโหลดเอกสารแล้ว', 'success');
+      return true;
+    } catch (error) {
+      BT.toast(error.message || 'อัปโหลดเอกสารไม่สำเร็จ', 'error');
+      return false;
+    } finally {
+      if (uploadInput) uploadInput.disabled = !selectedProject;
+      uploadChoose?.classList.toggle('is-disabled', !selectedProject);
+      if (uploadSubmit) uploadSubmit.disabled = !selectedProject || !pendingProjectDocument;
+      uploadButton?.classList.remove('is-over');
+      setProjectUploadProgress(false);
+    }
+  }
+
+  async function loadProjectData(force = false) {
+    const host = document.getElementById('aiProjectData');
+    const count = document.getElementById('aiProjectCount');
+    if (host) host.innerHTML = '<div class="ai-project-empty">กำลังโหลด...</div>';
+    if (count) count.textContent = 'กำลังโหลดข้อมูลโครงการ...';
+    try {
+      const context = window.BT?.loadHdContext
+        ? await BT.loadHdContext({ scope: 'helpdesk', force })
+        : await fetch(aiApiUrl('/hd-context?scope=helpdesk'), { headers: aiAuthHeaders() }).then((response) => response.json()).then((data) => data.data || {});
+      projectContext = context;
+      renderProjectData(projectContext);
+      await loadProjectDocuments();
+    } catch (error) {
+      if (host) host.innerHTML = `<div class="ai-project-empty">${esc(error.message || 'โหลดข้อมูลโครงการไม่สำเร็จ')}</div>`;
+      if (count) count.textContent = 'โหลดข้อมูลไม่สำเร็จ';
+    }
+  }
+
+  function setAiTab(tab) {
+    const target = tab === 'projects' ? 'projects' : 'rules';
+    document.querySelectorAll('[data-ai-tab]').forEach((button) => {
+      const selected = button.dataset.aiTab === target;
+      button.classList.toggle('is-active', selected);
+      button.setAttribute('aria-selected', String(selected));
+    });
+    document.getElementById('aiPanelRules').hidden = target !== 'rules';
+    document.getElementById('aiPanelProjects').hidden = target !== 'projects';
+    if (target === 'projects') loadProjectData();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderAiRules();
+    openRuleEditor(selectedRuleId);
+    document.querySelectorAll('[data-ai-tab]').forEach((button) => button.addEventListener('click', () => setAiTab(button.dataset.aiTab)));
+    document.getElementById('refreshProjectData')?.addEventListener('click', () => loadProjectData(true));
+    const projectDocInput = document.getElementById('projectDocInput');
+    const projectDocSubmit = document.getElementById('projectDocSubmit');
+    projectDocInput?.addEventListener('change', () => {
+      setPendingProjectDocument(projectDocInput.files?.[0]);
+    });
+    projectDocSubmit?.addEventListener('click', async () => {
+      const documentToUpload = pendingProjectDocument;
+      const uploaded = await uploadProjectDocument(documentToUpload);
+      if (uploaded && documentToUpload === pendingProjectDocument) {
+        pendingProjectDocument = null;
+        if (projectDocInput) projectDocInput.value = '';
+        renderProjectDocuments(projectDocuments);
+      }
+    });
+    const projectDocUpload = document.getElementById('projectDocUpload');
+    projectDocUpload?.addEventListener('dragenter', (event) => { event.preventDefault(); if (selectedProject) projectDocUpload.classList.add('is-over'); });
+    projectDocUpload?.addEventListener('dragover', (event) => { event.preventDefault(); if (selectedProject) projectDocUpload.classList.add('is-over'); });
+    projectDocUpload?.addEventListener('dragleave', (event) => { if (!projectDocUpload.contains(event.relatedTarget)) projectDocUpload.classList.remove('is-over'); });
+    projectDocUpload?.addEventListener('drop', (event) => {
+      event.preventDefault();
+      projectDocUpload.classList.remove('is-over');
+      setPendingProjectDocument(event.dataTransfer?.files?.[0]);
+    });
+    if (new URLSearchParams(window.location.search).get('tab') === 'projects') setAiTab('projects');
+  });
+</script>
+</body>
+</html>

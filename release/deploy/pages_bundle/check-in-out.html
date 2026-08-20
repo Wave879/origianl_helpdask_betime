@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Check in - out — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .cio-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .cio-time {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--bt-primary);
+      line-height: 1;
+      margin: 8px 0 6px;
+    }
+    .cio-sub {
+      color: var(--bt-muted);
+      font-size: 0.9rem;
+    }
+    .cio-log {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .cio-log-item {
+      border: 1px solid var(--bt-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+      background: #fff;
+    }
+    @media (max-width: 900px) {
+      .cio-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-clock-history"></i> Check in - out</h2>
+      <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="refreshClock()"><i class="bi bi-arrow-clockwise"></i> รีเฟรชเวลา</button>
+    </div>
+
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+      <div class="bt-card"><div class="bt-card-title">สถานะวันนี้</div><div class="bt-card-value" id="k-status" style="color:var(--bt-success)">ยังไม่เช็กอิน</div><div class="bt-card-sub">Daily status</div></div>
+      <div class="bt-card"><div class="bt-card-title">เวลาเข้า</div><div class="bt-card-value" id="k-in">-</div><div class="bt-card-sub">Check in time</div></div>
+      <div class="bt-card"><div class="bt-card-title">เวลาออก</div><div class="bt-card-value" id="k-out">-</div><div class="bt-card-sub">Check out time</div></div>
+    </div>
+
+    <div class="cio-grid" style="margin-top:16px">
+      <div class="bt-card">
+        <div class="bt-section-header"><h2>ลงเวลา</h2></div>
+        <div class="cio-time" id="clock">--:--:--</div>
+        <div class="cio-sub" id="today">-</div>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button class="bt-btn bt-btn-primary" onclick="checkIn()"><i class="bi bi-box-arrow-in-right"></i> Check in</button>
+          <button class="bt-btn bt-btn-warning" onclick="checkOut()"><i class="bi bi-box-arrow-right"></i> Check out</button>
+        </div>
+      </div>
+
+      <div class="bt-card">
+        <div class="bt-section-header"><h2>ประวัติวันนี้</h2></div>
+        <div id="logs" class="cio-log"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('check-in-out.html', 'Time Attendance');
+
+  const token = () => localStorage.getItem('bt_token');
+  const apiReq = (path, opts={}) => fetch('/api'+path, {
+    headers: {'Authorization':'Bearer '+token(), 'Content-Type':'application/json'}, ...opts
+  });
+
+  let todayRecord = null;
+  let locationSel = 'Office';
+
+  function nowDate() {
+    return new Date().toLocaleDateString('th-TH', { dateStyle: 'full' });
+  }
+  function nowTime() {
+    return new Date().toLocaleTimeString('th-TH', { hour12: false });
+  }
+  function refreshClock() {
+    document.getElementById('clock').textContent = nowTime();
+    document.getElementById('today').textContent = nowDate();
+  }
+
+  function render(rec) {
+    todayRecord = rec || null;
+    const hasIn  = !!(rec && rec.check_in);
+    const hasOut = !!(rec && rec.check_out);
+    const inTime  = hasIn  ? rec.check_in.slice(0,5)  : '-';
+    const outTime = hasOut ? rec.check_out.slice(0,5) : '-';
+    const workHrs = (rec && rec.work_hours) ? rec.work_hours.toFixed(1)+' ชม.' : '-';
+
+    document.getElementById('k-status').textContent = hasOut ? 'เช็กเอาต์แล้ว' : (hasIn ? 'เช็กอินแล้ว' : 'ยังไม่เช็กอิน');
+    document.getElementById('k-status').style.color  = hasOut ? 'var(--bt-warning)' : (hasIn ? 'var(--bt-success)' : 'var(--bt-danger)');
+    document.getElementById('k-in').textContent  = inTime;
+    document.getElementById('k-out').textContent = outTime;
+
+    const logs = [];
+    if (hasIn)  logs.push(`<div class="cio-log-item"><span>Check in</span><strong>${inTime}</strong><span style="color:var(--bt-muted)">${rec.location||''}</span></div>`);
+    if (hasOut) logs.push(`<div class="cio-log-item"><span>Check out</span><strong>${outTime}</strong><span style="color:var(--bt-success)">${workHrs}</span></div>`);
+    document.getElementById('logs').innerHTML = logs.join('') || '<div class="cio-sub">ยังไม่มีรายการวันนี้</div>';
+  }
+
+  async function loadToday() {
+    try {
+      const res = await apiReq('/checkin');
+      const d = await res.json();
+      render(d.ok ? d.data : null);
+    } catch(e) { render(null); }
+  }
+
+  async function checkIn() {
+    if (todayRecord?.check_in) { BT.notify('เช็กอินแล้ว', 'warning'); return; }
+    const loc = document.getElementById('loc-sel')?.value || locationSel;
+    try {
+      const res = await apiReq('/checkin', { method:'POST', body: JSON.stringify({ action:'check_in', location: loc }) });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      render(d.data);
+      BT.notify('เช็กอินเรียบร้อยแล้ว', 'success');
+    } catch(e) {
+      BT.notify('เช็กอินไม่สำเร็จ: '+e.message, 'danger');
+    }
+  }
+
+  async function checkOut() {
+    if (!todayRecord?.check_in) { BT.notify('กรุณาเช็กอินก่อน', 'warning'); return; }
+    if (todayRecord?.check_out) { BT.notify('เช็กเอาต์แล้ว', 'warning'); return; }
+    try {
+      const res = await apiReq('/checkin', { method:'POST', body: JSON.stringify({ action:'check_out' }) });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      render(d.data);
+      BT.notify('เช็กเอาต์เรียบร้อยแล้ว', 'success');
+    } catch(e) {
+      BT.notify('เช็กเอาต์ไม่สำเร็จ: '+e.message, 'danger');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    refreshClock();
+    loadToday();
+    setInterval(refreshClock, 1000);
+  });
+</script>
+</body>
+</html>

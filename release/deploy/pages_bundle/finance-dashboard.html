@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finance Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-bar-chart-line"></i> Finance Dashboard</h2></div>
+    <div class="bt-kpi-grid">
+      <div class="bt-card"><div class="bt-card-title">Invoice ค้างชำระ</div><div class="bt-card-value" id="fin-unpaid" style="color:var(--bt-danger)">—</div><div class="bt-card-sub">บาท</div></div>
+      <div class="bt-card"><div class="bt-card-title">Invoice ทั้งหมด</div><div class="bt-card-value" id="fin-total">—</div><div class="bt-card-sub">รายการ</div></div>
+      <div class="bt-card"><div class="bt-card-title">OT รออนุมัติ</div><div class="bt-card-value" id="fin-ot" style="color:var(--bt-warning)">—</div><div class="bt-card-sub">รายการ</div></div>
+      <div class="bt-card"><div class="bt-card-title">OT ชั่วโมงรวม (เดือนนี้)</div><div class="bt-card-value" id="fin-ot-hours" style="color:var(--bt-accent)">—</div><div class="bt-card-sub">ชั่วโมง</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">
+      <div class="bt-card">
+        <div class="bt-section-header">
+          <h2>Invoice ค้างชำระล่าสุด</h2>
+          <a href="/invoices.html" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+        </div>
+        <div id="fin-invoices-list"><p style="color:#888;text-align:center;padding:30px">กำลังโหลด...</p></div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-section-header">
+          <h2>OT รออนุมัติ</h2>
+          <a href="/ot-claims.html" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+        </div>
+        <div id="fin-ot-list"><p style="color:#888;text-align:center;padding:30px">กำลังโหลด...</p></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px">
+      <a href="/budget.html" class="bt-card" style="text-decoration:none;text-align:center;padding:24px;cursor:pointer">
+        <i class="bi bi-briefcase" style="font-size:2rem"></i>
+        <div style="font-weight:600;margin-top:8px">Budget Control</div>
+      </a>
+      <a href="/billing-alerts.html" class="bt-card" style="text-decoration:none;text-align:center;padding:24px;cursor:pointer">
+        <i class="bi bi-bell" style="font-size:2rem"></i>
+        <div style="font-weight:600;margin-top:8px">Billing Alerts</div>
+      </a>
+      <a href="/financial-reports.html" class="bt-card" style="text-decoration:none;text-align:center;padding:24px;cursor:pointer">
+        <i class="bi bi-file-text" style="font-size:2rem"></i>
+        <div style="font-weight:600;margin-top:8px">Financial Reports</div>
+      </a>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('finance-dashboard.html', 'Finance');
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const d = await BT.call('dashboard/finance', {}, 'GET');
+      document.getElementById('fin-unpaid').textContent    = Number(d.unpaid_amount ?? 0).toLocaleString();
+      document.getElementById('fin-total').textContent     = d.total_invoices ?? 0;
+      document.getElementById('fin-ot').textContent        = d.pending_ot ?? 0;
+      document.getElementById('fin-ot-hours').textContent  = d.ot_hours_month ?? 0;
+
+      const invRows = (d.unpaid_invoices || []).map(i => `<tr>
+        <td style="font-size:0.82rem">${i.invoice_no}</td>
+        <td style="font-size:0.82rem">${i.vendor}</td>
+        <td style="font-size:0.82rem;text-align:right">${Number(i.amount).toLocaleString()}</td>
+        <td style="font-size:0.82rem;color:${i.due_date && i.due_date < new Date().toISOString().slice(0,10) ? 'var(--bt-danger)' : '#888'}">${i.due_date||'-'}</td>
+      </tr>`).join('');
+      document.getElementById('fin-invoices-list').innerHTML = invRows
+        ? `<table class="bt-table"><thead><tr><th>เลขที่</th><th>Vendor</th><th>ยอด (฿)</th><th>ครบกำหนด</th></tr></thead><tbody>${invRows}</tbody></table>`
+        : '<p style="color:#888;text-align:center;padding:20px">ไม่มี Invoice ค้างชำระ</p>';
+
+      const otRows = (d.pending_ot_list || []).map(o => `<tr>
+        <td style="font-size:0.82rem">${o.full_name||o.employee}</td>
+        <td style="font-size:0.82rem">${o.ot_date}</td>
+        <td style="font-size:0.82rem">${o.ot_hours} ชม.</td>
+        <td><span class="bt-badge bt-badge-orange">${o.status}</span></td>
+      </tr>`).join('');
+      document.getElementById('fin-ot-list').innerHTML = otRows
+        ? `<table class="bt-table"><thead><tr><th>พนักงาน</th><th>วันที่</th><th>OT</th><th>สถานะ</th></tr></thead><tbody>${otRows}</tbody></table>`
+        : '<p style="color:#888;text-align:center;padding:20px">ไม่มี OT รออนุมัติ</p>';
+    } catch(e) {
+      if (e.message === 'Unauthorized') { BT.handleUnauthorized(); return; }
+    }
+  });
+</script>
+</body>
+</html>

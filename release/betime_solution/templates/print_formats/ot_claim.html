@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Sarabun', 'TH Sarabun New', Arial, sans-serif; font-size: 13px; color: #212121; margin: 0; padding: 24px; }
+  .header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #1565C0; }
+  .header h1 { font-size: 18px; color: #1565C0; margin: 0 0 4px; }
+  .header p { color: #757575; font-size: 12px; margin: 0; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin-bottom: 20px; }
+  .info-item label { font-weight: 700; font-size: 11px; color: #616161; text-transform: uppercase; }
+  .info-item .val { font-size: 14px; margin-top: 2px; }
+  .total-box { background: #E3F2FD; border: 1px solid #1565C0; border-radius: 8px; padding: 16px 20px; text-align: center; margin: 20px 0; }
+  .total-box .amount { font-size: 28px; font-weight: 700; color: #1565C0; }
+  .total-box label { font-size: 12px; color: #616161; display: block; }
+  .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+  .sig-box { border-top: 1px solid #212121; padding-top: 8px; text-align: center; font-size: 12px; }
+  .badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; }
+  .badge-orange { background: #FFF3E0; color: #E65100; }
+  .badge-green  { background: #E8F5E9; color: #2E7D32; }
+  .badge-red    { background: #FFEBEE; color: #C62828; }
+  .footer { text-align: center; color: #9E9E9E; font-size: 10px; margin-top: 32px; border-top: 1px solid #E0E0E0; padding-top: 10px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>แบบฟอร์มคำขอค่าล่วงเวลา (OT Claim)</h1>
+  <p>{{ doc.name }} | บริษัท Betime Solution Co., Ltd.</p>
+</div>
+
+<div class="info-grid">
+  <div class="info-item"><label>ชื่อพนักงาน</label><div class="val">{{ doc.employee_name or doc.employee }}</div></div>
+  <div class="info-item"><label>สถานะ</label><div class="val">
+    <span class="badge {{ 'badge-orange' if doc.status in ('Draft','Submitted') else 'badge-green' if doc.status == 'Approved' else 'badge-red' }}">{{ doc.status }}</span>
+  </div></div>
+  <div class="info-item"><label>วันที่ทำ OT</label><div class="val">{{ doc.date }}</div></div>
+  <div class="info-item"><label>ชั่วโมง OT</label><div class="val">{{ doc.ot_hours }} ชั่วโมง</div></div>
+  <div class="info-item"><label>เหตุผล</label><div class="val">{{ doc.reason or '-' }}</div></div>
+  <div class="info-item"><label>โครงการ</label><div class="val">{{ doc.project or '-' }}</div></div>
+  {% if doc.approved_by %}
+  <div class="info-item"><label>อนุมัติโดย</label><div class="val">{{ doc.approved_by }}</div></div>
+  <div class="info-item"><label>วันที่อนุมัติ</label><div class="val">{{ doc.approval_date or '-' }}</div></div>
+  {% endif %}
+</div>
+
+<div class="total-box">
+  <label>จำนวนเงินค่าล่วงเวลา</label>
+  <div class="amount">{{ frappe.utils.fmt_money(doc.amount or 0, currency='THB') }}</div>
+  <small style="color:#616161;">(อัตรา {{ doc.ot_rate or 0 }} บาท/ชม. × {{ doc.ot_hours }} ชม.)</small>
+</div>
+
+{% if doc.notes %}
+<p><strong>หมายเหตุ:</strong> {{ doc.notes }}</p>
+{% endif %}
+
+<div class="sig-row">
+  <div class="sig-box"><br><br>....................................<br>ผู้ยื่นคำขอ<br>{{ doc.employee_name or '' }}</div>
+  <div class="sig-box"><br><br>....................................<br>ผู้อนุมัติ<br>{{ doc.approved_by or '' }}</div>
+</div>
+
+<div class="footer">Betime Solution System | {{ doc.name }} | พิมพ์เมื่อ {{ frappe.utils.format_datetime(frappe.utils.now()) }}</div>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LINE Group - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .line-shell { display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:start; }
+    .line-card { background:#fff; border:1px solid #dce3ec; border-radius:18px; box-shadow:0 1px 2px rgba(15,23,42,0.04); }
+    .line-sidebar { padding:18px; }
+    .line-sidebar h3 { margin:0; font-size:1.5rem; font-weight:800; color:#0f172a; }
+    .line-sidebar p { margin:8px 0 0; color:#64748b; font-weight:600; }
+    .line-list { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .line-item {
+      border:1px solid #d6dee9; border-radius:14px; padding:14px; background:#f8fafc;
+      display:flex; gap:12px; align-items:center; cursor:pointer; transition:0.18s ease;
+    }
+    .line-item.active { background:#ff7a11; border-color:#ff7a11; color:#fff; box-shadow:0 10px 22px rgba(249,115,22,0.24); }
+    .line-item:hover { border-color:#f59e0b; }
+    .line-avatar {
+      width:42px; height:42px; border-radius:14px; display:grid; place-items:center;
+      background:#fde68a; color:#7c2d12; font-size:1.1rem; flex-shrink:0;
+    }
+    .line-item.active .line-avatar { background:#fff3c4; }
+    .line-item-name { font-weight:800; font-size:1rem; line-height:1.25; }
+    .line-item-meta { margin-top:4px; color:inherit; opacity:0.9; font-size:0.84rem; font-weight:600; }
+    .line-main { display:flex; flex-direction:column; gap:18px; }
+    .line-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+    .line-head h2 { margin:0; font-size:2rem; font-weight:800; letter-spacing:-0.02em; }
+    .line-tools { display:flex; gap:10px; flex-wrap:wrap; }
+    .line-search {
+      width:260px; max-width:100%; height:44px; border-radius:12px; border:1px solid #cfd8e3;
+      background:#f6f8fb; display:flex; align-items:center; gap:8px; padding:0 12px;
+    }
+    .line-search input { border:0; outline:0; width:100%; background:transparent; font:inherit; }
+    .line-action {
+      height:44px; border-radius:12px; border:1px solid #cfd8e3; background:#fff; color:#334155;
+      padding:0 16px; display:inline-flex; align-items:center; gap:8px; font-weight:700; cursor:pointer;
+    }
+    .line-primary { background:#ff7a11; border-color:#ff7a11; color:#fff; }
+    .line-overview { padding:22px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .line-overview-title { margin:0; font-size:1.7rem; font-weight:900; color:#0f172a; }
+    .line-overview-meta { margin-top:10px; display:flex; flex-wrap:wrap; gap:14px; color:#475569; font-weight:700; }
+    .line-pill {
+      display:inline-flex; align-items:center; border-radius:999px; background:#fff7ed; color:#c2410c;
+      padding:5px 11px; font-size:0.78rem; font-weight:800; border:1px solid #fed7aa;
+    }
+    .line-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+    .line-stat { padding:18px; }
+    .line-stat small { display:block; color:#64748b; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+    .line-stat strong { display:block; margin-top:10px; color:#0f172a; font-size:2rem; line-height:1; }
+    .line-panel { padding:20px 22px; }
+    .line-panel h3 { margin:0 0 12px; font-size:1.2rem; color:#0f172a; }
+    .line-empty {
+      min-height:170px; border:1px dashed #d6dee9; border-radius:14px; color:#64748b;
+      display:grid; place-items:center; padding:20px; text-align:center; font-weight:700; background:#fbfdff;
+    }
+    .line-empty small { display:block; margin-top:8px; font-size:0.9rem; font-weight:600; }
+    .line-select {
+      width:100%; max-width:260px; height:40px; border-radius:10px; border:1px solid #cfd8e3;
+      background:#f8fafc; padding:0 12px; font:inherit; font-weight:700;
+    }
+    .line-inline-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .line-toast {
+      position:fixed; right:20px; bottom:20px; background:#0f172a; color:#fff; padding:12px 16px;
+      border-radius:10px; font-size:0.85rem; font-weight:600; display:none; z-index:9999;
+      box-shadow:0 10px 24px rgba(15,23,42,0.24);
+    }
+    .line-toast.show { display:block; }
+    @media (max-width: 1200px) { .line-shell { grid-template-columns:1fr; } }
+    @media (max-width: 860px) {
+      .line-head h2, .line-overview-title { font-size:1.35rem; }
+      .line-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .line-search { width:100%; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <section class="line-head">
+      <div>
+        <h2>LINE Group</h2>
+        <div style="margin-top:6px;color:#64748b;font-weight:600">จัดการกลุ่ม LINE ที่ bot เชื่อมต่อเข้ามาจริงจากระบบ CEO Flow</div>
+      </div>
+      <div class="line-tools">
+        <label class="line-search">
+          <i class="bi bi-search" style="color:#94a3b8"></i>
+          <input id="search-input" type="text" placeholder="ค้นหาชื่อกลุ่ม หรือ group id">
+        </label>
+        <button class="line-action line-primary" onclick="syncAllGroups()"><i class="bi bi-arrow-repeat"></i> Sync ทุกกลุ่ม</button>
+      </div>
+    </section>
+
+    <section class="line-shell">
+      <aside class="line-card line-sidebar">
+        <h3>รายการกลุ่ม</h3>
+        <p id="group-counter">ทั้งหมด 0 กลุ่ม</p>
+        <div id="group-list" class="line-list"></div>
+      </aside>
+
+      <section class="line-main">
+        <article class="line-card line-overview" id="overview-card"></article>
+
+        <section class="line-grid">
+          <article class="line-card line-stat"><small>สมาชิก</small><strong id="stat-members">0</strong></article>
+          <article class="line-card line-stat"><small>Task ทั้งหมด</small><strong id="stat-all">0</strong></article>
+          <article class="line-card line-stat"><small>กำลังทำ</small><strong id="stat-doing">0</strong></article>
+          <article class="line-card line-stat"><small>เสร็จแล้ว</small><strong id="stat-done">0</strong></article>
+        </section>
+
+        <article class="line-card line-panel">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+            <div>
+              <h3 style="margin-bottom:4px">การทำงานกับกลุ่ม</h3>
+              <div style="color:#64748b;font-weight:600;font-size:0.95rem">เลือกกลุ่มที่ต้องการแล้วสั่งงานกับ LINE API ได้จากหน้านี้</div>
+            </div>
+            <select class="line-select" id="group-select"></select>
+          </div>
+
+          <div class="line-inline-actions">
+            <button class="line-action" onclick="sendLineNow()"><i class="bi bi-send"></i> ส่งข้อความทดสอบ</button>
+            <button class="line-action" onclick="syncMembers()"><i class="bi bi-people"></i> Sync สมาชิก</button>
+            <button class="line-action" onclick="inviteGroup()"><i class="bi bi-info-circle"></i> วิธีเชื่อมกลุ่มใหม่</button>
+            <button class="line-action" onclick="archiveTasks()"><i class="bi bi-link-45deg"></i> สถานะ Task Rule</button>
+            <button class="line-action" style="border-color:#fecaca;color:#b91c1c;background:#fff1f2" onclick="removeGroup()"><i class="bi bi-trash"></i> ลบกลุ่มออกจากระบบ</button>
+          </div>
+
+          <div id="empty-state" class="line-empty" style="margin-top:16px"></div>
+        </article>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="line-toast"></div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('line-group.html', 'LINE Group');
+
+  let groups = [];
+  let selectedGroupId = null;
+
+  function currentGroup() {
+    return groups.find((group) => group.groupId === selectedGroupId) || groups[0] || null;
+  }
+
+  function notify(message, type = 'info') {
+    BT.notify(message, type);
+    const el = document.getElementById('toast');
+    el.textContent = message;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2400);
+  }
+
+  function renderSidebar(keyword = '') {
+    const list = document.getElementById('group-list');
+    const search = String(keyword || '').trim().toLowerCase();
+    const visible = groups.filter((group) => {
+      return String(group.name || '').toLowerCase().includes(search)
+        || String(group.groupId || '').toLowerCase().includes(search);
+    });
+
+    document.getElementById('group-counter').textContent = `ทั้งหมด ${groups.length} กลุ่ม`;
+    if (!visible.length) {
+      list.innerHTML = '<div style="padding:14px;color:#64748b;font-weight:700">ยังไม่พบ LINE Group ที่ sync เข้ามา</div>';
+      return;
+    }
+
+    list.innerHTML = visible.map((group) => `
+      <button class="line-item ${group.groupId === selectedGroupId ? 'active' : ''}" onclick="selectGroup('${group.groupId}')">
+        <span class="line-avatar"><i class="bi bi-chat-dots-fill"></i></span>
+        <span style="min-width:0;text-align:left">
+          <div class="line-item-name">${group.name || group.groupId}</div>
+          <div class="line-item-meta">${group.groupId}</div>
+          <div class="line-item-meta"><i class="bi bi-people"></i> ${Number(group.members || 0)} คน</div>
+        </span>
+      </button>
+    `).join('');
+  }
+
+  function renderOverview() {
+    const group = currentGroup();
+    const card = document.getElementById('overview-card');
+    const select = document.getElementById('group-select');
+    select.innerHTML = groups.map((item) => `<option value="${item.groupId}" ${item.groupId === selectedGroupId ? 'selected' : ''}>${item.name || item.groupId}</option>`).join('');
+
+    if (!group) {
+      card.innerHTML = `
+        <div>
+          <h3 class="line-overview-title">ยังไม่มี LINE Group ในระบบ</h3>
+          <div class="line-overview-meta">
+            <span>เชิญ bot เข้า group</span>
+            <span>พิมพ์ /ซิงค์กลุ่ม</span>
+            <span>แล้วกลับมาหน้านี้</span>
+          </div>
+        </div>
+      `;
+      document.getElementById('stat-members').textContent = '0';
+      document.getElementById('stat-all').textContent = '0';
+      document.getElementById('stat-doing').textContent = '0';
+      document.getElementById('stat-done').textContent = '0';
+      document.getElementById('empty-state').innerHTML = 'ยังไม่มีข้อมูลกลุ่ม LINE<small>เมื่อ bot ถูกเชิญเข้า group และมีการสั่ง /ซิงค์กลุ่ม รายการจะขึ้นที่หน้านี้ทันที</small>';
+      return;
+    }
+
+    const tasks = group.tasks || {};
+    const syncedAt = group.lastSyncedAt ? new Date(group.lastSyncedAt).toLocaleString('th-TH') : '-';
+    card.innerHTML = `
+      <div>
+        <div class="line-pill">${group.active ? 'ACTIVE' : 'OFFLINE'}</div>
+        <h3 class="line-overview-title" style="margin-top:12px">${group.name || group.groupId}</h3>
+        <div class="line-overview-meta">
+          <span><i class="bi bi-upc-scan"></i> ${group.groupId}</span>
+          <span><i class="bi bi-people"></i> ${Number(group.members || 0)} คน</span>
+          <span><i class="bi bi-arrow-repeat"></i> sync ล่าสุด ${syncedAt}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center">
+        <button class="line-action line-primary" onclick="sendLineNow()"><i class="bi bi-send"></i> ส่งข้อความทดสอบ</button>
+      </div>
+    `;
+
+    document.getElementById('stat-members').textContent = Number(group.members || 0);
+    document.getElementById('stat-all').textContent = Number(tasks.all || 0);
+    document.getElementById('stat-doing').textContent = Number(tasks.doing || 0);
+    document.getElementById('stat-done').textContent = Number(tasks.done || 0);
+    document.getElementById('empty-state').innerHTML = 'กลุ่มนี้เชื่อมต่อกับ LINE จริงแล้ว<small>ถ้าต้องการให้ task แจ้งเข้า group อัตโนมัติ ให้ตั้งค่าต่อที่หน้า Task LINE Group</small>';
+  }
+
+  function renderAll() {
+    renderSidebar(document.getElementById('search-input').value || '');
+    renderOverview();
+  }
+
+  async function loadGroups() {
+    try {
+      const response = await BT.call('/line/groups', {}, 'GET');
+      groups = Array.isArray(response.data) ? response.data : [];
+      if (!selectedGroupId || !groups.some((group) => group.groupId === selectedGroupId)) {
+        selectedGroupId = groups[0] ? groups[0].groupId : null;
+      }
+      renderAll();
+    } catch (error) {
+      notify(error.message || 'โหลด LINE Group ไม่สำเร็จ', 'error');
+    }
+  }
+
+  function selectGroup(groupId) {
+    selectedGroupId = String(groupId);
+    renderAll();
+  }
+
+  async function syncAllGroups() {
+    try {
+      await BT.call('/line/groups/sync', {}, 'POST');
+      await loadGroups();
+      notify('sync LINE Group เรียบร้อยแล้ว');
+    } catch (error) {
+      notify(error.message || 'sync LINE Group ไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function sendLineNow() {
+    const group = currentGroup();
+    if (!group) return;
+    const message = prompt('ข้อความที่จะส่งไปยัง LINE Group', `ทดสอบจาก Betime: ${group.name || group.groupId}`);
+    if (!message) return;
+    try {
+      await BT.call(`/line/groups/${encodeURIComponent(group.groupId)}/push`, { message }, 'POST');
+      notify(`ส่งข้อความไปที่ ${group.name || group.groupId} แล้ว`);
+    } catch (error) {
+      notify(error.message || 'ส่งข้อความไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function syncMembers() {
+    const group = currentGroup();
+    if (!group) return;
+    try {
+      await BT.call(`/line/groups/${encodeURIComponent(group.groupId)}/sync-members`, {}, 'POST');
+      await loadGroups();
+      notify(`sync สมาชิกของ ${group.name || group.groupId} แล้ว`);
+    } catch (error) {
+      notify(error.message || 'sync สมาชิกไม่สำเร็จ', 'error');
+    }
+  }
+
+  function inviteGroup() {
+    notify('เชิญ LINE Bot เข้า group แล้วพิมพ์ /ซิงค์กลุ่ม ในห้องนั้นเพื่อให้ระบบดึง group เข้ามา');
+  }
+
+  function archiveTasks() {
+    notify('สถานะ task rule พร้อมให้เชื่อมต่อกับ LINE Group แล้วที่หน้า Task LINE Group');
+  }
+
+  async function removeGroup() {
+    const group = currentGroup();
+    if (!group) return;
+    if (!confirm(`ยืนยันการลบ ${group.name || group.groupId} ?`)) return;
+    try {
+      await BT.call(`/line/groups/${encodeURIComponent(group.groupId)}`, {}, 'DELETE');
+      await loadGroups();
+      notify('ลบ LINE Group ออกจากระบบแล้ว');
+    } catch (error) {
+      notify(error.message || 'ลบ LINE Group ไม่สำเร็จ', 'error');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('search-input').addEventListener('input', () => renderSidebar(document.getElementById('search-input').value));
+    document.getElementById('group-select').addEventListener('change', (event) => {
+      selectedGroupId = String(event.target.value || '');
+      renderAll();
+    });
+    loadGroups();
+  });
+</script>
+</body>
+</html>

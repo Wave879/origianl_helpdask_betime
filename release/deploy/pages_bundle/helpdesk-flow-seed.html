@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helpdesk Flow Seed</title>
+</head>
+<body>
+  <p id="status">Preparing helpdesk flow seed...</p>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const token = qs.get('token') || '';
+    const role = qs.get('role') || 'admin';
+    const user = (() => {
+      try { return JSON.parse(atob(qs.get('user') || '')); } catch { return {}; }
+    })();
+    const row = (() => {
+      try { return JSON.parse(atob(qs.get('row') || '')); } catch { return null; }
+    })();
+    const status = document.getElementById('status');
+
+    if (!token || !user || !user.email || !row || !row.id) {
+      status.textContent = 'Missing token/user/row';
+    } else {
+      const key = 'bt_helpdesk_v3_tickets::' + String(user.email || '').trim().toLowerCase();
+      localStorage.setItem('bt_token', token);
+      localStorage.setItem('bt_role', role);
+      localStorage.setItem('bt_user', JSON.stringify(user));
+      localStorage.setItem(key, JSON.stringify([row]));
+      status.textContent = 'Seeded. Redirecting...';
+      (window.BT && BT.replace ? BT.replace('/help-desk-v3-confirm.html?id=' + encodeURIComponent(row.id) + '&autotest=1&auto_send=1') : location.replace('/help-desk-v3-confirm.html?id=' + encodeURIComponent(row.id) + '&autotest=1&auto_send=1'));
+    }
+  </script>
+</body>
+</html>

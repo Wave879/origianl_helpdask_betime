@@ -1,0 +1,40 @@
+{
+ "charts": [],
+ "content": "[]",
+ "doctype": "Workspace",
+ "extends_another_page": 0,
+ "hide_custom": 0,
+ "is_hidden": 0,
+ "label": "AI Knowledge",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "AI Knowledge Base",
+   "link_to": "AI Knowledge Base",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Lesson Learned",
+   "link_to": "Lesson Learned",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  }
+ ],
+ "module": "AI Knowledge",
+ "name": "AI Knowledge",
+ "public": 1,
+ "roles": [],
+ "sequence_id": 4.0,
+ "shortcuts": [
+  {"color": "Purple", "format": "List", "label": "Knowledge Base",     "link_to": "AI Knowledge Base", "type": "DocType"},
+  {"color": "Blue",   "format": "List", "label": "Lesson Learned",     "link_to": "Lesson Learned",    "type": "DocType"},
+  {"color": "Green",  "format": "New",  "label": "เพิ่ม Knowledge",    "link_to": "AI Knowledge Base", "type": "DocType"}
+ ],
+ "title": "AI Knowledge"
+}

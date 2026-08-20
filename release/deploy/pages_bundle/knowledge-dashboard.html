@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knowledge Center Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .kc-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+    .kc-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)) auto;
+      gap: 12px;
+      align-items: end;
+      margin: 14px 0 10px;
+    }
+    .kc-employee-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .kc-employee-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+    }
+    .kc-employee-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .kc-employee-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 0.76rem;
+    }
+    .hk-meta {
+      display: block;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+    .kc-employee-empty {
+      color: #64748b;
+      text-align: center;
+      padding: 24px 16px;
+    }
+    @media (max-width: 980px) {
+      .kc-summary-grid,
+      .kc-toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 640px) {
+      .kc-summary-grid,
+      .kc-toolbar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-book"></i> Knowledge Center Dashboard</h2></div>
+    <div class="bt-kpi-grid">
+      <div class="bt-card"><div class="bt-card-title">บทความทั้งหมด</div><div class="bt-card-value" id="kc-articles">—</div><div class="bt-card-sub">บทความ</div></div>
+      <div class="bt-card"><div class="bt-card-title">บทเรียนที่เรียนรู้</div><div class="bt-card-value" id="kc-lessons" style="color:var(--bt-primary)">—</div><div class="bt-card-sub">รายการ</div></div>
+      <div class="bt-card"><div class="bt-card-title">Employee Knowledge</div><div class="bt-card-value" id="kc-employees" style="color:var(--bt-accent)">—</div><div class="bt-card-sub">ข้อมูลพนักงาน</div></div>
+      <div class="bt-card"><div class="bt-card-title">การค้นหา RAG</div><div class="bt-card-value" id="kc-searches" style="color:var(--bt-success)">—</div><div class="bt-card-sub">ครั้งวันนี้</div></div>
+      <div class="bt-card"><div class="bt-card-title">Help Desk Chat</div><div class="bt-card-value" id="kc-chats" style="color:var(--bt-warning)">—</div><div class="bt-card-sub">การสนทนา</div></div>
+    </div>
+
+    <div class="bt-card" style="margin-top:20px">
+      <div class="bt-section-header">
+        <h2>บทความล่าสุด</h2>
+        <a href="/knowledge.html" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+      </div>
+      <div id="kc-articles-list"><p style="color:#888;text-align:center;padding:30px">กำลังโหลด...</p></div>
+    </div>
+
+    <div class="bt-card" style="margin-top:20px">
+      <div class="bt-section-header">
+        <h2>Employee Knowledge</h2>
+        <a href="/knowledge.html" class="bt-btn bt-btn-outline bt-btn-sm">ค้นหาใน Knowledge Center</a>
+      </div>
+      <div class="kc-summary-grid">
+        <div class="bt-card" style="padding:14px">
+          <div class="bt-card-title">บริษัทที่พบ</div>
+          <div class="bt-card-value" id="kc-company-count" style="color:var(--bt-accent)">—</div>
+          <div class="bt-card-sub">ใช้กรองตามบริษัท</div>
+        </div>
+        <div class="bt-card" style="padding:14px">
+          <div class="bt-card-title">แผนกที่พบ</div>
+          <div class="bt-card-value" id="kc-department-count" style="color:var(--bt-primary)">—</div>
+          <div class="bt-card-sub">ใช้กรองตามทีมงาน</div>
+        </div>
+        <div class="bt-card" style="padding:14px">
+          <div class="bt-card-title">ตำแหน่งที่พบ</div>
+          <div class="bt-card-value" id="kc-position-count" style="color:var(--bt-success)">—</div>
+          <div class="bt-card-sub">ใช้กรองตามบทบาท</div>
+        </div>
+      </div>
+
+      <div class="kc-toolbar">
+        <div>
+          <label class="hk-meta" for="employee-search">ค้นหาพนักงาน</label>
+          <input type="search" id="employee-search" class="bt-input" placeholder="ชื่อ, แผนก, บริษัท, ตำแหน่ง" autocomplete="off">
+        </div>
+        <div>
+          <label class="hk-meta" for="employee-company">บริษัท</label>
+          <select id="employee-company" class="bt-input">
+            <option value="">ทั้งหมด</option>
+          </select>
+        </div>
+        <div>
+          <label class="hk-meta" for="employee-department">แผนก</label>
+          <select id="employee-department" class="bt-input">
+            <option value="">ทั้งหมด</option>
+          </select>
+        </div>
+        <div>
+          <label class="hk-meta" for="employee-position">ตำแหน่ง</label>
+          <select id="employee-position" class="bt-input">
+            <option value="">ทั้งหมด</option>
+          </select>
+        </div>
+        <button id="employee-clear" class="bt-btn bt-btn-outline" type="button">ล้างตัวกรอง</button>
+      </div>
+
+      <div id="kc-employee-summary" class="hk-meta" style="margin-top:6px;margin-bottom:8px"></div>
+      <div id="kc-employee-list" class="kc-employee-list"><p class="kc-employee-empty">กำลังโหลด...</p></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px">
+      <a href="/knowledge-add?tab=project" class="bt-card" style="text-decoration:none;display:flex;align-items:center;gap:16px;padding:20px;cursor:pointer">
+        <i class="bi bi-plus-circle" style="font-size:2.5rem"></i>
+        <div>
+          <div style="font-weight:700;font-size:1rem">เพิ่มข้อมูล</div>
+          <div style="font-size:0.82rem;color:#888;margin-top:4px">เพิ่มบทความหรือข้อมูลใหม่เข้า Knowledge Center</div>
+        </div>
+      </a>
+      <a href="/knowledge-rag-search" class="bt-card" style="text-decoration:none;display:flex;align-items:center;gap:16px;padding:20px;cursor:pointer">
+        <i class="bi bi-search" style="font-size:2.5rem"></i>
+        <div>
+          <div style="font-weight:700;font-size:1rem">RAG Search</div>
+          <div style="font-size:0.82rem;color:#888;margin-top:4px">ค้นหาด้วย AI แบบ Context-aware</div>
+        </div>
+      </a>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('knowledge-dashboard.html', 'Knowledge Center');
+  function esc(value) {
+    return String(value || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function normalize(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function uniqueValues(rows, key) {
+    return Array.from(
+      new Set(
+        rows
+          .map((row) => String(row?.[key] || '').trim())
+          .filter((value) => value && value !== 'ไม่ระบุ' && value !== '-')
+      )
+    ).sort((a, b) => a.localeCompare(b, 'th'));
+  }
+
+  function optionHtml(value) {
+    return `<option value="${esc(value)}">${esc(value)}</option>`;
+  }
+
+  const employeeState = { q: '', company: '', department: '', position: '' };
+  let employeeRows = [];
+
+  function employeeMatches(row) {
+    const q = normalize(employeeState.q);
+    if (employeeState.company && row.company !== employeeState.company) return false;
+    if (employeeState.department && row.department !== employeeState.department) return false;
+    if (employeeState.position && row.position !== employeeState.position) return false;
+    if (!q) return true;
+
+    const haystack = [
+      row.title,
+      row.company,
+      row.department,
+      row.position,
+      row.level,
+      row.manager,
+      row.nickname,
+      row.full_name,
+      row.email1,
+      row.email2,
+      row.tags,
+    ].join(' ').toLowerCase();
+    return haystack.includes(q);
+  }
+
+  function renderEmployeeList() {
+    const listEl = document.getElementById('kc-employee-list');
+    const summaryEl = document.getElementById('kc-employee-summary');
+    if (!listEl || !summaryEl) return;
+
+    const filtered = employeeRows.filter(employeeMatches);
+    summaryEl.textContent = `แสดง ${filtered.length.toLocaleString('th-TH')} จาก ${employeeRows.length.toLocaleString('th-TH')} รายการ`;
+
+    if (!filtered.length) {
+      listEl.innerHTML = '<p class="kc-employee-empty">ไม่พบข้อมูลพนักงานที่ตรงกับตัวกรอง</p>';
+      return;
+    }
+
+    listEl.innerHTML = filtered.map((row) => {
+      const created = String(row.created_at || '').slice(0, 10);
+      const metaPills = [
+        ['บริษัท', row.company],
+        ['แผนก', row.department],
+        ['ตำแหน่ง', row.position],
+        ['ระดับ', row.level],
+        ['หัวหน้า', row.manager],
+        ['อีเมล', row.email2 || row.email1 || '-'],
+      ].map(([label, value]) => `<span class="kc-employee-pill"><strong>${esc(label)}:</strong> ${esc(value || '-')}</span>`).join('');
+      return `
+        <div class="kc-employee-item">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+            <div>
+              <div style="font-weight:700;font-size:0.96rem">${esc(row.title || '-')}</div>
+              <div style="font-size:0.82rem;color:#64748b;margin-top:4px">${esc(row.full_name || row.nickname || '-')}${row.nickname ? ` (${esc(row.nickname)})` : ''}</div>
+            </div>
+            <div style="font-size:0.75rem;color:#94a3b8">${esc(created || '-')}</div>
+          </div>
+          <div class="kc-employee-meta">${metaPills}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function populateEmployeeSelect(selectEl, values) {
+    if (!selectEl) return;
+    selectEl.innerHTML = ['<option value="">ทั้งหมด</option>', ...values.map(optionHtml)].join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const employeeSearch = document.getElementById('employee-search');
+    const employeeCompany = document.getElementById('employee-company');
+    const employeeDepartment = document.getElementById('employee-department');
+    const employeePosition = document.getElementById('employee-position');
+    const employeeClear = document.getElementById('employee-clear');
+
+    const bindEmployeeEvents = () => {
+      employeeSearch?.addEventListener('input', () => {
+        employeeState.q = employeeSearch.value;
+        renderEmployeeList();
+      });
+      employeeCompany?.addEventListener('change', () => {
+        employeeState.company = employeeCompany.value;
+        renderEmployeeList();
+      });
+      employeeDepartment?.addEventListener('change', () => {
+        employeeState.department = employeeDepartment.value;
+        renderEmployeeList();
+      });
+      employeePosition?.addEventListener('change', () => {
+        employeeState.position = employeePosition.value;
+        renderEmployeeList();
+      });
+      employeeClear?.addEventListener('click', () => {
+        employeeState.q = '';
+        employeeState.company = '';
+        employeeState.department = '';
+        employeeState.position = '';
+        if (employeeSearch) employeeSearch.value = '';
+        if (employeeCompany) employeeCompany.value = '';
+        if (employeeDepartment) employeeDepartment.value = '';
+        if (employeePosition) employeePosition.value = '';
+        renderEmployeeList();
+      });
+    };
+
+    bindEmployeeEvents();
+
+    try {
+      const d = await BT.call('dashboard/knowledge', {}, 'GET');
+      document.getElementById('kc-articles').textContent = d.article_count ?? 0;
+      document.getElementById('kc-lessons').textContent  = d.lesson_count ?? 0;
+      document.getElementById('kc-employees').textContent = d.employee_count ?? 0;
+      document.getElementById('kc-searches').textContent = d.search_today ?? 0;
+      document.getElementById('kc-chats').textContent    = d.chat_count ?? 0;
+
+      const recentRows = (d.recent_articles || []).map((a) => `
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9">
+          <div style="font-size:1.4rem">📄</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:0.88rem">${esc(a.title)}</div>
+            <div style="font-size:0.75rem;color:#888;margin-top:2px">${esc(a.category || 'ทั่วไป')} · ${esc(String(a.created_at || '').slice(0, 10))}</div>
+          </div>
+        </div>`).join('');
+      document.getElementById('kc-articles-list').innerHTML = recentRows || '<p style="color:#888;text-align:center;padding:20px">ยังไม่มีบทความ</p>';
+
+      employeeRows = Array.isArray(d.employee_articles) ? d.employee_articles : [];
+      const stats = d.employee_stats || {};
+      document.getElementById('kc-company-count').textContent = stats.companies ?? uniqueValues(employeeRows, 'company').length ?? 0;
+      document.getElementById('kc-department-count').textContent = stats.departments ?? uniqueValues(employeeRows, 'department').length ?? 0;
+      document.getElementById('kc-position-count').textContent = stats.positions ?? uniqueValues(employeeRows, 'position').length ?? 0;
+
+      populateEmployeeSelect(employeeCompany, uniqueValues(employeeRows, 'company'));
+      populateEmployeeSelect(employeeDepartment, uniqueValues(employeeRows, 'department'));
+      populateEmployeeSelect(employeePosition, uniqueValues(employeeRows, 'position'));
+      renderEmployeeList();
+    } catch (e) {
+      if (e.message === 'Unauthorized') { BT.handleUnauthorized(); return; }
+      ['kc-articles','kc-lessons','kc-employees','kc-searches','kc-chats'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '0';
+      });
+      document.getElementById('kc-employee-list').innerHTML = '<p class="kc-employee-empty">ไม่สามารถโหลดข้อมูลพนักงานได้</p>';
+    }
+  });
+</script>
+</body>
+</html>

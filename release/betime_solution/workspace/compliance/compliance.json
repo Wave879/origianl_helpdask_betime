@@ -1,0 +1,63 @@
+{
+ "name": "Compliance",
+ "label": "Compliance",
+ "module": "Compliance",
+ "icon": "fa fa-shield",
+ "is_default": 0,
+ "shortcuts": [
+  {
+   "label": "TOR Check",
+   "link_to": "TOR Check",
+   "type": "DocType",
+   "icon": "fa fa-check-square"
+  },
+  {
+   "label": "สร้าง TOR Check ใหม่",
+   "link_to": "TOR Check",
+   "type": "DocType",
+   "icon": "fa fa-plus",
+   "doc_view": "new"
+  },
+  {
+   "label": "AI Knowledge Base",
+   "link_to": "AI Knowledge Base",
+   "type": "DocType",
+   "icon": "fa fa-book"
+  }
+ ],
+ "links": [
+  {
+   "label": "Compliance",
+   "items": [
+    {
+     "label": "TOR Check",
+     "link_to": "TOR Check",
+     "type": "DocType",
+     "description": "ตรวจสอบความสอดคล้อง TOR ด้วย AI"
+    }
+   ]
+  },
+  {
+   "label": "Knowledge",
+   "items": [
+    {
+     "label": "AI Knowledge Base",
+     "link_to": "AI Knowledge Base",
+     "type": "DocType",
+     "description": "คลังความรู้สำหรับ TOR และสัญญา"
+    }
+   ]
+  },
+  {
+   "label": "Reports",
+   "items": [
+    {
+     "label": "TOR Check List",
+     "link_to": "TOR Check",
+     "type": "DocType",
+     "description": "รายการการตรวจสอบทั้งหมด"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Calendar — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-calendar3"></i> Smart Calendar</h2></div>
+    <div class="bt-card" style="margin-bottom:20px"><div class="bt-section-header"><h2>กิจกรรมที่เปิดอยู่</h2><button class="bt-btn bt-btn-outline bt-btn-sm" onclick="loadCalendar()"><i class="bi bi-arrow-clockwise"></i> โหลด</button></div>
+      <div id="cal-events"><p style="color:#888;text-align:center;padding:20px">กำลังโหลด...</p></div>
+    </div>
+    <div class="bt-card">
+      <h4>เพิ่มกิจกรรม</h4>
+      <form id="cal-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="bt-form-group"><label class="bt-label">หัวข้อ *</label><input type="text" id="cal-title" class="bt-input" required></div>
+          <div class="bt-form-group"><label class="bt-label">ห้องประชุม</label><input type="text" id="cal-room" class="bt-input" placeholder="เช่น ห้อง A"></div>
+          <div class="bt-form-group"><label class="bt-label">เริ่ม *</label><input type="datetime-local" id="cal-start" class="bt-input" required></div>
+          <div class="bt-form-group"><label class="bt-label">สิ้นสุด *</label><input type="datetime-local" id="cal-end" class="bt-input" required></div>
+        </div>
+        <button type="submit" class="bt-btn bt-btn-primary"><i class="bi bi-calendar-plus"></i> บันทึกกิจกรรม</button>
+      </form>
+    </div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('calendar.html', 'Calendar & Scheduling');
+      async function loadCalendar() {
+      if (!BT.hasBackend()) return;
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const rows = await BT.listDocs('Smart Calendar', ['name','title','start_datetime','end_datetime','room','conflict_detected'], {'start_datetime':['>=',today]}, 30);
+        const tbody = rows.map(r=>`<tr><td><strong>${r.title||r.name}</strong>${r.conflict_detected?' <span style="color:var(--bt-danger)">⚠️ Conflict</span>':''}</td><td>${r.start_datetime?r.start_datetime.slice(0,16):'-'}</td><td>${r.end_datetime?r.end_datetime.slice(0,16):'-'}</td><td>${r.room||'-'}</td></tr>`).join('');
+        document.getElementById('cal-events').innerHTML = `<table class="bt-table"><thead><tr><th>หัวข้อ</th><th>เริ่ม</th><th>สิ้นสุด</th><th>ห้อง</th></tr></thead><tbody>${tbody||'<tr><td colspan=4 style=text-align:center;color:#888>ไม่มีกิจกรรม</td></tr>'}</tbody></table>`;
+      } catch(e) {}
+    }
+    document.getElementById('cal-form').addEventListener('submit', async e=>{
+      e.preventDefault();
+      if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อน', 'warning'); return; }
+      try {
+        await BT.call('frappe.client.insert', {doc:{doctype:'Smart Calendar',title:document.getElementById('cal-title').value,start_datetime:document.getElementById('cal-start').value,end_datetime:document.getElementById('cal-end').value,room:document.getElementById('cal-room').value}});
+        BT.notify('✅ บันทึกกิจกรรมแล้ว', 'success'); e.target.reset(); loadCalendar();
+      } catch(e2) { BT.notify(e2.message, 'error'); }
+    });
+    document.addEventListener('DOMContentLoaded', loadCalendar);
+</script>
+</body>
+</html>

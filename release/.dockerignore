@@ -1,0 +1,8 @@
+node_modules
+.wrangler
+.pytest_cache
+__pycache__
+*.log
+.git
+.tmp
+test-results

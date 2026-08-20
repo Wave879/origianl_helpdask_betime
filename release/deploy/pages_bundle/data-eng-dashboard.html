@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Engineering Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media(max-width:900px){ .two-col{grid-template-columns:1fr;} }
+    .de-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--bt-border); font-size:0.88rem; }
+    .de-row:last-child { border-bottom:none; }
+    .de-badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .de-badge.running { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+    .de-badge.failed  { background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; }
+    .de-badge.pending { background:#fef9c3; color:#854d0e; border:1px solid #fde68a; }
+    .de-badge.paused  { background:#f8fafc; color:#475569; border:1px solid #cbd5e1; }
+    .de-stat-bar-wrap { background:#e2e8f0; border-radius:999px; height:6px; overflow:hidden; margin-top:4px; }
+    .de-stat-bar      { height:100%; border-radius:999px; }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-database"></i> Data Engineering Dashboard</h2>
+      <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="BT.notify('ฟีเจอร์นี้กำลังพัฒนา','info')"><i class="bi bi-plus-lg"></i> สร้าง Pipeline</button>
+    </div>
+
+    <!-- KPI -->
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
+      <div class="bt-card"><div class="bt-card-title">Pipeline ทั้งหมด</div><div class="bt-card-value" id="kpi-total" style="color:var(--bt-primary)">—</div><div class="bt-card-sub">ETL jobs</div></div>
+      <div class="bt-card"><div class="bt-card-title">Running</div><div class="bt-card-value" id="kpi-running" style="color:var(--bt-success)">—</div><div class="bt-card-sub">Active now</div></div>
+      <div class="bt-card"><div class="bt-card-title">Failed วันนี้</div><div class="bt-card-value" id="kpi-failed" style="color:var(--bt-danger)">—</div><div class="bt-card-sub">Errors</div></div>
+      <div class="bt-card"><div class="bt-card-title">Data Volume</div><div class="bt-card-value" id="kpi-volume" style="color:#7c3aed">—</div><div class="bt-card-sub">GB / วัน</div></div>
+    </div>
+
+    <div class="two-col">
+      <!-- Pipelines -->
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-arrow-left-right" style="color:var(--bt-primary)"></i> ETL Pipelines</h2></div>
+        <div id="pipeline-list"></div>
+      </div>
+      <!-- Data Sources -->
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-hdd-stack" style="color:var(--bt-accent)"></i> Data Sources</h2></div>
+        <div id="source-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('data-eng-dashboard.html', 'Data Engineering');
+
+const PIPELINES_DATA = [];
+
+const SOURCES_DATA = [];
+
+const STATUS_LABEL = { running:'Running', failed:'Failed', pending:'Pending', paused:'Paused' };
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('kpi-total').textContent   = PIPELINES_DATA.length;
+  document.getElementById('kpi-running').textContent = PIPELINES_DATA.filter(x => x.status === 'running').length;
+  document.getElementById('kpi-failed').textContent  = PIPELINES_DATA.filter(x => x.status === 'failed').length;
+  document.getElementById('kpi-volume').textContent  = '4.2 GB';
+
+  document.getElementById('pipeline-list').innerHTML = PIPELINES_DATA.map(p => `
+    <div class="de-row">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+        <div style="font-size:0.76rem;color:var(--bt-muted)">Last run: ${p.last} · ${p.rows} rows</div>
+      </div>
+      <span class="de-badge ${p.status}">${STATUS_LABEL[p.status]}</span>
+    </div>`).join('');
+
+  document.getElementById('source-list').innerHTML = SOURCES_DATA.map(s => `
+    <div class="de-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <div>
+          <span style="font-weight:700;font-size:0.88rem">${s.name}</span>
+          <span style="font-size:0.74rem;color:var(--bt-muted);margin-left:8px">${s.type}</span>
+        </div>
+        <span style="font-size:0.8rem;font-weight:700;color:${s.color}">${s.status}%</span>
+      </div>
+      <div class="de-stat-bar-wrap" style="width:100%">
+        <div class="de-stat-bar" style="width:${s.status}%;background:${s.color}"></div>
+      </div>
+    </div>`).join('');
+});
+</script>
+</body>
+</html>

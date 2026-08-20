@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เพิ่มข้อมูล - Knowledge Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    :root {
+      --kc-bg: #f5f7fb;
+      --kc-panel: rgba(255,255,255,0.92);
+      --kc-line: #dfe7f3;
+      --kc-ink: #10213a;
+      --kc-muted: #5f6b81;
+      --kc-primary: #1f4fbf;
+      --kc-accent: #3f7cff;
+      --kc-success: #0f9d58;
+    }
+    .kc-shell {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .kc-hero {
+      border-radius: 24px;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top right, rgba(63, 124, 255, 0.20), transparent 34%),
+        linear-gradient(145deg, rgba(255,255,255,0.95), rgba(243,247,255,0.98));
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+      animation: kcFadeUp .4s ease both;
+    }
+    .kc-title-row {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+    .kc-title {
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      max-width: 920px;
+    }
+    .kc-title h2 {
+      margin: 0;
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--kc-ink);
+      letter-spacing: -0.01em;
+    }
+    .kc-title p {
+      margin: 0;
+      color: var(--kc-muted);
+      line-height: 1.8;
+    }
+    .kc-pill-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
+    }
+    .kc-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eff6ff;
+      border:1px solid #bfd4ff;
+      color:#1d4ed8;
+      font-size:.78rem;
+      font-weight:700;
+    }
+    .kc-tabs {
+      display:flex;
+      gap:10px;
+      margin-top:16px;
+      flex-wrap:wrap;
+    }
+    .kc-tab {
+      border:1px solid var(--kc-line);
+      background:#fff;
+      color:var(--kc-muted);
+      padding:11px 16px;
+      border-radius:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
+    }
+    .kc-tab:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
+    .kc-tab.active {
+      background: linear-gradient(135deg, var(--kc-primary), var(--kc-accent));
+      color:#fff;
+      border-color: transparent;
+      box-shadow: 0 10px 26px rgba(31,79,191,.22);
+    }
+    .kc-sidebar,
+    .kc-main,
+    .kc-form,
+    .kc-library {
+      background: var(--kc-panel);
+      border: 1px solid var(--kc-line);
+      border-radius: 22px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      backdrop-filter: blur(8px);
+    }
+    .kc-sidebar { padding: 16px; animation: kcFadeUp .45s ease both; }
+    .kc-main { padding: 18px; animation: kcFadeUp .5s ease both; }
+    .kc-form { margin-top: 18px; padding: 18px; animation: kcFadeUp .55s ease both; }
+    .kc-form-dashed {
+      border: 2px dashed rgba(31, 79, 191, 0.24);
+      background:
+        linear-gradient(135deg, rgba(31,79,191,0.04), rgba(255,255,255,0.96)),
+        rgba(255,255,255,0.92);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+    }
+    .kc-section-title {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+      padding-bottom:10px;
+      border-bottom:1px solid var(--kc-line);
+    }
+    .kc-section-title h3 {
+      margin:0;
+      font-size:1rem;
+      font-weight:800;
+      color:var(--kc-ink);
+    }
+    .kc-section-title small { color: var(--kc-muted); }
+    .kc-search {
+      width:100%;
+      border:1.5px solid var(--kc-line);
+      border-radius:14px;
+      padding:12px 14px;
+      font-family:inherit;
+      font-size:.92rem;
+      background:#fff;
+      outline:none;
+    }
+    .kc-search:focus {
+      border-color: var(--kc-primary);
+      box-shadow: 0 0 0 3px rgba(31,79,191,0.12);
+    }
+    .kc-folder-list {
+      display:grid;
+      gap:8px;
+      margin-top:14px;
+      max-height: 560px;
+      overflow:auto;
+      padding-right: 2px;
+    }
+    .kc-folder {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--kc-line);
+      border-radius:14px;
+      background:#fff;
+      cursor:pointer;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+    .kc-folder:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(15,23,42,0.06); }
+    .kc-folder.active {
+      border-color: rgba(31,79,191,0.25);
+      background: linear-gradient(135deg, rgba(31,79,191,0.10), rgba(63,124,255,0.06));
+    }
+    .kc-folder-name {
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .kc-folder-name strong {
+      font-size:.9rem;
+      color: var(--kc-ink);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .kc-folder-name span {
+      font-size:.74rem;
+      color: var(--kc-muted);
+    }
+    .kc-folder-count {
+      flex-shrink:0;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:700;
+      font-size:.76rem;
+    }
+    .kc-drive-tools {
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) 180px 180px auto;
+      gap:10px;
+      align-items:end;
+      margin-bottom:14px;
+    }
+    .kc-grid {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:12px;
+    }
+    .kc-table-wrap {
+      border:1px solid var(--kc-line);
+      border-radius:18px;
+      background:#fff;
+      overflow:hidden;
+    }
+    .kc-table-scroll {
+      overflow:auto;
+    }
+    .kc-table {
+      width:100%;
+      border-collapse:collapse;
+      min-width: 980px;
+    }
+    .kc-table thead th {
+      position: sticky;
+      top: 0;
+      background: #f8fbff;
+      z-index: 1;
+      text-align:left;
+      font-size:.82rem;
+      color:#334155;
+      padding:14px 16px;
+      border-bottom:1px solid var(--kc-line);
+      letter-spacing:.01em;
+    }
+    .kc-table tbody td {
+      padding:14px 16px;
+      border-bottom:1px solid #edf2f7;
+      vertical-align:top;
+      color:#1e293b;
+      font-size:.9rem;
+    }
+    .kc-table tbody tr:hover {
+      background: linear-gradient(180deg, rgba(31,79,191,0.03), rgba(31,79,191,0.01));
+    }
+    .kc-doc-title {
+      font-weight:800;
+      color: var(--kc-ink);
+      margin-bottom:6px;
+    }
+    .kc-doc-meta {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:8px;
+    }
+    .kc-doc-sub {
+      color:var(--kc-muted);
+      font-size:.82rem;
+      line-height:1.65;
+    }
+    .kc-ai-box {
+      min-width: 240px;
+    }
+    .kc-ai-result {
+      line-height:1.65;
+      color:#0f172a;
+      background:#f8fbff;
+      border:1px solid #dbeafe;
+      border-radius:12px;
+      padding:10px 12px;
+      min-height:54px;
+      white-space:pre-wrap;
+    }
+    .kc-ai-result.is-loading {
+      color:#64748b;
+      font-style:italic;
+    }
+    .kc-ai-actions {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .kc-table-empty {
+      padding:20px;
+      text-align:center;
+      color:var(--kc-muted);
+    }
+    .kc-card {
+      border:1px solid var(--kc-line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+    .kc-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px rgba(15,23,42,.08);
+    }
+    .kc-card-top {
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:10px;
+    }
+    .kc-card-top h4 {
+      margin:0;
+      font-size:.96rem;
+      color: var(--kc-ink);
+    }
+    .kc-card-top small {
+      color: var(--kc-muted);
+      font-size:.74rem;
+    }
+    .kc-chip-row { display:flex; flex-wrap:wrap; gap:6px; }
+    .kc-chip {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#334155;
+      font-size:.74rem;
+      font-weight:600;
+    }
+    .kc-note {
+      color: var(--kc-muted);
+      font-size:.82rem;
+      line-height:1.7;
+    }
+    .kc-dropzone {
+      display:grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      gap:16px;
+      align-items:center;
+      margin-top: 14px;
+      padding: 16px;
+      border: 1.5px dashed rgba(31, 79, 191, 0.24);
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(255,255,255,0.88));
+    }
+    .kc-dropzone-icon {
+      width:72px;
+      height:72px;
+      display:grid;
+      place-items:center;
+      border-radius:20px;
+      background: linear-gradient(135deg, rgba(31,79,191,0.14), rgba(63,124,255,0.26));
+      color: var(--kc-primary);
+      font-size: 1.5rem;
+      box-shadow: inset 0 0 0 1px rgba(31,79,191,0.08);
+    }
+    .kc-dropzone h4 {
+      margin:0 0 6px;
+      font-size:1rem;
+      font-weight:800;
+      color:var(--kc-ink);
+    }
+    .kc-dropzone p {
+      margin:0;
+      color:var(--kc-muted);
+      line-height:1.7;
+      font-size:.88rem;
+    }
+    .kc-mini-grid {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .kc-mini-chip {
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid #dbe7fb;
+      background:#fff;
+      color:#38547d;
+      font-size:.82rem;
+      font-weight:700;
+    }
+    .kc-form-grid {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .kc-span-2 { grid-column: span 2; }
+    .kc-label {
+      display:block;
+      font-weight:700;
+      font-size:.84rem;
+      margin-bottom:6px;
+      color: var(--kc-ink);
+    }
+    .kc-input,
+    .kc-select,
+    .kc-textarea {
+      width:100%;
+      border:1.5px solid var(--kc-line);
+      border-radius:14px;
+      padding:11px 14px;
+      font-family:inherit;
+      font-size:.92rem;
+      outline:none;
+      background:#fff;
+    }
+    .kc-textarea { min-height: 180px; resize: vertical; }
+    .kc-input:focus,
+    .kc-select:focus,
+    .kc-textarea:focus {
+      border-color: var(--kc-primary);
+      box-shadow: 0 0 0 3px rgba(31,79,191,.12);
+    }
+    .kc-actions {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+      align-items:center;
+    }
+    .kc-status {
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid #bfdbfe;
+      background:#eff6ff;
+      color:#1d4ed8;
+      min-height:20px;
+    }
+    .kc-empty {
+      text-align:center;
+      color:var(--kc-muted);
+      padding:20px 10px;
+    }
+    .kc-panel { display: none; }
+    .kc-panel.active { display: block; }
+    .kc-drive-head {
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+      margin-bottom: 12px;
+    }
+    .kc-breadcrumbs {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      color:var(--kc-muted);
+      font-size:.8rem;
+    }
+    .kc-breadcrumbs span {
+      padding:4px 8px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+    }
+    @keyframes kcFadeUp {
+      from { opacity:0; transform: translateY(10px); }
+      to { opacity:1; transform: translateY(0); }
+    }
+    @media (max-width: 1100px) {
+      .kc-shell { grid-template-columns: 1fr; }
+      .kc-folder-list { max-height: none; }
+    }
+    @media (max-width: 860px) {
+      .kc-drive-tools { grid-template-columns: 1fr; }
+      .kc-grid { grid-template-columns: 1fr; }
+      .kc-form-grid { grid-template-columns: 1fr; }
+      .kc-span-2 { grid-column: span 1; }
+      .kc-dropzone { grid-template-columns: 1fr; }
+      .kc-mini-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="kc-hero">
+      <div class="kc-title-row">
+        <div class="kc-title">
+          <h2><i class="bi bi-folder-plus"></i> เพิ่มข้อมูล</h2>
+          <p>
+            หน้าเดียวสำหรับจัดเก็บความรู้ใน 2 แท็บ คือ <strong>โครงการ</strong> และ <strong>คู่มือ</strong>
+            พร้อมบันทึกเข้า knowledge base และ vector search อัตโนมัติ
+          </p>
+          <div class="kc-pill-row">
+            <span class="kc-pill"><i class="bi bi-folder2-open"></i> มุมมองคล้าย Google Drive</span>
+            <span class="kc-pill"><i class="bi bi-diagram-3"></i> แยกโครงการ / คู่มือ</span>
+            <span class="kc-pill"><i class="bi bi-broadcast"></i> พร้อมเข้า vector search</span>
+          </div>
+        </div>
+      </div>
+      <div class="kc-tabs" role="tablist" aria-label="knowledge tabs">
+        <button id="tab-project" class="kc-tab" type="button">โครงการ</button>
+        <button id="tab-guide" class="kc-tab" type="button">คู่มือ</button>
+      </div>
+    </div>
+
+    <section id="panel-project" class="kc-panel">
+      <div class="kc-shell">
+        <aside class="kc-sidebar">
+          <div class="kc-section-title">
+            <h3>โครงสร้างโครงการ</h3>
+            <small id="project-count">0 รายการ</small>
+          </div>
+          <input id="project-search" class="kc-search" type="search" placeholder="ค้นหาโครงการ / หัวข้อ / แท็ก">
+          <div style="margin-top:12px" class="kc-note">คลิกโฟลเดอร์เพื่อกรองตามรหัสโครงการ คล้ายการเปิดโฟลเดอร์ใน Google Drive</div>
+          <div id="project-folder-list" class="kc-folder-list"></div>
+        </aside>
+
+        <div class="kc-main">
+          <div class="kc-drive-head">
+            <div>
+              <div class="kc-section-title" style="margin-bottom:10px">
+                <h3>รายการเอกสารโครงการ</h3>
+                <small id="project-current-folder">ทั้งหมด</small>
+              </div>
+              <div id="project-breadcrumbs" class="kc-breadcrumbs">
+                <span>Knowledge Center</span>
+                <span>โครงการ</span>
+              </div>
+            </div>
+            <div class="kc-note" style="max-width:340px">
+              โครงการจะถูกจัดกลุ่มด้วย `project_code` และ `sub_project_code` เพื่อให้ค้นหาและแยกสิทธิ์ได้ง่าย
+            </div>
+          </div>
+
+          <div class="kc-form kc-form-dashed">
+            <div class="kc-section-title">
+              <h3>เพิ่มเอกสารเข้าโครงการที่มีอยู่</h3>
+              <small>เลือกโครงการปลายทาง แล้ววางข้อมูลเอกสารลงในกรอบนี้</small>
+            </div>
+            <div class="kc-dropzone">
+              <div class="kc-dropzone-icon"><i class="bi bi-folder-plus"></i></div>
+              <div>
+                <h4>พื้นที่รับเอกสารของโครงการ</h4>
+                <p>หน้านี้ออกแบบมาเพื่อใส่ข้อมูลเอกสารเข้าโครงการที่มีอยู่แล้ว โดยกรอกชื่อเอกสาร รายละเอียด และรหัสโครงการปลายทาง ก่อนบันทึกเข้า knowledge base</p>
+                <div class="kc-mini-grid">
+                  <div class="kc-mini-chip">Project เดิม</div>
+                  <div class="kc-mini-chip">รายละเอียดเอกสาร</div>
+                  <div class="kc-mini-chip">พร้อมทำ embedding</div>
+                </div>
+              </div>
+            </div>
+            <form id="project-form">
+              <div class="kc-form-grid">
+                <div>
+                  <label class="kc-label" for="project-title">ชื่อเอกสาร</label>
+                  <input id="project-title" class="kc-input" type="text" placeholder="เช่น คู่มือการส่งมอบงาน / สรุปประชุม / SOP" required>
+                </div>
+                <div>
+                  <label class="kc-label" for="project-tags">แท็ก</label>
+                  <input id="project-tags" class="kc-input" type="text" placeholder="เช่น project, SOP, handover, manual">
+                </div>
+                <div>
+                  <label class="kc-label" for="project-code">Project Code ปลายทาง</label>
+                  <input id="project-code" class="kc-input" list="project-code-options" type="text" placeholder="เช่น PM-001" required>
+                  <datalist id="project-code-options"></datalist>
+                </div>
+                <div>
+                  <label class="kc-label" for="sub-project-code">Sub Project</label>
+                  <input id="sub-project-code" class="kc-input" type="text" placeholder="เช่น PM-001-OPS">
+                </div>
+                <div>
+                  <label class="kc-label" for="project-scope">Knowledge Scope</label>
+                  <select id="project-scope" class="kc-select">
+                    <option value="project">project</option>
+                    <option value="global">global</option>
+                    <option value="department">department</option>
+                    <option value="private">private</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="kc-label" for="project-source-type">ประเภทแหล่งที่มา</label>
+                  <input id="project-source-type" class="kc-input" type="text" placeholder="เช่น SOP, Doc, Policy, PDF">
+                </div>
+                <div class="kc-span-2">
+                  <label class="kc-label" for="project-source-ref">อ้างอิงแหล่งที่มา</label>
+                  <input id="project-source-ref" class="kc-input" type="text" placeholder="ลิงก์ไฟล์, path, เอกสารอ้างอิง">
+                </div>
+                <div class="kc-span-2">
+                  <label class="kc-label" for="project-content">รายละเอียดเอกสาร</label>
+                  <textarea id="project-content" class="kc-textarea" placeholder="อธิบายเนื้อหา, จุดสำคัญ, ขอบเขต, ขั้นตอน, checklist, acceptance criteria" required></textarea>
+                </div>
+              </div>
+              <div class="kc-actions">
+                <button class="bt-btn bt-btn-primary" type="submit"><i class="bi bi-check2-circle"></i> บันทึกเอกสารเข้าโครงการ</button>
+                <button class="bt-btn bt-btn-outline" type="button" data-clear="project">ล้างฟอร์ม</button>
+                <a class="bt-btn bt-btn-secondary" href="/knowledge-rag-search">ไป RAG Search</a>
+              </div>
+              <div id="project-status" class="kc-status">พร้อมบันทึกเอกสารเข้าโครงการ</div>
+            </form>
+          </div>
+
+          <div class="kc-drive-tools">
+            <div>
+              <label class="kc-label" for="project-filter-search">ค้นหา</label>
+              <input id="project-filter-search" class="kc-search" type="search" placeholder="ชื่อเอกสาร, tag, content">
+            </div>
+            <div>
+              <label class="kc-label" for="project-filter-scope">Scope</label>
+              <select id="project-filter-scope" class="kc-select">
+                <option value="">ทั้งหมด</option>
+                <option value="global">global</option>
+                <option value="project">project</option>
+                <option value="department">department</option>
+                <option value="private">private</option>
+              </select>
+            </div>
+            <div>
+              <label class="kc-label" for="project-filter-sort">เรียง</label>
+              <select id="project-filter-sort" class="kc-select">
+                <option value="updated">ล่าสุด</option>
+                <option value="title">ชื่อเอกสาร</option>
+              </select>
+            </div>
+            <button id="project-reset" class="bt-btn bt-btn-outline" type="button">ล้างตัวกรอง</button>
+          </div>
+
+          <div class="kc-table-wrap">
+            <div class="kc-table-scroll">
+              <table class="kc-table" aria-label="รายการเอกสารโครงการ">
+                <thead>
+                  <tr>
+                    <th style="width:28%">ชื่อ</th>
+                    <th style="width:46%">รายละเอียด</th>
+                    <th style="width:26%">วันที่อัปโหลด</th>
+                  </tr>
+                </thead>
+                <tbody id="project-grid"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-guide" class="kc-panel">
+      <div class="kc-shell" style="grid-template-columns: 280px minmax(0, 1fr);">
+        <aside class="kc-sidebar">
+          <div class="kc-section-title">
+            <h3>คู่มือทั้งหมด</h3>
+            <small id="guide-count">0 รายการ</small>
+          </div>
+          <input id="guide-search" class="kc-search" type="search" placeholder="ค้นหาคู่มือ / ขั้นตอน / FAQ">
+          <div style="margin-top:12px" class="kc-note">คู่มือจะถูกเก็บเป็นคลังความรู้สำหรับค้นหาและตอบคำถามอัตโนมัติ</div>
+          <div id="guide-folder-list" class="kc-folder-list"></div>
+        </aside>
+
+        <div class="kc-main">
+          <div class="kc-drive-head">
+            <div>
+              <div class="kc-section-title" style="margin-bottom:10px">
+                <h3>รายการคู่มือ</h3>
+                <small id="guide-current-folder">ทั้งหมด</small>
+              </div>
+              <div id="guide-breadcrumbs" class="kc-breadcrumbs">
+                <span>Knowledge Center</span>
+                <span>คู่มือ</span>
+              </div>
+            </div>
+            <div class="kc-note" style="max-width:340px">
+              คู่มือเหมาะกับเนื้อหาแบบ SOP, วิธีใช้งาน, policy, checklist และ FAQ ที่ต้องค้นหาบ่อย
+            </div>
+          </div>
+
+          <div class="kc-drive-tools">
+            <div>
+              <label class="kc-label" for="guide-filter-search">ค้นหา</label>
+              <input id="guide-filter-search" class="kc-search" type="search" placeholder="หัวข้อ, tag, content">
+            </div>
+            <div>
+              <label class="kc-label" for="guide-filter-scope">Scope</label>
+              <select id="guide-filter-scope" class="kc-select">
+                <option value="">ทั้งหมด</option>
+                <option value="global">global</option>
+                <option value="project">project</option>
+                <option value="department">department</option>
+                <option value="private">private</option>
+              </select>
+            </div>
+            <div>
+              <label class="kc-label" for="guide-filter-sort">เรียง</label>
+              <select id="guide-filter-sort" class="kc-select">
+                <option value="updated">ล่าสุด</option>
+                <option value="title">ชื่อคู่มือ</option>
+              </select>
+            </div>
+            <button id="guide-reset" class="bt-btn bt-btn-outline" type="button">ล้างตัวกรอง</button>
+          </div>
+
+          <div id="guide-grid" class="kc-grid"></div>
+
+          <div class="kc-form">
+            <div class="kc-section-title">
+              <h3>บันทึกคู่มือใหม่</h3>
+              <small>บันทึกเป็น category: Guide และพร้อมเข้า vector search</small>
+            </div>
+            <form id="guide-form">
+              <div class="kc-form-grid">
+                <div>
+                  <label class="kc-label" for="guide-title">หัวข้อคู่มือ</label>
+                  <input id="guide-title" class="kc-input" type="text" placeholder="เช่น วิธีออกใบแจ้งหนี้" required>
+                </div>
+                <div>
+                  <label class="kc-label" for="guide-tags">แท็ก</label>
+                  <input id="guide-tags" class="kc-input" type="text" placeholder="เช่น guide, SOP, invoice">
+                </div>
+                <div>
+                  <label class="kc-label" for="guide-scope">Knowledge Scope</label>
+                  <select id="guide-scope" class="kc-select">
+                    <option value="global">global</option>
+                    <option value="department">department</option>
+                    <option value="project">project</option>
+                    <option value="private">private</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="kc-label" for="guide-source-type">ประเภทแหล่งที่มา</label>
+                  <input id="guide-source-type" class="kc-input" type="text" placeholder="เช่น คู่มือ, Policy, FAQ">
+                </div>
+                <div class="kc-span-2">
+                  <label class="kc-label" for="guide-source-ref">อ้างอิงแหล่งที่มา</label>
+                  <input id="guide-source-ref" class="kc-input" type="text" placeholder="ไฟล์, link, เอกสารอ้างอิง">
+                </div>
+                <div class="kc-span-2">
+                  <label class="kc-label" for="guide-content">เนื้อหาคู่มือ</label>
+                  <textarea id="guide-content" class="kc-textarea" placeholder="อธิบายขั้นตอนการใช้งานอย่างละเอียด พร้อม bullet/step ได้เลย" required></textarea>
+                </div>
+              </div>
+              <div class="kc-actions">
+                <button class="bt-btn bt-btn-primary" type="submit"><i class="bi bi-check2-circle"></i> บันทึกคู่มือ</button>
+                <button class="bt-btn bt-btn-outline" type="button" data-clear="guide">ล้างฟอร์ม</button>
+                <a class="bt-btn bt-btn-secondary" href="/knowledge-rag-search">ไป RAG Search</a>
+              </div>
+              <div id="guide-status" class="kc-status">พร้อมบันทึกคู่มือใหม่</div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('knowledge-add', 'เพิ่มข้อมูล');
+
+  const state = {
+    tab: new URLSearchParams(location.search).get('tab') === 'guide' ? 'guide' : 'project',
+    docs: [],
+    aiSummaryCache: {},
+    projectFolder: 'all',
+    guideFolder: 'all',
+    projectQuery: '',
+    guideQuery: '',
+    projectScope: '',
+    guideScope: '',
+    projectSort: 'updated',
+    guideSort: 'updated',
+  };
+
+  const els = {
+    tabProject: document.getElementById('tab-project'),
+    tabGuide: document.getElementById('tab-guide'),
+    panelProject: document.getElementById('panel-project'),
+    panelGuide: document.getElementById('panel-guide'),
+    projectList: document.getElementById('project-grid'),
+    guideList: document.getElementById('guide-grid'),
+    projectFolders: document.getElementById('project-folder-list'),
+    guideFolders: document.getElementById('guide-folder-list'),
+    projectCount: document.getElementById('project-count'),
+    guideCount: document.getElementById('guide-count'),
+    projectCurrentFolder: document.getElementById('project-current-folder'),
+    guideCurrentFolder: document.getElementById('guide-current-folder'),
+    projectSearch: document.getElementById('project-search'),
+    guideSearch: document.getElementById('guide-search'),
+    projectFilterSearch: document.getElementById('project-filter-search'),
+    guideFilterSearch: document.getElementById('guide-filter-search'),
+    projectFilterScope: document.getElementById('project-filter-scope'),
+    guideFilterScope: document.getElementById('guide-filter-scope'),
+    projectFilterSort: document.getElementById('project-filter-sort'),
+    guideFilterSort: document.getElementById('guide-filter-sort'),
+    projectStatus: document.getElementById('project-status'),
+    guideStatus: document.getElementById('guide-status'),
+    projectCodeOptions: document.getElementById('project-code-options'),
+  };
+
+  function esc(value) {
+    return String(value || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function text(value) {
+    return String(value || '').trim();
+  }
+
+  function cssEscape(value) {
+    return String(value || '').replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+  }
+
+  function storageKeyForDoc(doc) {
+    return `kc-ai-summary:${String(doc?.id || '').trim()}`;
+  }
+
+  function loadAiSummaryCache() {
+    try {
+      const raw = sessionStorage.getItem('kc-ai-summary-cache');
+      state.aiSummaryCache = raw ? JSON.parse(raw) || {} : {};
+    } catch {
+      state.aiSummaryCache = {};
+    }
+  }
+
+  function saveAiSummaryCache() {
+    try {
+      sessionStorage.setItem('kc-ai-summary-cache', JSON.stringify(state.aiSummaryCache || {}));
+    } catch {}
+  }
+
+  function fallbackDocTypeLabel(doc) {
+    const name = String(doc?.title || '').toLowerCase();
+    const content = String(doc?.content || '').toLowerCase();
+    const source = `${name}\n${content}`;
+    if (/(manual|คู่มือ|user manual|วิธีใช้|how to|guide)/i.test(source)) return 'คู่มือการใช้งาน';
+    if (/(policy|นโยบาย|procedure|sop|workflow|checklist)/i.test(source)) return 'เอกสารกระบวนการ / นโยบาย';
+    if (/(report|สรุป|summary|analysis|review)/i.test(source)) return 'รายงาน / สรุป';
+    if (/(form|แบบฟอร์ม|template)/i.test(source)) return 'แบบฟอร์ม / เทมเพลต';
+    return 'เอกสารโครงการ / ความรู้';
+  }
+
+  function cleanAiSummary(value, doc) {
+    let text = String(value || '').replace(/\s+/g, ' ').trim();
+    if (!text) return '';
+    text = text.replace(/#source:\s*/ig, '');
+    text = text.replace(/\bsource:\s*/ig, '');
+    if (/^[\w-]+(?:,[\w-]+)+$/i.test(text)) return fallbackDocTypeLabel(doc);
+    if (text.length > 180) text = `${text.slice(0, 180).trim()}…`;
+    return text;
+  }
+
+  function buildDocAiPrompt(doc) {
+    const title = text(doc?.title || '-');
+    const content = text(doc?.content_preview || doc?.content || '');
+    const tags = text(doc?.tags || '');
+    const projectCode = text(doc?.project_code || '');
+    const subProjectCode = text(doc?.sub_project_code || '');
+    return [
+      'ช่วยสรุปประเภทไฟล์นี้เป็นภาษาไทย 1 บรรทัด',
+      'อย่าพูดเกิน 18 คำ',
+      'บอกให้ชัดว่าไฟล์นี้น่าจะเป็นเอกสารประเภทอะไร และใช้ทำอะไร',
+      'ถ้าเป็นไฟล์เอกสารโครงการ ให้ระบุว่าเป็นคู่มือ/SOP/รายงาน/แผนงาน/ไฟล์อ้างอิง',
+      `ชื่อไฟล์: ${title}`,
+      `Project Code: ${projectCode || '-'}`,
+      `Sub Project Code: ${subProjectCode || '-'}`,
+      `Tags: ${tags || '-'}`,
+      `เนื้อหา: ${content.slice(0, 1800) || '-'}`,
+    ].join('\n');
+  }
+
+  async function summarizeDocWithAi(doc) {
+    if (!doc?.id) return '';
+    const cacheKey = storageKeyForDoc(doc);
+    if (state.aiSummaryCache[cacheKey]) return state.aiSummaryCache[cacheKey];
+
+    try {
+      const token = localStorage.getItem('bt_token') || '';
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: 'คุณคือผู้ช่วยสรุปเอกสารของระบบ Betime. ตอบสั้น กระชับ เป็นภาษาไทย 1 บรรทัด และบอกว่าไฟล์นี้คืออะไร' },
+            { role: 'user', content: buildDocAiPrompt(doc) },
+          ],
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const reply = String(data.reply || data.answer || '').trim().replace(/\s+/g, ' ');
+      if (res.ok && data.ok && reply) {
+        const normalized = cleanAiSummary(reply, doc) || fallbackDocTypeLabel(doc);
+        state.aiSummaryCache[cacheKey] = normalized;
+        saveAiSummaryCache();
+        return normalized;
+      }
+    } catch {}
+
+    const fallback = fallbackDocTypeLabel(doc);
+    state.aiSummaryCache[cacheKey] = fallback;
+    saveAiSummaryCache();
+    return cleanAiSummary(fallback, doc) || fallback;
+  }
+
+  function setStatus(target, message, tone = 'info') {
+    if (!target) return;
+    const palette = {
+      info: ['#eff6ff', '#bfdbfe', '#1d4ed8'],
+      success: ['#ecfdf5', '#bbf7d0', '#15803d'],
+      warning: ['#fffbeb', '#fde68a', '#b45309'],
+      danger: ['#fef2f2', '#fecaca', '#b91c1c'],
+    };
+    const [bg, border, color] = palette[tone] || palette.info;
+    target.textContent = message;
+    target.style.background = bg;
+    target.style.borderColor = border;
+    target.style.color = color;
+  }
+
+  function notify(message, tone = 'info') {
+    if (BT.notify) return BT.notify(message, tone);
+    alert(message);
+  }
+
+  function categoryLabel(category) {
+    return category === 'Project' ? 'โครงการ' : category === 'Guide' ? 'คู่มือ' : 'Helpdeck';
+  }
+
+  function currentCategory() {
+    return state.tab === 'guide' ? 'Guide' : 'Project';
+  }
+
+  function currentDocs() {
+    const category = currentCategory();
+    const q = state.tab === 'guide' ? state.guideQuery : state.projectQuery;
+    const scope = state.tab === 'guide' ? state.guideScope : state.projectScope;
+    const folder = state.tab === 'guide' ? state.guideFolder : state.projectFolder;
+
+    let docs = state.docs.filter((doc) => doc.category === category || (category === 'Project' && doc.category === 'Helpdeck'));
+    if (folder && folder !== 'all') {
+      docs = docs.filter((doc) => (doc.project_code || '').toUpperCase() === folder.toUpperCase());
+    }
+    if (scope) {
+      docs = docs.filter((doc) => String(doc.knowledge_scope || 'global').trim().toLowerCase() === scope);
+    }
+    const query = text(q).toLowerCase();
+    if (query) {
+      docs = docs.filter((doc) => {
+        const hay = [
+          doc.title,
+          doc.tags,
+          doc.content_preview || doc.content,
+          doc.project_code,
+          doc.sub_project_code,
+          doc.author,
+          doc.source_type,
+          doc.source_ref,
+        ].join(' ').toLowerCase();
+        return hay.includes(query);
+      });
+    }
+    if ((state.tab === 'project' ? state.projectSort : state.guideSort) === 'title') {
+      docs = [...docs].sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'th'));
+    } else {
+      docs = [...docs].sort((a, b) => String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || '')));
+    }
+    return docs;
+  }
+
+  function groupFolders(category) {
+    const docs = state.docs.filter((doc) => doc.category === category || (category === 'Project' && doc.category === 'Helpdeck'));
+    const buckets = new Map();
+    docs.forEach((doc) => {
+      const code = text(doc.project_code || '').toUpperCase();
+      const key = code || 'NO-CODE';
+      if (!buckets.has(key)) buckets.set(key, { key, code: code || 'ไม่ระบุรหัส', count: 0, updated_at: '' });
+      const bucket = buckets.get(key);
+      bucket.count += 1;
+      const updated = String(doc.updated_at || doc.created_at || '');
+      if (updated > bucket.updated_at) bucket.updated_at = updated;
+    });
+    return Array.from(buckets.values()).sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  }
+
+  function renderFolders() {
+    const category = currentCategory();
+    const folders = groupFolders(category);
+    const listEl = state.tab === 'guide' ? els.guideFolders : els.projectFolders;
+    const activeFolder = state.tab === 'guide' ? state.guideFolder : state.projectFolder;
+    const countEl = state.tab === 'guide' ? els.guideCount : els.projectCount;
+    const currentFolderEl = state.tab === 'guide' ? els.guideCurrentFolder : els.projectCurrentFolder;
+    if (!listEl || !countEl || !currentFolderEl) return;
+
+    countEl.textContent = `${currentDocs().length.toLocaleString('th-TH')} รายการ`;
+    currentFolderEl.textContent = activeFolder === 'all' ? 'ทั้งหมด' : activeFolder;
+
+    const base = `
+      <div class="kc-folder ${activeFolder === 'all' ? 'active' : ''}" data-folder="all">
+        <div class="kc-folder-name"><strong>ทั้งหมด</strong><span>แสดงข้อมูลทุกหมวด</span></div>
+        <span class="kc-folder-count">${folders.reduce((n, f) => n + f.count, 0)}</span>
+      </div>`;
+
+    const items = folders.map((folder) => `
+      <div class="kc-folder ${activeFolder === folder.code ? 'active' : ''}" data-folder="${esc(folder.code)}">
+        <div class="kc-folder-name">
+          <strong>${esc(folder.code)}</strong>
+          <span>${esc(categoryLabel(category))} / โฟลเดอร์โครงการ</span>
+        </div>
+        <span class="kc-folder-count">${folder.count}</span>
+      </div>`).join('');
+
+    listEl.innerHTML = base + items || '<div class="kc-empty">ยังไม่มีข้อมูล</div>';
+    listEl.querySelectorAll('.kc-folder').forEach((el) => {
+      el.addEventListener('click', () => {
+        const folder = el.dataset.folder || 'all';
+        if (state.tab === 'guide') state.guideFolder = folder;
+        else state.projectFolder = folder;
+        renderLibrary();
+      });
+    });
+
+    if (state.tab === 'project') {
+      renderProjectCodeOptions(folders);
+    }
+  }
+
+  function renderProjectCodeOptions(folders = []) {
+    if (!els.projectCodeOptions) return;
+    const codes = folders
+      .map((folder) => String(folder.code || '').trim())
+      .filter((code) => code && code !== 'ไม่ระบุรหัส');
+    const unique = Array.from(new Set(codes));
+    els.projectCodeOptions.innerHTML = unique.map((code) => `<option value="${esc(code)}"></option>`).join('');
+  }
+
+  function renderCards() {
+    const docs = currentDocs();
+    const listEl = state.tab === 'guide' ? els.guideList : els.projectList;
+    if (!listEl) return;
+    if (!docs.length) {
+      listEl.innerHTML = state.tab === 'project'
+        ? '<tr><td class="kc-table-empty" colspan="3">ไม่พบข้อมูลที่ตรงกับตัวกรอง</td></tr>'
+        : '<div class="kc-empty">ไม่พบข้อมูลที่ตรงกับตัวกรอง</div>';
+      return;
+    }
+
+    if (state.tab === 'project') {
+      listEl.innerHTML = docs.map((doc) => {
+        const folder = [doc.project_code, doc.sub_project_code].filter(Boolean).join(' / ') || 'ไม่มีรหัสโครงการ';
+        const updated = String(doc.updated_at || doc.created_at || '').slice(0, 10);
+        const chips = [
+          `Scope: ${doc.knowledge_scope || 'global'}`,
+          doc.project_code ? `Project: ${doc.project_code}` : null,
+          doc.sub_project_code ? `Sub: ${doc.sub_project_code}` : null,
+          doc.tags ? `#${doc.tags}` : null,
+        ].filter(Boolean).map((label) => `<span class="kc-chip">${esc(label)}</span>`).join('');
+        const aiKey = storageKeyForDoc(doc);
+        const cachedAi = cleanAiSummary(state.aiSummaryCache[aiKey] || fallbackDocTypeLabel(doc), doc) || fallbackDocTypeLabel(doc);
+        return `
+          <tr data-doc-id="${esc(doc.id)}">
+            <td>
+              <div class="kc-doc-title">${esc(doc.title || '-')}</div>
+              <div class="kc-doc-sub">${esc(folder)} · ${esc(categoryLabel(doc.category))}</div>
+              <div class="kc-doc-meta">${chips}</div>
+            </td>
+            <td>
+              <div class="kc-doc-sub">${esc(String(doc.content_preview || doc.content || '').slice(0, 240))}${String(doc.content_preview || doc.content || '').length > 240 ? '…' : ''}</div>
+              <div class="kc-doc-sub" style="margin-top:10px;padding:10px 12px;border:1px solid #dbeafe;border-radius:12px;background:#f8fbff">
+                <strong style="color:var(--kc-ink)">AI สรุป:</strong> ${esc(cachedAi || 'กำลังเตรียมสรุป...')}
+              </div>
+            </td>
+            <td>${esc(updated || '-')}</td>
+          </tr>
+        `;
+      }).join('');
+      return;
+    }
+
+    listEl.innerHTML = docs.map((doc) => {
+      const folder = [doc.project_code, doc.sub_project_code].filter(Boolean).join(' / ') || 'ไม่มีรหัสโครงการ';
+      const updated = String(doc.updated_at || doc.created_at || '').slice(0, 10);
+      const chips = [
+        `Scope: ${doc.knowledge_scope || 'global'}`,
+        doc.project_code ? `Project: ${doc.project_code}` : null,
+        doc.sub_project_code ? `Sub: ${doc.sub_project_code}` : null,
+        doc.tags ? `#${doc.tags}` : null,
+      ].filter(Boolean).map((label) => `<span class="kc-chip">${esc(label)}</span>`).join('');
+      return `
+        <article class="kc-card">
+          <div class="kc-card-top">
+            <div>
+              <h4>${esc(doc.title || '-')}</h4>
+              <small>${esc(folder)} · ${esc(categoryLabel(doc.category))}</small>
+            </div>
+            <small>${esc(updated || '-')}</small>
+          </div>
+          <div class="kc-note" style="margin-bottom:10px">${esc(String(doc.content_preview || doc.content || '').slice(0, 180))}${String(doc.content_preview || doc.content || '').length > 180 ? '…' : ''}</div>
+          <div class="kc-chip-row">${chips}</div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function renderLibrary() {
+    renderFolders();
+    renderCards();
+    const current = currentDocs();
+    const grid = state.tab === 'guide' ? els.guideList : els.projectList;
+    if (grid && !current.length) grid.classList.add('kc-empty-state');
+  }
+
+  function setTab(tab) {
+    state.tab = tab;
+    history.replaceState(null, '', `/knowledge-add?tab=${tab}`);
+    els.tabProject.classList.toggle('active', tab === 'project');
+    els.tabGuide.classList.toggle('active', tab === 'guide');
+    els.panelProject.classList.toggle('active', tab === 'project');
+    els.panelGuide.classList.toggle('active', tab === 'guide');
+    renderLibrary();
+  }
+
+  function resetForm(tab) {
+    if (tab === 'project') {
+      document.getElementById('project-form')?.reset();
+      setStatus(els.projectStatus, 'พร้อมบันทึกข้อมูลโครงการ', 'info');
+    } else {
+      document.getElementById('guide-form')?.reset();
+      setStatus(els.guideStatus, 'พร้อมบันทึกคู่มือใหม่', 'info');
+    }
+  }
+
+  async function loadDocs() {
+    const token = localStorage.getItem('bt_token') || '';
+    try {
+      const res = await fetch('/api/helpdeck-knowledge?preview=1', {
+        headers: token ? { Authorization: 'Bearer ' + token } : {},
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        if (res.status === 401) {
+          BT.handleUnauthorized();
+          return;
+        }
+        throw new Error(data.error || 'โหลดข้อมูลไม่สำเร็จ');
+      }
+      state.docs = Array.isArray(data.data) ? data.data : [];
+      renderLibrary();
+    } catch (err) {
+      setStatus(els.projectStatus, err.message || 'โหลดข้อมูลไม่สำเร็จ', 'danger');
+      setStatus(els.guideStatus, err.message || 'โหลดข้อมูลไม่สำเร็จ', 'danger');
+      notify(err.message || 'โหลดข้อมูลไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function saveDoc(tab) {
+    const category = tab === 'guide' ? 'Guide' : 'Project';
+    const token = localStorage.getItem('bt_token') || '';
+    const payload = tab === 'guide' ? {
+      category,
+      title: document.getElementById('guide-title')?.value.trim() || '',
+      tags: document.getElementById('guide-tags')?.value.trim() || '',
+      knowledge_scope: document.getElementById('guide-scope')?.value || 'global',
+      source_type: document.getElementById('guide-source-type')?.value.trim() || '',
+      source_ref: document.getElementById('guide-source-ref')?.value.trim() || '',
+      content: document.getElementById('guide-content')?.value.trim() || '',
+    } : {
+      category,
+      title: document.getElementById('project-title')?.value.trim() || '',
+      tags: document.getElementById('project-tags')?.value.trim() || '',
+      knowledge_scope: document.getElementById('project-scope')?.value || 'project',
+      project_code: document.getElementById('project-code')?.value.trim() || '',
+      sub_project_code: document.getElementById('sub-project-code')?.value.trim() || '',
+      source_type: document.getElementById('project-source-type')?.value.trim() || '',
+      source_ref: document.getElementById('project-source-ref')?.value.trim() || '',
+      content: document.getElementById('project-content')?.value.trim() || '',
+    };
+
+    if (!payload.title || !payload.content) {
+      setStatus(tab === 'guide' ? els.guideStatus : els.projectStatus, 'กรุณากรอกหัวข้อและเนื้อหาให้ครบก่อนบันทึก', 'warning');
+      return;
+    }
+    if (tab === 'project' && !payload.project_code) {
+      setStatus(els.projectStatus, 'กรุณาระบุ Project Code อย่างน้อย 1 ค่า', 'warning');
+      return;
+    }
+
+    const statusTarget = tab === 'guide' ? els.guideStatus : els.projectStatus;
+    setStatus(statusTarget, 'กำลังบันทึกและสร้าง vector embedding...', 'info');
+    try {
+      const res = await fetch('/api/helpdeck-knowledge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        if (res.status === 401) {
+          BT.handleUnauthorized();
+          return;
+        }
+        throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+      }
+      setStatus(statusTarget, `บันทึกสำเร็จแล้ว${data.id ? ` (ID: ${data.id})` : ''} และพร้อมเข้า vector search`, 'success');
+      notify('บันทึกสำเร็จ', 'success');
+      resetForm(tab);
+      await loadDocs();
+    } catch (err) {
+      setStatus(statusTarget, err.message || 'บันทึกไม่สำเร็จ', 'danger');
+      notify(err.message || 'บันทึกไม่สำเร็จ', 'error');
+    }
+  }
+
+  function bindFilterEvents(tab) {
+    if (tab === 'project') {
+      els.projectSearch.addEventListener('input', (e) => { state.projectQuery = e.target.value; renderLibrary(); });
+      els.projectFilterSearch.addEventListener('input', (e) => { state.projectQuery = e.target.value; renderLibrary(); });
+      els.projectFilterScope.addEventListener('change', (e) => { state.projectScope = e.target.value; renderLibrary(); });
+      els.projectFilterSort.addEventListener('change', (e) => { state.projectSort = e.target.value; renderLibrary(); });
+      document.getElementById('project-reset')?.addEventListener('click', () => {
+        state.projectFolder = 'all';
+        state.projectQuery = '';
+        state.projectScope = '';
+        state.projectSort = 'updated';
+        els.projectSearch.value = '';
+        els.projectFilterSearch.value = '';
+        els.projectFilterScope.value = '';
+        els.projectFilterSort.value = 'updated';
+        renderLibrary();
+      });
+    } else {
+      els.guideSearch.addEventListener('input', (e) => { state.guideQuery = e.target.value; renderLibrary(); });
+      els.guideFilterSearch.addEventListener('input', (e) => { state.guideQuery = e.target.value; renderLibrary(); });
+      els.guideFilterScope.addEventListener('change', (e) => { state.guideScope = e.target.value; renderLibrary(); });
+      els.guideFilterSort.addEventListener('change', (e) => { state.guideSort = e.target.value; renderLibrary(); });
+      document.getElementById('guide-reset')?.addEventListener('click', () => {
+        state.guideFolder = 'all';
+        state.guideQuery = '';
+        state.guideScope = '';
+        state.guideSort = 'updated';
+        els.guideSearch.value = '';
+        els.guideFilterSearch.value = '';
+        els.guideFilterScope.value = '';
+        els.guideFilterSort.value = 'updated';
+        renderLibrary();
+      });
+    }
+  }
+
+  document.getElementById('tab-project').addEventListener('click', () => setTab('project'));
+  document.getElementById('tab-guide').addEventListener('click', () => setTab('guide'));
+  document.getElementById('project-form').addEventListener('submit', (e) => { e.preventDefault(); saveDoc('project'); });
+  document.getElementById('guide-form').addEventListener('submit', (e) => { e.preventDefault(); saveDoc('guide'); });
+  document.querySelectorAll('[data-clear]').forEach((btn) => {
+    btn.addEventListener('click', () => resetForm(btn.dataset.clear));
+  });
+
+  bindFilterEvents('project');
+  bindFilterEvents('guide');
+  loadAiSummaryCache();
+  setTab(state.tab);
+  loadDocs();
+</script>
+</body>
+</html>

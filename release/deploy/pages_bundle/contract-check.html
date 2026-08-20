@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contract Check — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-file-earmark-text"></i> Contract Check</h2></div>
+    <div class="bt-card" style="margin-bottom:20px">
+      <div class="bt-form-group"><label class="bt-label">ข้อกำหนด TOR</label><textarea id="cc-tor" class="bt-input" rows="6" placeholder="วางข้อกำหนด TOR หรือสัญญา..."></textarea></div>
+      <div class="bt-form-group"><label class="bt-label">ผลส่งมอบที่ส่งแล้ว</label><textarea id="cc-deliverables" class="bt-input" rows="4" placeholder="1. รายงานวิเคราะห์&#10;2. ต้นแบบระบบ..."></textarea></div>
+      <button id="cc-btn" class="bt-btn bt-btn-primary" onclick="checkCompliance()">🛡️ ตรวจสอบ Compliance</button>
+    </div>
+    <div class="bt-card" id="cc-result-card" style="display:none">
+      <div class="bt-section-header"><h2>ผลการตรวจสอบ</h2></div>
+      <div style="display:grid;grid-template-columns:160px 1fr;gap:20px;align-items:start">
+        <div style="text-align:center;padding:20px">
+          <div id="cc-score" style="font-size:3rem;font-weight:800;color:var(--bt-primary)">—</div>
+          <div style="color:#888;font-size:0.85rem">Compliance Score</div>
+          <div class="bt-progress" style="margin-top:10px"><div class="bt-progress-bar" id="cc-bar" style="width:0%"></div></div>
+        </div>
+        <div><h5>❌ รายการที่ขาด</h5><div id="cc-missing" style="font-size:0.9rem;white-space:pre-wrap"></div></div>
+      </div>
+      <div style="margin-top:16px"><h5>💡 คำแนะนำ</h5><div id="cc-recs" style="font-size:0.9rem;white-space:pre-wrap"></div></div>
+    </div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('contract-check.html', 'Compliance Score');
+      async function checkCompliance() {
+      if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อน', 'warning'); return; }
+      const tor=document.getElementById('cc-tor').value.trim(); const del=document.getElementById('cc-deliverables').value.trim();
+      if (!tor||!del) { BT.notify('กรุณากรอก TOR และผลส่งมอบ', 'warning'); return; }
+      const btn=document.getElementById('cc-btn'); btn.disabled=true; btn.textContent='⏳ กำลังตรวจสอบ...';
+      try {
+        const r=await BT.call('betime_solution.api.portal.check_compliance_inline',{tor_text:tor,deliverables:del});
+        const score=r.score||0;
+        document.getElementById('cc-score').textContent=score.toFixed(1)+'%';
+        document.getElementById('cc-score').style.color=score>=90?'var(--bt-success)':score>=70?'var(--bt-warning)':'var(--bt-danger)';
+        document.getElementById('cc-bar').style.width=score+'%';
+        document.getElementById('cc-missing').textContent=r.missing_items||'ครบถ้วน';
+        document.getElementById('cc-recs').textContent=r.recommendations||'-';
+        document.getElementById('cc-result-card').style.display='block';
+      } catch(e){ BT.notify('เกิดข้อผิดพลาด: '+e.message,'error'); }
+      finally { btn.disabled=false; btn.textContent='🛡️ ตรวจสอบ Compliance'; }
+    }
+</script>
+</body>
+</html>

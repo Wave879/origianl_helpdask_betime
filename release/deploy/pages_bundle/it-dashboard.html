@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .sys-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-bottom:20px; }
+    .sys-card { background:#fff; border:1px solid var(--bt-border); border-radius:var(--bt-radius); padding:16px 20px; display:flex; align-items:center; gap:14px; position:relative; }
+    .sys-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+    .sys-up   { background:#f0fdf4; color:var(--bt-success); }
+    .sys-warn { background:#fef9c3; color:#b45309; }
+    .sys-down { background:#fee2e2; color:var(--bt-danger); }
+    .sys-info { font-size:0.82rem; }
+    .sys-name { font-weight:700; font-size:0.9rem; }
+    .sys-status { font-size:0.78rem; margin-top:2px; }
+    .sys-card-actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
+    .sys-edit-btn { border:1px solid var(--bt-border); background:#fff; color:#475569; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .sys-edit-btn:hover { border-color:var(--bt-primary); color:var(--bt-primary); }
+    .sys-empty { color:var(--bt-muted); font-size:0.9rem; padding:16px 0; }
+    .sys-modal-backdrop { position:fixed; inset:0; background:rgba(15,23,42,.45); display:none; align-items:center; justify-content:center; padding:20px; z-index:3000; }
+    .sys-modal-backdrop.open { display:flex; }
+    .sys-modal { width:min(100%,560px); background:#fff; border-radius:18px; padding:22px; box-shadow:0 30px 80px rgba(15,23,42,.22); }
+    .sys-modal h3 { margin:0 0 16px; font-size:1.15rem; color:#0f172a; }
+    .sys-form-grid { display:grid; gap:14px; }
+    .sys-field label { display:block; font-size:.82rem; font-weight:700; color:#475569; margin-bottom:6px; }
+    .sys-field input, .sys-field select, .sys-field textarea { width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:10px 12px; font:inherit; }
+    .sys-field textarea { min-height:92px; resize:vertical; }
+    .sys-modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+    .ticket-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--bt-border); font-size:0.88rem; }
+    .ticket-row:last-child { border-bottom:none; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media(max-width:900px){ .two-col{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-display"></i> IT Dashboard</h2>
+      <a href="/it-requests.html" class="bt-btn bt-btn-primary bt-btn-sm"><i class="bi bi-plus-lg"></i> แจ้งปัญหาใหม่</a>
+    </div>
+
+    <!-- KPI -->
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))">
+      <div class="bt-card"><div class="bt-card-title">Ticket เปิดอยู่</div><div class="bt-card-value" id="kpi-open" style="color:var(--bt-warning)">-</div><div class="bt-card-sub">Open tickets</div></div>
+      <div class="bt-card"><div class="bt-card-title">แก้ไขแล้ววันนี้</div><div class="bt-card-value" id="kpi-solved" style="color:var(--bt-success)">-</div><div class="bt-card-sub">Resolved today</div></div>
+      <div class="bt-card"><div class="bt-card-title">Asset ทั้งหมด</div><div class="bt-card-value" id="kpi-assets" style="color:var(--bt-accent)">-</div><div class="bt-card-sub">Total IT assets</div></div>
+      <div class="bt-card"><div class="bt-card-title">SLA ผ่าน</div><div class="bt-card-value" id="kpi-sla" style="color:var(--bt-success)">-</div><div class="bt-card-sub">SLA compliance</div></div>
+    </div>
+
+    <!-- System Status -->
+    <div class="bt-card" style="margin-bottom:20px">
+      <div class="bt-section-header"><h2><i class="bi bi-hdd-network" style="color:var(--bt-primary)"></i> สถานะระบบ</h2></div>
+      <div class="sys-grid" id="sys-status-grid"></div>
+    </div>
+
+    <!-- Recent Tickets + Top Categories -->
+    <div class="two-col">
+      <div class="bt-card">
+        <div class="bt-section-header">
+          <h2><i class="bi bi-ticket" style="color:var(--bt-primary)"></i> Ticket ล่าสุด</h2>
+          <a href="/it-requests.html" style="font-size:0.8rem;color:var(--bt-primary);text-decoration:none">ดูทั้งหมด</a>
+        </div>
+        <div id="recent-tickets"></div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-pie-chart" style="color:var(--bt-accent)"></i> หมวดหมู่ปัญหา</h2></div>
+        <div id="category-chart"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="sys-modal-backdrop" id="sys-modal">
+  <div class="sys-modal">
+    <h3>แก้ไขสถานะโครงการ</h3>
+    <div class="sys-form-grid">
+      <div class="sys-field">
+        <label>โครงการ</label>
+        <input id="sys-project-name" readonly>
+      </div>
+      <div class="sys-field">
+        <label>สถานะ</label>
+        <select id="sys-project-status">
+          <option value="up">พร้อมใช้งาน</option>
+          <option value="warn">เฝ้าระวัง</option>
+          <option value="down">ปิดปรับปรุง / ใช้งานไม่ได้</option>
+        </select>
+      </div>
+      <div class="sys-field">
+        <label>รายละเอียดสถานะ</label>
+        <input id="sys-project-detail" placeholder="เช่น Online, ปิดปรับปรุง 14:00-16:00">
+      </div>
+      <div class="sys-field">
+        <label>บันทึกเพิ่มเติม</label>
+        <textarea id="sys-project-note" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+      </div>
+    </div>
+    <div class="sys-modal-footer">
+      <button class="bt-btn bt-btn-outline" type="button" onclick="closeSystemModal()">ยกเลิก</button>
+      <button class="bt-btn bt-btn-primary" type="button" onclick="saveSystemStatus()">บันทึกสถานะ</button>
+    </div>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('it-dashboard.html', 'IT Support');
+
+  const token = () => localStorage.getItem('bt_token');
+  const api = (path, opts={}) => fetch('/api'+path, { headers:{'Authorization':'Bearer '+token(),'Content-Type':'application/json'}, ...opts });
+  let projectSystems = [];
+  let editingSystemId = null;
+
+  const priorityColor = { high:'var(--bt-danger)', medium:'var(--bt-warning)', low:'var(--bt-success)' };
+  const priorityLabel = { high:'สูง', medium:'กลาง', low:'ต่ำ' };
+  const statusLabel   = { open:'เปิด', resolved:'แก้แล้ว', pending:'รอ' };
+  const statusColor   = { open:'bt-badge-orange', resolved:'bt-badge-green', pending:'bt-badge-blue' };
+  const systemStatusLabel = { up:'พร้อมใช้งาน', warn:'เฝ้าระวัง', down:'ใช้งานไม่ได้' };
+
+  function parseExtra(extra) {
+    try { return JSON.parse(extra || '{}'); } catch { return {}; }
+  }
+
+  function systemViewModel(row) {
+    const extra = parseExtra(row.extra);
+    return {
+      ...row,
+      extra,
+      status: extra.system_status || (row.active ? 'up' : 'down'),
+      detail: extra.system_detail || (row.active ? 'Online' : 'Inactive'),
+      note: extra.system_note || '',
+    };
+  }
+
+  function renderKPIs(d) {
+    document.getElementById('kpi-open').textContent   = d.open_requests ?? '-';
+    document.getElementById('kpi-solved').textContent = d.resolved_requests ?? '-';
+    document.getElementById('kpi-assets').textContent = d.total_assets ?? '-';
+    document.getElementById('kpi-sla').textContent    = d.total_requests > 0 ? Math.round((d.resolved_requests/d.total_requests)*100)+'%' : '100%';
+  }
+
+  function renderSystems() {
+    if (!projectSystems.length) {
+      document.getElementById('sys-status-grid').innerHTML = '<div class="sys-empty">ยังไม่มีโครงการสำหรับแสดงสถานะระบบ</div>';
+      return;
+    }
+    const html = projectSystems.map(s => `
+      <div class="sys-card">
+        <div class="sys-icon sys-${s.status}">
+          <i class="bi bi-${s.status==='up'?'check-circle-fill':s.status==='warn'?'exclamation-triangle-fill':'x-circle-fill'}"></i>
+        </div>
+        <div class="sys-info">
+          <div class="sys-name">${s.name}</div>
+          <div class="sys-status" style="color:${s.status==='up'?'var(--bt-success)':s.status==='warn'?'#b45309':'var(--bt-danger)'}">${s.detail}</div>
+        </div>
+        <div class="sys-card-actions">
+          <button class="sys-edit-btn" type="button" onclick="openSystemModal('${s.id}')" title="แก้ไขสถานะ">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+        </div>
+      </div>`).join('');
+    document.getElementById('sys-status-grid').innerHTML = html;
+  }
+
+  function openSystemModal(id) {
+    const row = projectSystems.find(item => item.id === id);
+    if (!row) return;
+    editingSystemId = id;
+    document.getElementById('sys-project-name').value = row.name || row.code || '-';
+    document.getElementById('sys-project-status').value = row.status || 'up';
+    document.getElementById('sys-project-detail').value = row.detail || '';
+    document.getElementById('sys-project-note').value = row.note || '';
+    document.getElementById('sys-modal').classList.add('open');
+  }
+
+  function closeSystemModal() {
+    editingSystemId = null;
+    document.getElementById('sys-modal').classList.remove('open');
+  }
+
+  async function saveSystemStatus() {
+    const row = projectSystems.find(item => item.id === editingSystemId);
+    if (!row) return;
+    const nextStatus = document.getElementById('sys-project-status').value;
+    const nextDetail = document.getElementById('sys-project-detail').value.trim();
+    const nextNote = document.getElementById('sys-project-note').value.trim();
+    const extra = { ...row.extra, system_status: nextStatus, system_detail: nextDetail, system_note: nextNote };
+    try {
+      const res = await api(`/hd-master/${encodeURIComponent(row.id)}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          code: row.code || '',
+          name: row.name || '',
+          extra: JSON.stringify(extra),
+          active: row.active,
+          sort_order: row.sort_order || 0,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'บันทึกสถานะไม่สำเร็จ');
+      closeSystemModal();
+      await loadProjectSystems();
+      BT.notify('อัปเดตสถานะโครงการแล้ว', 'success');
+    } catch (e) {
+      BT.notify(e.message || 'บันทึกสถานะไม่สำเร็จ', 'danger');
+    }
+  }
+
+  function renderTickets(list) {
+    const html = (list||[]).slice(0,5).map(t => `
+      <div class="ticket-row">
+        <span style="font-size:0.75rem;font-weight:700;color:var(--bt-muted);min-width:56px">${t.ticket_no||t.id}</span>
+        <span style="flex:1">${t.title}</span>
+        <span class="bt-badge ${statusColor[t.status]||'bt-badge-grey'}">${statusLabel[t.status]||t.status}</span>
+        <span class="bt-badge" style="background:#f1f5f9;color:${priorityColor[t.priority]};min-width:32px;text-align:center">${priorityLabel[t.priority]||t.priority}</span>
+      </div>`).join('');
+    document.getElementById('recent-tickets').innerHTML = html || '<div style="color:var(--bt-muted);font-size:0.85rem;padding:12px">ไม่มี Ticket</div>';
+  }
+
+  function renderCategories(list) {
+    const counts = {};
+    (list||[]).forEach(x => { counts[x.category] = (counts[x.category]||0)+1; });
+    const total = (list||[]).length || 1;
+    const colors = ['#ea580c','#3b82f6','#16a34a','#d97706','#7c3aed','#0d9488'];
+    const html = Object.entries(counts).map(([cat,n],i) => `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
+          <span>${cat}</span><span style="font-weight:700">${n}</span>
+        </div>
+        <div class="bt-progress"><div class="bt-progress-bar" style="width:${Math.round(n/total*100)}%;background:${colors[i%colors.length]}"></div></div>
+      </div>`).join('');
+    document.getElementById('category-chart').innerHTML = html || '<div style="color:var(--bt-muted);font-size:0.85rem">ไม่มีข้อมูล</div>';
+  }
+
+  async function loadProjectSystems() {
+    try {
+      const res = await api('/hd-master?table=hd_projects');
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'โหลดสถานะระบบไม่สำเร็จ');
+      projectSystems = (data.data || []).map(systemViewModel);
+      renderSystems();
+    } catch (e) {
+      document.getElementById('sys-status-grid').innerHTML = `<div class="sys-empty">${e.message || 'โหลดสถานะระบบไม่สำเร็จ'}</div>`;
+    }
+  }
+
+  async function loadDashboard() {
+    try {
+      const res = await api('/dashboard/it');
+      const d = await res.json();
+      if (!d.ok) { BT.notify('โหลดข้อมูลไม่สำเร็จ', 'warning'); return; }
+      renderKPIs(d);
+      renderTickets(d.recent_requests);
+      renderCategories(d.recent_requests);
+    } catch(e) {
+      BT.notify('ไม่สามารถเชื่อมต่อ server ได้', 'danger');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadProjectSystems();
+    loadDashboard();
+  });
+
+  document.getElementById('sys-modal').addEventListener('click', (event) => {
+    if (event.target === document.getElementById('sys-modal')) closeSystemModal();
+  });
+</script>
+</body>
+</html>

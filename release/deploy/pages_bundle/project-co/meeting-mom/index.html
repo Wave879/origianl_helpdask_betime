@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meeting MOM - Project CO. - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .mom-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .mom-card {
+      background: #fff;
+      border: 1px solid #d9e1ef;
+      border-radius: 12px;
+      box-shadow: 0 14px 34px rgba(15,23,42,0.07);
+      overflow: hidden;
+    }
+    .mom-title {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: #1e3a8a;
+    }
+    .mom-sub { margin-top: 8px; color: var(--bt-muted); font-size: 0.95rem; }
+    .mom-body { padding: 18px 20px 20px; background: #fff; }
+    .mom-stepbar {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      margin: 0 0 16px;
+      border: 1px solid #d9e1ef;
+      border-radius: 14px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow: 0 12px 26px rgba(15,23,42,0.05);
+    }
+    .mom-step {
+      position: relative;
+      padding: 14px 14px 12px;
+      min-height: 74px;
+      border-right: 1px solid #e6edf7;
+      background: linear-gradient(180deg, #fff 0%, #f9fbff 100%);
+    }
+    .mom-step:last-child { border-right: none; }
+    .mom-step.active { background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%); }
+    .mom-step.done { background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); }
+    .mom-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      margin-bottom: 7px;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
+    .mom-step.active .mom-step-num { background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; }
+    .mom-step.done .mom-step-num { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; }
+    .mom-step-label { display: block; font-size: 0.88rem; font-weight: 900; color: #0f172a; }
+    .mom-step-desc { margin-top: 6px; font-size: 0.76rem; color: #64748b; line-height: 1.35; }
+    .mom-step.active .mom-step-desc { color: #334155; }
+    .mom-step.done .mom-step-desc { color: #166534; }
+    .mom-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+      gap: 40px;
+      align-items: start;
+    }
+    .mom-grid > div {
+      min-width: 0;
+    }
+    .mom-result-stack {
+      display: grid;
+      gap: 22px;
+    }
+    .mom-section-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 12px;
+    }
+    .mom-drop {
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 16px 18px;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+    }
+    .mom-drop:hover { background: #f1f5f9; border-color: #93c5fd; transform: translateY(-1px); }
+    .mom-drop.dragover { background: #eff6ff; border-color: #1d4ed8; }
+    .mom-drop.has-file {
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+      border-style: solid;
+      border-color: #cfe0fb;
+      transform: none;
+      cursor: default;
+    }
+    .mom-drop-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .mom-drop .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    .mom-drop strong { display: block; font-size: 0.93rem; color: #0f172a; line-height: 1.45; }
+    .mom-drop small { color: #64748b; display: block; margin-top: 4px; }
+    .mom-file-preview {
+      display: none;
+      width: 100%;
+      margin-top: 14px;
+      border-radius: 12px;
+      border: 1px solid #cfe0fb;
+      background: #eff6ff;
+      padding: 14px 16px;
+      text-align: left;
+    }
+    .mom-drop.has-file .mom-drop-hint { display: none; }
+    .mom-drop.has-file .mom-file-preview { display: block; margin-top: 0; }
+    .mom-file-preview-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .mom-file-preview-main i {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 1rem;
+    }
+    .mom-file-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+      word-break: break-word;
+    }
+    .mom-file-size {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .mom-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+    .mom-form-grid .full { grid-column: 1 / -1; }
+    .mom-label { display: block; margin-bottom: 7px; font-size: 0.9rem; font-weight: 700; color: #334155; }
+    .mom-input, .mom-select, .mom-textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 15px 16px;
+      font: inherit;
+      font-size: 0.98rem;
+      background: #fff;
+    }
+    .mom-textarea { min-height: 150px; resize: vertical; }
+    .mom-help {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .mom-progress {
+      margin-top: 14px;
+      display: none;
+    }
+    .mom-progress-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 8px; }
+    .mom-progress-msg { font-size: 0.9rem; color: #1d4ed8; }
+    .mom-progress-time { font-size: 0.82rem; font-weight: 800; color: #64748b; white-space: nowrap; }
+    .mom-panels {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .mom-box {
+      border: 1px solid #d9e1ef;
+      border-radius: 12px;
+      padding: 18px;
+      background: #f8fafc;
+    }
+    .mom-disclosure {
+      border: 1px solid #d9e1ef;
+      border-radius: 12px;
+      background: #f8fafc;
+      overflow: hidden;
+    }
+    .mom-disclosure > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 18px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      user-select: none;
+    }
+    .mom-disclosure > summary::-webkit-details-marker { display: none; }
+    .mom-disclosure > summary::after {
+      content: "▾";
+      color: #64748b;
+      font-size: 0.95rem;
+      transition: transform 0.18s ease;
+    }
+    .mom-disclosure[open] > summary::after { transform: rotate(180deg); }
+    .mom-disclosure-body {
+      border-top: 1px solid #e2e8f0;
+      padding: 18px;
+    }
+    .mom-box h4 {
+      margin: 0 0 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .mom-box p,
+    .mom-box li {
+      font-size: 0.92rem;
+      color: #0f172a;
+      line-height: 1.7;
+    }
+    .mom-box ul { margin: 0; padding-left: 18px; }
+    .mom-box li + li { margin-top: 6px; }
+    .mom-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .mom-actions .bt-btn {
+      border-radius: 12px;
+    }
+    .mom-empty {
+      color: #64748b;
+      font-size: 0.92rem;
+    }
+    @media (max-width: 900px) {
+      .mom-layout,
+      .mom-grid,
+      .mom-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .mom-title { font-size: 1.45rem; }
+      .mom-body { padding: 14px 12px 16px; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-mic"></i> Meeting MOM</h2>
+      <button class="bt-btn bt-btn-primary bt-btn-sm" id="btnScrollToForm"><i class="bi bi-arrow-down-circle"></i> ไปที่ฟอร์ม</button>
+    </div>
+
+    <section class="mom-layout">
+      <section class="mom-card">
+        <div class="mom-body">
+          <div class="mom-stepbar" aria-label="ขั้นตอนการทำงาน">
+            <div class="mom-step done">
+              <span class="mom-step-num">1</span>
+              <span class="mom-step-label">ใส่ข้อมูล</span>
+              <div class="mom-step-desc">เลือกโครงการและรายชื่อผู้เข้าร่วม</div>
+            </div>
+            <div class="mom-step active">
+              <span class="mom-step-num">2</span>
+              <span class="mom-step-label">ประมวลผล</span>
+              <div class="mom-step-desc">ถอดเสียงและสรุปผลด้วย AI</div>
+            </div>
+            <div class="mom-step">
+              <span class="mom-step-num">3</span>
+              <span class="mom-step-label">บันทึก</span>
+              <div class="mom-step-desc">เก็บลงระบบและส่งต่อ Action Item</div>
+            </div>
+          </div>
+
+          <div class="mom-grid" id="momTopGrid" style="margin-top:16px">
+            <div>
+              <div class="mom-section-title">ข้อมูลประชุม</div>
+              <div class="mom-form-grid">
+                <div class="full">
+                  <label class="mom-label">โครงการอะไร</label>
+                  <input class="mom-input" id="inp-project" type="text" placeholder="เช่น Project CO.">
+                </div>
+                <div class="full">
+                  <label class="mom-label">มีใครบ้าง</label>
+                  <input class="mom-input" id="inp-title" type="text" placeholder="เช่น PM, HR, Dev, Sales">
+                </div>
+                <div class="full">
+                  <label class="mom-label">วันที่ประชุม</label>
+                  <input class="mom-input" id="inp-date" type="date">
+                </div>
+              </div>
+              <div class="mom-help">ถ้าไม่ใส่ Project ระบบยังประมวลผลได้ แต่ควรกรอกเพื่อให้จัดเก็บและติดตามง่ายขึ้น</div>
+
+              <div class="mom-section-title" style="margin-top:16px">อัปโหลดไฟล์เสียง</div>
+              <div class="mom-drop" id="drop-zone">
+                <div class="mom-drop-hint">
+                  <div class="icon"><i class="bi bi-mic-fill"></i></div>
+                  <strong>ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์</strong>
+                  <small>รองรับ .wav สำหรับทดสอบ production</small>
+                </div>
+                <div id="file-preview" class="mom-file-preview">
+                  <div class="mom-file-preview-main">
+                    <i class="bi bi-file-earmark-music"></i>
+                    <div>
+                      <div id="file-name" class="mom-file-name"></div>
+                      <div id="file-size" class="mom-file-size"></div>
+                    </div>
+                  </div>
+                </div>
+                <input type="file" id="audio-file" accept=".wav,audio/wav,audio/x-wav" style="display:none;">
+              </div>
+              <div class="mom-actions" style="margin-top:14px">
+                <button class="bt-btn bt-btn-primary" id="btn-process" disabled><i class="bi bi-play-fill"></i> เริ่มถอดเสียงและวิเคราะห์</button>
+                <button class="bt-btn bt-btn-success" id="btn-save-mom" disabled><i class="bi bi-save2"></i> บันทึกเป็น MOM</button>
+              </div>
+              <details class="mom-disclosure" id="transcriptDisclosure" style="margin-top:14px;">
+                <summary>Transcript <span style="font-size:0.78rem;font-weight:700;color:#64748b;">เปิดดูได้ถ้าต้องการ</span></summary>
+                <div class="mom-disclosure-body">
+                  <div class="bt-transcript-box" id="transcript-box"><span class="mom-empty">ผลการถอดเสียงจะปรากฏที่นี่</span></div>
+                  <button class="bt-btn bt-btn-outline bt-btn-sm" id="btn-copy-transcript" disabled style="margin-top:10px;"><i class="bi bi-clipboard"></i> คัดลอก Transcript</button>
+                </div>
+              </details>
+            </div>
+
+            <div class="mom-result-stack">
+              <div>
+                <div class="mom-section-title">ผลการประมวลผล</div>
+                <div class="mom-progress" id="progress-area">
+                  <div class="mom-progress-msg" id="progress-msg">กำลังอัปโหลด...</div>
+                  <div class="mom-progress-time" id="progress-time">00:00</div>
+                  <div class="bt-progress"><div class="bt-progress-bar" id="progress-bar" style="width:0%;transition:width 0.4s;"></div></div>
+                </div>
+              </div>
+
+              <div class="mom-box">
+                <h4>Summary</h4>
+                <p id="summary-box" class="mom-empty">ยังไม่มีผลสรุป</p>
+              </div>
+              <div class="mom-box">
+                <h4>Decisions</h4>
+                <ul id="decisions-box"><li class="mom-empty">ยังไม่มีมติ</li></ul>
+              </div>
+              <div class="mom-box">
+                <h4>Risks / Issues</h4>
+                <ul id="risks-box"><li class="mom-empty">ยังไม่มีความเสี่ยงหรือประเด็น</li></ul>
+              </div>
+              <div class="mom-box">
+                <h4>ตารางวันที่</h4>
+                <div id="dates-box" class="mom-empty">ระบบจะแสดงช่วงวันที่หรือ timeline ที่พูดถึงในประชุมที่นี่</div>
+              </div>
+              <div class="mom-box">
+                <h4>Tasks จาก MOM</h4>
+                <div id="tasks-box" class="mom-empty">ระบบจะแสดงงานที่สร้างจากมติประชุมที่นี่</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('meeting-mom', 'Meeting MOM');
+
+let audioFile = null;
+let analysisResult = null;
+let progressStartedAt = 0;
+let progressTimer = null;
+
+function normalizeFrappeResult(payload) {
+  return payload?.message || payload?.data || payload || {};
+}
+
+function requireLoginToken() {
+  const token = BT.getToken();
+  if (!token) {
+    throw new Error('กรุณาเข้าสู่ระบบใหม่ก่อนทดสอบ');
+  }
+  return token;
+}
+
+async function readApiJson(res) {
+  const text = await res.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    const looksLikeHtml = /^\s*</.test(text || '');
+    if (looksLikeHtml) {
+      throw new Error('ระบบได้รับหน้าเว็บแทน JSON กรุณา login ใหม่แล้วกด Ctrl+F5');
+    }
+    throw new Error((text || res.statusText || 'Invalid API response').slice(0, 240));
+  }
+  if (!res.ok || payload?.error) {
+    throw new Error(payload?.error || payload?.message || res.statusText);
+  }
+  return payload;
+}
+
+async function uploadAudioForProcessing(preparedFile, title) {
+  const fd = new FormData();
+  fd.append('file', preparedFile, preparedFile.name);
+  fd.append('related_type', 'meeting-mom');
+  fd.append('related_id', title || 'meeting-mom');
+
+  const token = requireLoginToken();
+  const uploadRes = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token },
+    body: fd,
+  });
+  const uploadData = await readApiJson(uploadRes);
+  const filePath = uploadData.url || uploadData.file_url || uploadData.message?.file_url || uploadData.message?.name;
+  return { filePath, raw: uploadData };
+}
+
+async function processMomAudio(filePath, title, date, project) {
+  const token = requireLoginToken();
+  const res = await fetch('/api/meeting-mom/process', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+    body: JSON.stringify({
+    file_path: filePath,
+    meeting_title: title,
+    meeting_date: date,
+    project: project,
+    }),
+  });
+  return await readApiJson(res);
+}
+
+async function saveMomRecord(payload) {
+  const token = requireLoginToken();
+  const res = await fetch('/api/meeting-moms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+    body: JSON.stringify(payload),
+  });
+  return await readApiJson(res);
+}
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('audio-file');
+const filePreview = document.getElementById('file-preview');
+const btnProcess = document.getElementById('btn-process');
+const btnDemoTest = document.createElement('button');
+btnDemoTest.className = 'bt-btn bt-btn-outline';
+btnDemoTest.type = 'button';
+btnDemoTest.innerHTML = '<i class="bi bi-lightning-charge"></i> ทดสอบระบบ';
+btnProcess.insertAdjacentElement('afterend', btnDemoTest);
+const btnSave = document.getElementById('btn-save-mom');
+const btnCopy = document.getElementById('btn-copy-transcript');
+const btnScroll = document.getElementById('btnScrollToForm');
+
+document.getElementById('inp-date').value = new Date().toISOString().split('T')[0];
+
+btnScroll.addEventListener('click', () => {
+  document.getElementById('momTopGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  audioFile = file;
+  dropZone.classList.add('has-file');
+  filePreview.style.display = 'block';
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+  btnProcess.disabled = false;
+  BT.notify('เลือกไฟล์แล้ว: ' + file.name, 'info');
+}
+
+function setProgress(pct, msg) {
+  const area = document.getElementById('progress-area');
+  area.style.display = pct > 0 ? 'block' : 'none';
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-msg').textContent = msg;
+}
+
+function formatElapsed(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
+function updateProgressTime() {
+  const el = document.getElementById('progress-time');
+  if (!el || !progressStartedAt) return;
+  el.textContent = formatElapsed(Date.now() - progressStartedAt);
+}
+
+function startProgressTimer() {
+  stopProgressTimer(false);
+  progressStartedAt = Date.now();
+  updateProgressTime();
+  progressTimer = setInterval(updateProgressTime, 1000);
+}
+
+function stopProgressTimer(keepFinal = true) {
+  if (progressTimer) clearInterval(progressTimer);
+  progressTimer = null;
+  if (keepFinal) updateProgressTime();
+  else {
+    progressStartedAt = 0;
+    const el = document.getElementById('progress-time');
+    if (el) el.textContent = '00:00';
+  }
+}
+
+function nextFrame() {
+  return new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+}
+
+function encodeWav(audioBuffer) {
+  const numChannels = 1;
+  const sampleRate = audioBuffer.sampleRate;
+  const samples = audioBuffer.getChannelData(0);
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  const writeString = (offset, str) => {
+    for (let i = 0; i < str.length; i += 1) view.setUint8(offset + i, str.charCodeAt(i));
+  };
+  const writeUint16 = (offset, value) => view.setUint16(offset, value, true);
+  const writeUint32 = (offset, value) => view.setUint32(offset, value, true);
+
+  writeString(0, 'RIFF');
+  writeUint32(4, 36 + samples.length * 2);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  writeUint32(16, 16);
+  writeUint16(20, 1);
+  writeUint16(22, numChannels);
+  writeUint32(24, sampleRate);
+  writeUint32(28, sampleRate * numChannels * 2);
+  writeUint16(32, numChannels * 2);
+  writeUint16(34, 16);
+  writeString(36, 'data');
+  writeUint32(40, samples.length * 2);
+
+  let offset = 44;
+  for (let i = 0; i < samples.length; i += 1) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    offset += 2;
+  }
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+async function prepareAudioForUpload(file) {
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const isWav = ext === 'wav' || file.type === 'audio/wav' || file.type === 'audio/x-wav';
+  if (isWav) return file;
+  throw new Error('ตอนนี้ production รองรับไฟล์ .wav ก่อน เพื่อป้องกันหน้าเว็บค้างระหว่างแปลงไฟล์ .m4a/.mp3 กรุณาแปลงเป็น .wav แล้วอัปโหลดใหม่');
+  if (file.size > 40 * 1024 * 1024) {
+    throw new Error('ไฟล์เสียงใหญ่เกินไปสำหรับการแปลงในหน้าเว็บตอนนี้ กรุณาใช้ไฟล์ .wav หรือแบ่งไฟล์ให้เล็กลงก่อนอัปโหลด');
+  }
+  setProgress(15, 'เตรียมไฟล์เสียง...');
+  await nextFrame();
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx || typeof OfflineAudioContext === 'undefined') return file;
+    const audioCtx = new AudioCtx();
+    const decoded = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+    const targetRate = 16000;
+    const mono = audioCtx.createBuffer(1, decoded.length, decoded.sampleRate);
+    const monoData = mono.getChannelData(0);
+    const channels = decoded.numberOfChannels;
+    for (let i = 0; i < decoded.length; i += 1) {
+      let sum = 0;
+      for (let c = 0; c < channels; c += 1) sum += decoded.getChannelData(c)[i] || 0;
+      monoData[i] = sum / Math.max(channels, 1);
+    }
+    const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * targetRate), targetRate);
+    const source = offline.createBufferSource();
+    source.buffer = mono;
+    source.connect(offline.destination);
+    source.start(0);
+    const rendered = await offline.startRendering();
+    const wavBlob = encodeWav(rendered);
+    return new File([wavBlob], file.name.replace(/\.[^.]+$/, '') + '.wav', { type: 'audio/wav' });
+  } catch {
+    return file;
+  }
+}
+
+function renderAnalysis(r) {
+  const summaryLines = Array.isArray(r.summary) ? r.summary : (r.summary ? [r.summary] : []);
+  document.getElementById('summary-box').innerHTML = summaryLines.length
+    ? summaryLines.map(s => `<div style="margin-top:6px;">• ${s}</div>`).join('')
+    : '<span class="mom-empty">ยังไม่มีสรุป</span>';
+
+  const decisions = Array.isArray(r.decisions) ? r.decisions : [];
+  document.getElementById('decisions-box').innerHTML = decisions.length
+    ? decisions.map(d => `<li>${d}</li>`).join('')
+    : '<li class="mom-empty">ไม่พบมติ</li>';
+
+  const risks = [...(Array.isArray(r.risks) ? r.risks : []), ...(Array.isArray(r.issues) ? r.issues : [])];
+  document.getElementById('risks-box').innerHTML = risks.length
+    ? risks.map(d => `<li>${d}</li>`).join('')
+    : '<li class="mom-empty">ไม่พบความเสี่ยง</li>';
+
+  const dates = Array.isArray(r.dates) ? r.dates : [];
+  document.getElementById('dates-box').innerHTML = dates.length
+    ? dates.map(item => {
+        if (typeof item === 'string') {
+          return `<div style="background:#fff;border:1px solid #d9e1ef;border-radius:10px;padding:10px 12px;margin-top:8px;">${item}</div>`;
+        }
+        const range = item.date_range || item.range || 'ยังไม่ชัดเจน';
+        const month = item.month_hint ? ` <span style="color:#64748b;">(${item.month_hint})</span>` : '';
+        const context = item.context ? `<div style="margin-top:4px;color:#475569;font-size:0.88rem;line-height:1.5;">${item.context}</div>` : '';
+        return `
+          <div style="background:#fff;border:1px solid #d9e1ef;border-radius:10px;padding:10px 12px;margin-top:8px;">
+            <strong style="display:block;color:#0f172a;">${range}${month}</strong>
+            ${context}
+          </div>`;
+      }).join('')
+    : 'ระบบจะแสดงช่วงวันที่หรือ timeline ที่พูดถึงในประชุมที่นี่';
+
+  const tasks = Array.isArray(r.tasks) ? r.tasks : [];
+  document.getElementById('tasks-box').innerHTML = tasks.length
+    ? tasks.map(t => `
+      <div style="background:#fff;border:1px solid #d9e1ef;border-radius:10px;padding:10px 12px;margin-top:8px;">
+        <strong style="display:block;color:#0f172a;">${t.task_name || t.task || 'งานจาก MOM'}</strong>
+        <small style="color:#64748b;">ผู้รับผิดชอบ: ${t.owner || t.assigned_to_hint || 'PM'}${t.deadline ? ` | Deadline: ${t.deadline}` : ''}${t.priority ? ` | Priority: ${t.priority}` : ''}</small>
+        ${t.dependency ? `<div style="margin-top:4px;color:#475569;font-size:0.88rem;line-height:1.5;">Dependency: ${t.dependency}</div>` : ''}
+      </div>`).join('')
+    : '<span class="mom-empty">ยังไม่มี Tasks</span>';
+
+  btnCopy.disabled = false;
+  btnSave.disabled = false;
+}
+
+btnDemoTest.addEventListener('click', async () => {
+  try {
+    btnDemoTest.disabled = true;
+    setProgress(5, 'โหลดไฟล์ทดสอบ...');
+    startProgressTimer();
+    const res = await fetch('/assets/sample-stt.wav', { cache: 'no-store' });
+    if (!res.ok) throw new Error('โหลดไฟล์ทดสอบไม่สำเร็จ');
+    const blob = await res.blob();
+    const file = new File([blob], 'sample-stt.wav', { type: 'audio/wav' });
+    handleFile(file);
+    await nextFrame();
+    btnProcess.click();
+  } catch (e) {
+    setProgress(0, '');
+    stopProgressTimer(false);
+    BT.notify('ทดสอบระบบไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    btnDemoTest.disabled = false;
+  }
+});
+
+btnProcess.addEventListener('click', async () => {
+  if (!audioFile) return;
+  startProgressTimer();
+  btnProcess.disabled = true;
+
+  const title = document.getElementById('inp-title').value || 'การประชุม';
+  const date = document.getElementById('inp-date').value || new Date().toISOString().split('T')[0];
+  const project = document.getElementById('inp-project').value || '';
+
+  setProgress(10, 'อัปโหลดไฟล์เสียง...');
+
+  try {
+  const preparedFile = await prepareAudioForUpload(audioFile);
+  const { filePath } = await uploadAudioForProcessing(preparedFile, title);
+
+  if (!filePath) {
+    setProgress(0, '');
+    stopProgressTimer(false);
+    btnProcess.disabled = false;
+    BT.notify('อัปโหลดไฟล์ไม่สำเร็จ', 'error');
+    return;
+  }
+
+  setProgress(35, 'ถอดเสียงและวิเคราะห์ด้วย AI...');
+  try {
+    const result = await processMomAudio(filePath, title, date, project);
+    analysisResult = result;
+    document.getElementById('transcript-box').textContent = result.transcript || '(ไม่มี transcript)';
+    renderAnalysis(result);
+    document.getElementById('transcriptDisclosure').open = false;
+    stopProgressTimer(true);
+    setProgress(100, 'เสร็จสิ้น');
+  } catch (e) {
+    setProgress(0, '');
+    stopProgressTimer(false);
+    btnProcess.disabled = false;
+    BT.notify('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  }
+  } catch (e) {
+    setProgress(0, '');
+    stopProgressTimer(false);
+    BT.notify('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  } finally {
+    btnProcess.disabled = false;
+  }
+});
+
+btnCopy.addEventListener('click', async () => {
+  const text = document.getElementById('transcript-box').textContent || '';
+  if (!text || btnCopy.disabled) return;
+  await navigator.clipboard.writeText(text);
+  BT.notify('คัดลอก transcript แล้ว', 'info');
+});
+
+btnSave.addEventListener('click', async () => {
+  if (!analysisResult) return;
+
+  const title = document.getElementById('inp-title').value || 'การประชุม';
+  const date = document.getElementById('inp-date').value || new Date().toISOString().split('T')[0];
+  const project = document.getElementById('inp-project').value || '';
+
+  try {
+    const result = await saveMomRecord({
+      meeting_title: title,
+      meeting_date: date,
+      project: project,
+      agenda: title,
+      transcript: analysisResult.transcript || '',
+      risks: analysisResult.risks || [],
+      decisions: analysisResult.decisions || [],
+      issues: analysisResult.issues || [],
+      tasks: analysisResult.tasks || [],
+      ai_summary: Array.isArray(analysisResult.summary) ? analysisResult.summary.join(' ') : (analysisResult.summary || ''),
+    });
+    BT.notify('บันทึก MOM แล้ว: ' + (result.mom_name || result.id || 'OK'), 'info');
+  } catch (e) {
+    BT.notify('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+  }
+});
+</script>
+</body>
+</html>

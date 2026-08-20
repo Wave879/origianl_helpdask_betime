@@ -1,0 +1,8 @@
+name = "betime-solution"
+pages_build_output_dir = "deploy/pages_bundle"
+compatibility_date = "2026-04-27"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "BETIME_R2"
+bucket_name = "betime-files"

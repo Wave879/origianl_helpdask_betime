@@ -1,0 +1,2 @@
+include requirements.txt
+recursive-include betime_solution *.json *.js *.css *.html *.md *.txt

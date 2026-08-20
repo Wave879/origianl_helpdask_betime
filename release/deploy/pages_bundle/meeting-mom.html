@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meeting MOM — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-mic"></i> Meeting MOM</h2></div>
+    <div class="bt-card" style="margin-bottom:20px">
+      <h4>อัปโหลดไฟล์เสียงการประชุม</h4>
+      <div class="bt-stt-drop" id="stt-drop" onclick="document.getElementById('audio-file').click()">
+        <div class="icon">🎙️</div>
+        <p>คลิกหรือลากไฟล์ MP3/WAV/M4A มาวางที่นี่</p>
+        <input type="file" id="audio-file" accept="audio/*" style="display:none" onchange="handleAudio(this)">
+      </div>
+      <div id="stt-progress" style="display:none;margin-top:16px">
+        <div class="bt-progress"><div class="bt-progress-bar" id="stt-bar" style="width:0%"></div></div>
+        <p id="stt-status" style="text-align:center;color:#888">กำลังประมวลผล...</p>
+      </div>
+    </div>
+    <div class="bt-card" id="transcript-card" style="display:none">
+      <h4>📄 Transcript</h4>
+      <div class="bt-transcript-box" id="transcript-box"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px" id="analysis-panel"></div>
+    </div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  window.location.replace('/project-co/meeting-mom');
+      async function handleAudio(input) {
+      if (!input.files[0]) return;
+      if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อนใช้งาน', 'warning'); return; }
+      const file = input.files[0];
+      document.getElementById('stt-progress').style.display = 'block';
+      document.getElementById('stt-bar').style.width = '30%';
+      document.getElementById('stt-status').textContent = 'กำลัง Transcribe...';
+      try {
+        const fd = new FormData(); fd.append('file', file); fd.append('is_private', 1);
+        const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+        const upRes = await fetch(BT.getApiBaseUrl() + '/api/method/upload_file', {method:'POST',credentials:'include',headers:{'X-Frappe-CSRF-Token':csrf},body:fd});
+        const upJson = await upRes.json();
+        document.getElementById('stt-bar').style.width = '60%';
+        document.getElementById('stt-status').textContent = 'กำลังวิเคราะห์ด้วย AI...';
+        const result = await BT.call('betime_solution.api.portal.process_audio_stt', {file_path: upJson.message?.file_url || upJson.message?.name});
+        document.getElementById('stt-bar').style.width = '100%';
+        document.getElementById('stt-status').textContent = '✅ เสร็จสิ้น';
+        document.getElementById('transcript-box').textContent = result.transcript || '';
+        document.getElementById('transcript-card').style.display = 'block';
+        document.getElementById('analysis-panel').innerHTML = `<div><h5>📋 สรุป</h5><p>${result.summary||'-'}</p></div><div><h5>✅ Decisions</h5><pre style="white-space:pre-wrap;font-size:0.85rem">${result.decisions||'-'}</pre></div><div><h5>⚠️ Risks</h5><pre style="white-space:pre-wrap;font-size:0.85rem">${result.risks||'-'}</pre></div><div><h5>📌 Issues</h5><pre style="white-space:pre-wrap;font-size:0.85rem">${result.issues||'-'}</pre></div>`;
+      } catch(e) { BT.notify('เกิดข้อผิดพลาด: ' + e.message, 'error'); }
+    }
+    const drop = document.getElementById('stt-drop');
+    drop.addEventListener('dragover', e=>{e.preventDefault();drop.classList.add('dragover');});
+    drop.addEventListener('dragleave', ()=>drop.classList.remove('dragover'));
+    drop.addEventListener('drop', e=>{e.preventDefault();drop.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f){const inp=document.getElementById('audio-file');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleAudio(inp);}});
+</script>
+</body>
+</html>

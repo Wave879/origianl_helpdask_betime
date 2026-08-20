@@ -1,0 +1,119 @@
+ื<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEV Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media(max-width:900px){ .two-col{grid-template-columns:1fr;} }
+    .dev-sprint-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--bt-border); font-size:0.88rem; }
+    .dev-sprint-row:last-child { border-bottom:none; }
+    .dev-badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .dev-badge.open    { background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; }
+    .dev-badge.review  { background:#fef9c3; color:#854d0e; border:1px solid #fde68a; }
+    .dev-badge.done    { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+    .dev-badge.bug     { background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; }
+    .dev-progress-wrap { background:#e2e8f0; border-radius:999px; height:8px; overflow:hidden; margin-top:6px; }
+    .dev-progress-bar  { height:100%; border-radius:999px; background:linear-gradient(90deg,#f97316,#3b82f6); }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-code-slash"></i> DEV Dashboard</h2>
+      <a href="/projects.html" class="bt-btn bt-btn-primary bt-btn-sm"><i class="bi bi-plus-lg"></i> สร้าง Task</a>
+    </div>
+
+    <!-- KPI -->
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
+      <div class="bt-card"><div class="bt-card-title">Task เปิดอยู่</div><div class="bt-card-value" id="kpi-open" style="color:var(--bt-warning)">—</div><div class="bt-card-sub">In progress</div></div>
+      <div class="bt-card"><div class="bt-card-title">PR รอ Review</div><div class="bt-card-value" id="kpi-pr" style="color:#7c3aed">—</div><div class="bt-card-sub">Pull requests</div></div>
+      <div class="bt-card"><div class="bt-card-title">Bug เปิดอยู่</div><div class="bt-card-value" id="kpi-bug" style="color:var(--bt-danger)">—</div><div class="bt-card-sub">Open bugs</div></div>
+      <div class="bt-card"><div class="bt-card-title">Deploy วันนี้</div><div class="bt-card-value" id="kpi-deploy" style="color:var(--bt-success)">—</div><div class="bt-card-sub">Deployments</div></div>
+    </div>
+
+    <div class="two-col">
+      <!-- Sprint Board -->
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-kanban" style="color:var(--bt-primary)"></i> Sprint Board</h2></div>
+        <div id="sprint-list"></div>
+      </div>
+      <!-- Team -->
+      <div class="bt-card">
+        <div class="bt-section-header"><h2><i class="bi bi-people" style="color:var(--bt-accent)"></i> ทีม DEV</h2></div>
+        <div id="team-list"></div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="bt-card" style="margin-top:20px">
+      <div class="bt-section-header"><h2><i class="bi bi-bar-chart-line" style="color:var(--bt-success)"></i> Sprint Progress</h2></div>
+      <div id="sprint-progress"></div>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('dev-dashboard.html', 'DEV');
+
+const SPRINT_DATA = [];
+
+const TEAM_DATA = [];
+
+const STATUS_COLORS = { open:'open', review:'review', done:'done', bug:'bug' };
+const STATUS_LABEL  = { open:'In Progress', review:'Review', done:'Done', bug:'Bug' };
+
+document.addEventListener('DOMContentLoaded', () => {
+  const open   = SPRINT_DATA.filter(x => x.status === 'open').length;
+  const review = SPRINT_DATA.filter(x => x.status === 'review').length;
+  const bug    = SPRINT_DATA.filter(x => x.status === 'bug').length;
+  const done   = SPRINT_DATA.filter(x => x.status === 'done').length;
+
+  document.getElementById('kpi-open').textContent   = open + review;
+  document.getElementById('kpi-pr').textContent     = review;
+  document.getElementById('kpi-bug').textContent    = bug;
+  document.getElementById('kpi-deploy').textContent = 2;
+
+  document.getElementById('sprint-list').innerHTML = SPRINT_DATA.map(t => `
+    <div class="dev-sprint-row">
+      <span style="flex:1;font-weight:600;font-size:0.88rem">${t.name}</span>
+      <span style="font-size:0.78rem;color:var(--bt-muted)">${t.assignee}</span>
+      <span class="dev-badge ${STATUS_COLORS[t.status]}">${STATUS_LABEL[t.status]}</span>
+    </div>`).join('');
+
+  document.getElementById('team-list').innerHTML = TEAM_DATA.map(m => `
+    <div class="dev-sprint-row">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#3b82f6);color:#fff;display:grid;place-items:center;font-size:0.78rem;font-weight:800;flex-shrink:0">${m.avatar}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.88rem">${m.name}</div>
+        <div style="font-size:0.76rem;color:var(--bt-muted)">${m.role}</div>
+      </div>
+      <span class="bt-badge bt-badge-info">${m.task} tasks</span>
+    </div>`).join('');
+
+  const total = SPRINT_DATA.length;
+  const pct   = Math.round((done / total) * 100);
+  document.getElementById('sprint-progress').innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;font-weight:700;margin-bottom:8px">
+      <span>Sprint 12 — เสร็จ ${done}/${total} tasks</span>
+      <span style="color:var(--bt-primary)">${pct}%</span>
+    </div>
+    <div class="dev-progress-wrap"><div class="dev-progress-bar" style="width:${pct}%"></div></div>
+    <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;font-size:0.8rem">
+      <span>✅ Done: ${done}</span>
+      <span>🔄 Review: ${review}</span>
+      <span>🚧 Open: ${open}</span>
+      <span>🐛 Bug: ${bug}</span>
+    </div>`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1278 @@
+﻿<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Help Desk — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    body.betime-portal.bt-shell-body { overflow: hidden; }
+    .hd-shell {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      height: calc(100vh - 80px);
+      background: #ECEEF2;
+      overflow: hidden;
+      margin-left: var(--bt-sidebar-w, 260px);
+    }
+    .hd-left {
+      background: #F4F6FA;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #DDE2EC;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .hd-left-header { padding: 20px 20px 10px; }
+    .hd-left-title { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin-bottom: 12px; }
+    .hd-new-btn {
+      width: 100%; padding: 13px; border-radius: 12px;
+      background: var(--bt-primary); color: #fff; border: none;
+      font-size: 0.95rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-bottom: 12px; transition: opacity 0.15s;
+    }
+    .hd-new-btn:hover { opacity: 0.88; }
+    .hd-search-wrap { position: relative; margin-bottom: 8px; }
+    .hd-search {
+      width: 100%; padding: 10px 16px 10px 38px; border-radius: 12px;
+      border: 1px solid #DDE2EC; background: #fff;
+      font-size: 0.88rem; font-family: inherit; outline: none; box-sizing: border-box;
+    }
+    .hd-search:focus { border-color: var(--bt-primary); }
+    .hd-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; }
+    .hd-tab-bar { display: flex; gap: 0; padding: 0 12px; border-bottom: 2px solid #DDE2EC; margin-bottom: 4px; flex-shrink: 0; }
+    .hd-tab { flex: 1; padding: 9px 4px; text-align: center; font-size: 0.8rem; font-weight: 700; color: #94a3b8; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.15s, border-color 0.15s; }
+    .hd-tab.active { color: var(--bt-primary); border-bottom-color: var(--bt-primary); }
+    .hd-chat-list { flex: 1; overflow-y: auto; padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .hd-chat-item {
+      background: #fff; border-radius: 16px; padding: 14px 16px;
+      cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: box-shadow 0.15s, transform 0.1s; border: 2px solid transparent;
+    }
+    .hd-chat-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .hd-chat-item.active { border-color: var(--bt-primary); box-shadow: 0 4px 16px rgba(234,88,12,0.15); }
+    .hd-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; color: #fff; flex-shrink: 0;
+    }
+    .hd-item-body { flex: 1; min-width: 0; }
+    .hd-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .hd-item-name { font-weight: 700; font-size: 0.92rem; color: #1a1a2e; }
+    .hd-item-time { font-size: 0.75rem; color: #94a3b8; }
+    .hd-item-id { font-size: 0.78rem; color: var(--bt-primary); font-weight: 700; margin-bottom: 2px; }
+    .hd-item-preview { font-size: 0.8rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hd-item-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 4px; flex-shrink: 0; width: 88px; min-height: 48px; }
+    .hd-assignee { font-size: 0.72rem; color: #64748b; font-weight: 600; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 88px; }
+    .hd-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #10b981; flex-shrink: 0;
+    }
+    .hd-right { display: flex; flex-direction: column; overflow: hidden; background: #F4F6FA; flex: 1; min-height: 0; }
+    .hd-chat-header {
+      background: #fff; padding: 14px 20px;
+      display: flex; align-items: center; gap: 14px;
+      border-bottom: 1px solid #DDE2EC; flex-shrink: 0;
+    }
+    .hd-back-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      background: none; border: none; cursor: pointer; color: #64748b;
+      font-size: 0.72rem; font-weight: 600; font-family: inherit; padding: 4px 8px;
+    }
+    .hd-chat-info { flex: 1; }
+    .hd-chat-info h3 { margin: 0; font-size: 0.95rem; font-weight: 800; color: #1a1a2e; }
+    .hd-online-badge { background: #dcfce7; color: var(--bt-success); font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; margin-top: 3px; display: inline-block; }
+    .hd-ai-chip { display: flex; align-items: center; gap: 8px; }
+    .hd-ai-avatar { width: 38px; height: 38px; border-radius: 50%; background: #1e40af; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+    .hd-ai-label { font-size: 0.78rem; font-weight: 700; color: #1e40af; }
+    .hd-ai-sub { font-size: 0.7rem; color: var(--bt-success); font-weight: 700; }
+    .hd-ticket-form {
+      background: #fff;
+      border-bottom: 1px solid #DDE2EC;
+      padding: 8px 12px;
+      flex-shrink: 0;
+    }
+    .hd-ticket-form.hidden { display: none; }
+    .hd-ticket-form-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #475569;
+      margin-bottom: 0;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 0 4px;
+    }
+    .hd-ticket-form-title:hover { color: #1e40af; }
+    .hd-ticket-form-toggle { font-size: 1rem; transition: transform 0.2s; }
+    .hd-ticket-form.collapsed .hd-ticket-form-toggle { transform: rotate(-90deg); }
+    .hd-ticket-grid-body { overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s; max-height: 400px; opacity: 1; margin-top: 6px; }
+    .hd-ticket-form.collapsed .hd-ticket-grid-body { max-height: 0; opacity: 0; margin-top: 0; }
+    .hd-ticket-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .hd-ticket-item {
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: #F8FAFC;
+      min-height: 38px;
+    }
+    .hd-ticket-item.span-2 { grid-column: span 2; }
+    .hd-ticket-item.span-4 { grid-column: span 4; }
+    .hd-ticket-k {
+      font-size: 0.64rem;
+      font-weight: 800;
+      color: #64748b;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .hd-ticket-v {
+      font-size: 0.78rem;
+      color: #0f172a;
+      font-weight: 600;
+      word-break: break-word;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hd-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+    .hd-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; gap: 12px; padding: 40px; text-align: center; }
+    .hd-empty i { font-size: 3rem; }
+    .msg-row { display: flex; align-items: flex-end; gap: 8px; }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row > div { max-width: 72%; }
+    .msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 0.88rem; line-height: 1.5; word-break: break-word; white-space: pre-wrap; display: inline-block; max-width: 100%; }
+    .msg-row.ai .msg-bubble { background: #fff; color: #1a1a2e; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .msg-row.user .msg-bubble { background: #1e40af; color: #fff; border-bottom-right-radius: 4px; }
+    .msg-time { font-size: 0.68rem; color: #94a3b8; margin-top: 4px; display: block; text-align: right; }
+    .msg-row.ai .msg-time { text-align: left; }
+    .msg-row.msg-enter .msg-time { opacity: 0; animation: msgTimeIn 0.25s ease forwards; animation-delay: calc(var(--msg-stagger, 0ms) + 100ms); }
+    .msg-row.msg-enter.ai .msg-bubble,
+    .msg-row.msg-enter.ai .ai-card,
+    .msg-row.msg-enter.ai .tk-summary-card {
+      transform-origin: left bottom;
+      animation: bubbleInAi 0.28s cubic-bezier(.2,.8,.25,1) both;
+      animation-delay: var(--msg-stagger, 0ms);
+    }
+    .msg-row.msg-enter.user .msg-bubble {
+      transform-origin: right bottom;
+      animation: bubbleInUser 0.28s cubic-bezier(.2,.8,.25,1) both;
+      animation-delay: var(--msg-stagger, 0ms);
+    }
+    @keyframes bubbleInAi {
+      from { opacity: 0; transform: translateY(10px) translateX(-6px) scale(0.98); filter: blur(1px); }
+      to { opacity: 1; transform: translateY(0) translateX(0) scale(1); filter: blur(0); }
+    }
+    @keyframes bubbleInUser {
+      from { opacity: 0; transform: translateY(10px) translateX(6px) scale(0.98); filter: blur(1px); }
+      to { opacity: 1; transform: translateY(0) translateX(0) scale(1); filter: blur(0); }
+    }
+    @keyframes msgTimeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg-avatar-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--bt-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.72rem; flex-shrink: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      .msg-row.msg-enter .msg-bubble,
+      .msg-row.msg-enter .ai-card,
+      .msg-row.msg-enter .tk-summary-card,
+      .msg-row.msg-enter .msg-time {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+    /* Typing dots animation */
+    .typing-dots { display: flex; align-items: center; gap: 4px; padding: 12px 16px; }
+    .typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; display: inline-block; animation: typingBounce 1.2s infinite ease-in-out; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-6px);opacity:1} }
+    /* Think block */
+    .ai-think { margin-bottom: 8px; max-width: 80%; }
+    .ai-think-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 700; color: #6d28d9;
+      cursor: pointer; user-select: none;
+      padding: 5px 12px; border-radius: 20px;
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+      border: 1px solid #ddd6fe;
+      transition: background 0.15s;
+    }
+    .ai-think-toggle:hover { background: linear-gradient(135deg, #ede9fe, #ddd6fe); }
+    .ai-think-toggle .think-icon { font-size: 0.9rem; }
+    .ai-think-toggle .think-chevron { font-size: 0.72rem; transition: transform 0.25s; margin-left: 2px; opacity: 0.7; }
+    .ai-think-toggle.open .think-chevron { transform: rotate(180deg); }
+    .ai-think-body {
+      display: none; margin-top: 6px;
+      padding: 10px 14px;
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-left: 3px solid #a855f7;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.76rem; color: #7e22ce; line-height: 1.7;
+      white-space: pre-wrap; animation: thinkFadeIn 0.2s ease;
+    }
+    .ai-think-body.open { display: block; }
+    @keyframes thinkFadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+    /* Ticket summary in chat */
+    .tk-summary-card { background:#fff; border-radius:14px; padding:12px 14px; max-width:500px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border:1px solid #E2E8F0; }
+    .tk-summary-label { font-size:0.7rem; font-weight:800; color:var(--bt-primary); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+    .tk-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+    .tk-s-item { background:#F8FAFC; border:1px solid #EEF2F7; border-radius:8px; padding:6px 8px; min-width:0; }
+    .tk-s-item.span2 { grid-column:span 2; }
+    .tk-s-item.full { grid-column:1/-1; }
+    .tk-s-k { font-size:0.62rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; }
+    .tk-s-v { font-size:0.8rem; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ai-card { background: #fff; border-radius: 16px; padding: 14px 16px; max-width: 80%; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 3px solid var(--bt-primary); }
+    .ai-card-label { font-size: 0.7rem; font-weight: 800; color: var(--bt-primary); letter-spacing: 0.06em; margin-bottom: 6px; text-transform: uppercase; }
+    .ai-card-text { font-size: 0.88rem; color: #1a1a2e; margin-bottom: 10px; }
+    .ai-opt-btn { display: block; width: 100%; text-align: center; padding: 9px 12px; margin-bottom: 6px; border: 1.5px solid #DDE2EC; border-radius: 10px; background: #F8FAFC; font-size: 0.85rem; font-family: inherit; font-weight: 600; cursor: pointer; color: #334155; transition: all 0.15s; }
+    .ai-opt-btn:hover { border-color: var(--bt-primary); background: #fff7ed; color: var(--bt-primary); }
+    .ai-opt-btn:last-child { margin-bottom: 0; }
+    .hd-input-bar { background: #fff; border-top: 1px solid #DDE2EC; padding: 10px 16px; display: flex; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+    .hd-input-icon-btn { width: 38px; height: 38px; border-radius: 12px; background: #fff7ed; color: var(--bt-primary); border: none; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; margin-bottom: 2px; }
+    .hd-input { flex: 1; padding: 10px 14px; border-radius: 22px; border: 1.5px solid #DDE2EC; font-size: 0.88rem; font-family: inherit; outline: none; background: #F4F6FA; resize: none; line-height: 1.5; overflow-y: hidden; min-height: 40px; max-height: 120px; display: block; box-sizing: border-box; }
+    .hd-input:focus { border-color: var(--bt-primary); background: #fff; }
+    .hd-send-btn { width: 42px; height: 42px; border-radius: 50%; background: #1e40af; color: #fff; border: none; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; flex-shrink: 0; transition: opacity 0.15s; }
+    .hd-send-btn:hover { opacity: 0.85; }
+    /* Quick reply chips */
+    .hd-quickreply {
+      background: #fff;
+      border-top: 1px solid #EEF0F5;
+      padding: 8px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .hd-quickreply:empty { display: none; }
+    .hd-qr-chip {
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1.5px solid #C7D2FE;
+      background: #EEF2FF;
+      color: #3730a3;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .hd-qr-chip:hover { background: #3730a3; color: #fff; border-color: #3730a3; }
+
+    .hd-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+    @keyframes hdModalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes hdModalCardIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .hd-modal.open {
+      display: flex;
+      animation: hdModalFadeIn 0.22s ease both;
+    }
+    .hd-modal-card {
+      width: min(760px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(2, 6, 23, 0.25);
+      padding: 16px 18px;
+    }
+    .hd-modal.open .hd-modal-card {
+      animation: hdModalCardIn 0.28s cubic-bezier(.2,.75,.2,1) both;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hd-modal.open,
+      .hd-modal.open .hd-modal-card {
+        animation: none !important;
+      }
+    }
+    .hd-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .hd-modal-title { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+    /* Success overlay animations */
+    @keyframes suc-circle-in { from { stroke-dashoffset:214; opacity:0; } to { stroke-dashoffset:0; opacity:1; } }
+    @keyframes suc-check-in  { from { stroke-dashoffset:60; opacity:0; } to { stroke-dashoffset:0; opacity:1; } }
+    @keyframes suc-pop        { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+    .suc-circle { stroke-dasharray:214; stroke-dashoffset:214; animation:suc-circle-in 0.55s cubic-bezier(.4,0,.2,1) 0.1s forwards; }
+    .suc-check  { stroke-dasharray:60;  stroke-dashoffset:60;  animation:suc-check-in  0.4s cubic-bezier(.4,0,.2,1) 0.55s forwards; }
+    #odoo-success-overlay > div { animation:suc-pop 0.35s cubic-bezier(.4,0,.2,1) forwards; }
+    .hd-close-btn {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 50%;
+      background: #f1f5f9;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #334155;
+    }
+    .hd-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 10px;
+    }
+    .hd-form-group { display: flex; flex-direction: column; gap: 4px; }
+    .hd-form-full { grid-column: 1 / -1; }
+    .hd-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #475569;
+      letter-spacing: 0.02em;
+    }
+    .hd-field {
+      border: 1.5px solid #dbe2ec;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      background: #fff;
+      color: #0f172a;
+      outline: none;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .hd-field:focus { border-color: var(--bt-primary); }
+    textarea.hd-field { min-height: 82px; resize: vertical; }
+    .hd-project-name {
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      font-size: 0.82rem;
+      color: #334155;
+    }
+    .hd-upload-list {
+      margin-top: 6px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .hd-upload-chip {
+      border-radius: 999px;
+      padding: 3px 10px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .hd-modal-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    @media (max-width: 900px) {
+      .hd-shell { grid-template-columns: 1fr; margin-left: 0; height: calc(100vh - 64px); }
+      .hd-right { display: none; }
+      .hd-right.mobile-open { display: flex; position: fixed; inset: 64px 0 0; z-index: 100; }
+      .hd-left.mobile-hidden { display: none; }
+    }
+    @media (max-width: 720px) {
+      .hd-form-grid { grid-template-columns: 1fr; }
+      .hd-ticket-grid { grid-template-columns: 1fr 1fr; }
+      .hd-ticket-item.span-4,
+      .hd-ticket-item.span-2 { grid-column: span 2; }
+      .hd-modal-card { padding: 16px; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <div class="hd-shell">
+
+    <div class="hd-left" id="hd-left">
+      <div class="hd-left-header">
+        <div class="hd-left-title">แชท</div>
+        <button class="hd-new-btn" onclick="openTicketForm()">
+          <i class="bi bi-plus-lg"></i> เปิด Ticket
+        </button>
+        <div class="hd-search-wrap">
+          <i class="bi bi-search hd-search-icon"></i>
+          <input type="text" class="hd-search" id="search-input" placeholder="ค้นหาคำ หรือ Ticket" oninput="renderList()">
+        </div>
+      </div>
+      <div class="hd-tab-bar">
+        <div class="hd-tab active" id="tab-active" onclick="switchTab('active')">ดำเนินการ</div>
+        <div class="hd-tab" id="tab-sent" onclick="switchTab('sent')">ส่งแล้ว</div>
+      </div>
+      <div class="hd-chat-list" id="chat-list"></div>
+    </div>
+
+    <div class="hd-right" id="hd-right">
+      <div class="hd-chat-header" id="chat-header">
+        <button class="hd-back-btn" onclick="backToList()">
+          <i class="bi bi-arrow-left" style="font-size:1rem"></i> กลับ
+        </button>
+        <div class="hd-chat-info" id="chat-header-info">
+          <h3>HELPDECK AI SUPPORT</h3>
+          <span class="hd-online-badge">ONLINE</span>
+        </div>
+        <div class="hd-ai-chip">
+          <div style="text-align:right">
+            <div class="hd-ai-label">AI ASSISTANT</div>
+            <div class="hd-ai-sub">พร้อมช่วยเหลือ</div>
+          </div>
+          <div class="hd-ai-avatar">A</div>
+        </div>
+      </div>
+
+<div class="hd-messages" id="hd-messages">
+        <div class="hd-empty">
+          <i class="bi bi-chat-dots"></i>
+          <p>เลือกแชกเพื่อดูข้อความ<br>หรือกด <strong>เริ่มต้นใหม่</strong> เพื่อแจ้งปัญหาใหม่</p>
+        </div>
+      </div>
+
+      <div class="hd-quickreply" id="hd-quickreply"></div>
+      <div class="hd-input-bar">
+        <button class="hd-input-icon-btn"><i class="bi bi-paperclip"></i></button>
+        <textarea class="hd-input" id="msg-input" rows="1" placeholder="บอกปัญหาของคุณให้ AI ช่วยแก้ไข..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}" oninput="autoResize(this)"></textarea>
+        <button class="hd-send-btn" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="hd-modal" id="ticketModal" onclick="if(event.target===this)closeTicketForm()">
+  <div class="hd-modal-card">
+    <div class="hd-modal-head">
+      <div>
+        <div class="hd-modal-title">เปิด Ticket ใหม่</div>
+        <div style="font-size:0.8rem;color:#64748b">กรอกข้อมูลก่อนให้ AI เริ่มช่วยแก้ปัญหา</div>
+      </div>
+      <button class="hd-close-btn" onclick="closeTicketForm()">✕</button>
+    </div>
+
+    <form id="ticketForm" onsubmit="submitTicketForm(event)">
+      <div class="hd-form-grid">
+        <div class="hd-form-group">
+          <label class="hd-label">เลือกโครงการ</label>
+          <select class="hd-field" id="frmProjectCode" onchange="syncProjectName()" required></select>
+        </div>
+        <div class="hd-form-group">
+          <label class="hd-label">ชื่อโครงการ (แสดงอัตโนมัติ)</label>
+          <div class="hd-project-name" id="frmProjectName">-</div>
+        </div>
+
+        <div class="hd-form-group">
+          <label class="hd-label">ประเภทปัญหา</label>
+          <select class="hd-field" id="frmBugType" required></select>
+        </div>
+        <div class="hd-form-group">
+          <label class="hd-label">โมดูล / หน้าที่มีปัญหา</label>
+          <input class="hd-field" id="frmArea" type="text" placeholder="เช่น หน้า Dashboard, ระบบ Login" required>
+        </div>
+
+        <div class="hd-form-group">
+          <label class="hd-label">วันที่ที่ลง</label>
+          <input class="hd-field" id="frmReportDate" readonly>
+        </div>
+        <div class="hd-form-group">
+          <label class="hd-label">เวลาที่ลง</label>
+          <input class="hd-field" id="frmReportTime" readonly>
+        </div>
+
+        <div class="hd-form-group hd-form-full">
+          <label class="hd-label">สถานที่ที่เกิด (เลือกได้หลายที่)</label>
+          <select class="hd-field" id="frmLocations" multiple size="3" required></select>
+        </div>
+
+        <div class="hd-form-group hd-form-full">
+          <label class="hd-label">รายงานปัญหา</label>
+          <textarea class="hd-field" id="frmIssue" placeholder="อธิบายอาการปัญหา เวลาเกิดปัญหา และขั้นตอนที่ทำแล้ว" required></textarea>
+        </div>
+
+        <div class="hd-form-group hd-form-full">
+          <label class="hd-label">รูปภาพประกอบ</label>
+          <input class="hd-field" id="frmImages" type="file" accept="image/*" multiple onchange="previewUploads()">
+          <div class="hd-upload-list" id="frmUploadList"></div>
+        </div>
+      </div>
+
+      <div class="hd-modal-actions">
+        <button type="button" class="ai-opt-btn" style="width:auto;margin:0;background:#fff" onclick="closeTicketForm()">ยกเลิก</button>
+        <button type="submit" class="hd-new-btn" style="width:auto;margin:0;padding:10px 18px">เริ่มให้ AI ช่วยแก้ไข</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Odoo Success Overlay -->
+<div id="odoo-success-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:40px 36px 32px;max-width:460px;width:92%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.25);position:relative;">
+    <!-- Close -->
+    <button onclick="document.getElementById('odoo-success-overlay').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;color:#94a3b8;cursor:pointer;">✕</button>
+    <!-- Animated check -->
+    <div id="success-check-wrap" style="margin:0 auto 20px;width:72px;height:72px;">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:72px;height:72px">
+        <circle cx="36" cy="36" r="34" stroke="#10b981" stroke-width="3" fill="#f0fdf4" class="suc-circle"/>
+        <path d="M22 37l10 10 18-20" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="suc-check"/>
+      </svg>
+    </div>
+    <div style="font-size:1.3rem;font-weight:800;color:#1a1a2e;margin-bottom:6px">ส่ง Ticket สำเร็จ! 🎉</div>
+    <div style="font-size:0.9rem;color:#64748b;margin-bottom:20px">Ticket ของคุณถูกส่งไปยังระบบ Odoo เรียบร้อยแล้ว</div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 18px;margin-bottom:24px;text-align:left">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:0.85rem">
+        <span style="color:#94a3b8;font-weight:600">Ticket ID</span>
+        <span id="suc-ticket-id" style="font-weight:800;color:var(--bt-primary)">-</span>
+        <span style="color:#94a3b8;font-weight:600">Odoo ID</span>
+        <span id="suc-odoo-id" style="font-weight:800;color:#10b981">-</span>
+        <span style="color:#94a3b8;font-weight:600">โครงการ</span>
+        <span id="suc-project" style="font-weight:600;color:#1e293b">-</span>
+        <span style="color:#94a3b8;font-weight:600">ประเภท</span>
+        <span id="suc-bugtype" style="font-weight:600;color:#1e293b">-</span>
+        <span style="color:#94a3b8;font-weight:600">ผู้รับผิดชอบ</span>
+        <span id="suc-assignee" style="font-weight:600;color:#1e293b">-</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a id="suc-view-btn" href="/ticket.html" style="display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:10px;background:var(--bt-primary);color:#fff;font-weight:700;font-size:0.88rem;text-decoration:none">
+        <i class="bi bi-list-ul"></i> ดู Ticket
+      </a>
+      <button onclick="document.getElementById('odoo-success-overlay').style.display='none'" style="display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:10px;background:#f1f5f9;color:#475569;font-weight:700;font-size:0.88rem;border:none;cursor:pointer">
+        <i class="bi bi-chat-dots"></i> คุยต่อ
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('help-desk.html', 'Help Desk');
+
+  const TICKET_KEY = 'bt_helpdesk_tickets';
+  const AVATAR_COLORS = ['#10b981','#ea580c','#3b82f6','#7c3aed','#f59e0b','#0d9488','#e11d48','#2563eb'];
+  let PROJECTS = [];
+  let BUG_TYPES = [];
+  let MODULES = [];
+  let LOCATIONS = [];
+  const DEV_OPTIONS = [];
+
+  const TICKETS_DATA = [];
+
+  let currentTicketId = null;
+  let tickets = null;
+  let currentTab = 'active'; // 'active' | 'sent'
+  const msgRenderState = {};
+
+  function getTickets() {
+    if (!tickets) tickets = JSON.parse(localStorage.getItem(TICKET_KEY) || 'null') || JSON.parse(JSON.stringify(TICKETS_DATA));
+    return tickets;
+  }
+  function saveTickets() { localStorage.setItem(TICKET_KEY, JSON.stringify(tickets)); }
+
+  function getColor(name) {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+  }
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    el.style.overflowY = el.scrollHeight > 120 ? 'auto' : 'hidden';
+  }
+  function nowTime() {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  function nowDate() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+  function esc(s) {
+    return String(s || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-active').classList.toggle('active', tab === 'active');
+    document.getElementById('tab-sent').classList.toggle('active', tab === 'sent');
+    renderList();
+  }
+
+  function renderList() {
+    const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+    const data = getTickets();
+    // filter by tab: 'sent' = flowStep==='sent', 'active' = everything else
+    const tabFiltered = data.filter(t => currentTab === 'sent' ? t.flowStep === 'sent' : t.flowStep !== 'sent');
+    const filtered = tabFiltered.filter(t => !q || t.id.toLowerCase().includes(q) || t.name.toLowerCase().includes(q) || (t.preview || '').toLowerCase().includes(q));
+    document.getElementById('chat-list').innerHTML = filtered.map(t => {
+      const aiMsgCount = (t.messages || []).filter(m => m.role === 'ai' && !m.isTyping).length;
+      const unread = aiMsgCount > (t.readMsgCount || 0);
+      return `
+      <div class="hd-chat-item ${currentTicketId===t.id?'active':''}" onclick="openTicket('${esc(t.id)}')">
+        <div class="hd-avatar" style="background:${t.color||getColor(t.name)}">${esc((t.name||'?')[0].toUpperCase())}</div>
+        <div class="hd-item-body">
+          <div class="hd-item-top">
+            <span class="hd-item-name">${esc(t.name)}</span>
+          </div>
+          <div class="hd-item-id">${esc(t.id)}</div>
+          <div class="hd-item-preview">${esc(t.preview || '')}</div>
+        </div>
+        <div class="hd-item-right">
+          <span class="hd-assignee">${esc(t.assignee||'')}</span>
+          ${unread ? '<div class="hd-dot"></div>' : '<span class="hd-item-time">' + esc(t.time) + '</span>'}
+        </div>
+      </div>`;
+    }).join('') || '<div style="text-align:center;padding:24px;color:#94a3b8;font-size:0.85rem">ไม่พบ Ticket</div>';
+  }
+
+  function openTicket(id) {
+    currentTicketId = id;
+    const t = getTickets().find(x => x.id === id);
+    if (!t) return;
+    // mark as read — save count of AI messages seen
+    const aiCount = (t.messages || []).filter(m => m.role === 'ai' && !m.isTyping).length;
+    t.readMsgCount = aiCount;
+    saveTickets();
+    msgRenderState[id] = (t.messages || []).length;
+    document.getElementById('chat-header-info').innerHTML = `
+      <h3>${esc(t.name)}</h3>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:0.78rem;font-weight:700;color:var(--bt-primary)">${esc(t.id)}</span>
+        <span class="hd-online-badge">${t.status === 'resolved' ? 'RESOLVED' : 'ONLINE'}</span>
+      </div>`;
+    renderTicketForm(t);
+    renderMessages(t.messages || []);
+    renderList();
+    document.getElementById('hd-right').classList.add('mobile-open');
+    document.getElementById('hd-left').classList.add('mobile-hidden');
+  }
+
+  function renderTicketForm(t) {
+    const box = document.getElementById('hd-ticket-form');
+    if (!box || !t) return;
+    const files = (t.files || []).length ? t.files.join(', ') : '-';
+    const locations = (t.locations || []).length ? t.locations.join(', ') : '-';
+    box.classList.remove('hidden');
+    box.innerHTML = `
+      <div class="hd-ticket-form-title" onclick="this.closest('.hd-ticket-form').classList.toggle('collapsed')">
+        <span>Ticket Form (Summary)</span>
+        <i class="bi bi-chevron-down hd-ticket-form-toggle"></i>
+      </div>
+      <div class="hd-ticket-grid-body"><div class="hd-ticket-grid">
+        <div class="hd-ticket-item"><div class="hd-ticket-k">Project</div><div class="hd-ticket-v" title="${esc(t.projectCode || t.name || '-')}">${esc(t.projectCode || t.name || '-')}</div></div>
+        <div class="hd-ticket-item span-2"><div class="hd-ticket-k">Project Name</div><div class="hd-ticket-v" title="${esc(t.projectName || '-')}">${esc(t.projectName || '-')}</div></div>
+        <div class="hd-ticket-item"><div class="hd-ticket-k">Bug Type</div><div class="hd-ticket-v" title="${esc(t.bugType || '-')}">${esc(t.bugType || '-')}</div></div>
+        <div class="hd-ticket-item span-2"><div class="hd-ticket-k">Module / Page</div><div class="hd-ticket-v" title="${esc(t.area || '-')}">${esc(t.area || '-')}</div></div>
+        <div class="hd-ticket-item"><div class="hd-ticket-k">Date / Time</div><div class="hd-ticket-v" title="${esc((t.reportDate || '-') + ' ' + (t.reportTime || '-'))}">${esc((t.reportDate || '-') + ' ' + (t.reportTime || '-'))}</div></div>
+        <div class="hd-ticket-item"><div class="hd-ticket-k">Location</div><div class="hd-ticket-v" title="${esc(locations)}">${esc(locations)}</div></div>
+        <div class="hd-ticket-item span-4"><div class="hd-ticket-k">Issue Detail</div><div class="hd-ticket-v" title="${esc(t.issue || '-')}">${esc(t.issue || '-')}</div></div>
+      </div></div>`;
+  }
+
+  function renderQuickReplies(msgs) {
+    const bar = document.getElementById('hd-quickreply');
+    if (!bar) return;
+    let opts = [];
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].role === 'user') break;
+      if (msgs[i].type === 'ai-card' && msgs[i].options && msgs[i].options.length) {
+        opts = msgs[i].options;
+        break;
+      }
+    }
+    bar.innerHTML = opts.map(o => `<button class="hd-qr-chip" onclick="selectOption(this,'${esc(o)}')">${esc(o)}</button>`).join('');
+  }
+
+  function renderMessages(msgs) {
+    const wrap = document.getElementById('hd-messages');
+    const ticketKey = currentTicketId || '__none__';
+    const prevCount = Number(msgRenderState[ticketKey] || 0);
+    const added = prevCount <= 0 ? 0 : Math.max(0, msgs.length - prevCount);
+    renderQuickReplies(msgs);
+    wrap.innerHTML = msgs.map(m => {
+      if (m.type === 'ticket-summary') {
+        const loc = (m.locations||[]).join(', ') || '-';
+        return `<div class="msg-row ai"><div class="msg-avatar-sm">AI</div><div>
+          <div class="tk-summary-card">
+            <div class="tk-summary-label"><i class="bi bi-ticket-detailed-fill"></i> TICKET FORM</div>
+            <div class="tk-summary-grid">
+              <div class="tk-s-item"><div class="tk-s-k">Project</div><div class="tk-s-v">${esc(m.projectCode||'-')}</div></div>
+              <div class="tk-s-item span2"><div class="tk-s-k">Project Name</div><div class="tk-s-v">${esc(m.projectName||'-')}</div></div>
+              <div class="tk-s-item"><div class="tk-s-k">Bug Type</div><div class="tk-s-v">${esc(m.bugType||'-')}</div></div>
+              <div class="tk-s-item span2"><div class="tk-s-k">Module / Page</div><div class="tk-s-v">${esc(m.area||'-')}</div></div>
+              <div class="tk-s-item"><div class="tk-s-k">Date / Time</div><div class="tk-s-v">${esc((m.reportDate||'-')+' '+(m.reportTime||'-'))}</div></div>
+              <div class="tk-s-item"><div class="tk-s-k">Location</div><div class="tk-s-v">${esc(loc)}</div></div>
+              <div class="tk-s-item full"><div class="tk-s-k">Issue Detail</div><div class="tk-s-v">${esc(m.issue||'-')}</div></div>
+            </div>
+          </div>
+          <span class="msg-time">${esc(m.time||'')}</span></div></div>`;
+      }
+      if (m.type === 'ai-card') {
+        const opts = (m.options||[]).map(o => `<button class="ai-opt-btn" onclick="selectOption(this,'${esc(o)}')">${esc(o)}</button>`).join('');
+        return `<div class="msg-row ai"><div class="msg-avatar-sm">AI</div><div><div class="ai-card"><div class="ai-card-label">HELPDECK AI</div><div class="ai-card-text">${esc(m.text).replace(/\n/g,'<br>')}</div>${opts}</div><span class="msg-time">${esc(m.time||'')}</span></div></div>`;
+      }
+      if (m.role === 'ai') {
+        if (m.isTyping) return `<div class="msg-row ai"><div class="msg-avatar-sm">AI</div><div><div class="msg-bubble" style="padding:0"><div class="typing-dots"><span></span><span></span><span></span></div></div></div></div>`;
+        const { think, reply } = parseThink(m.text || '');
+        const uid = 'tk_' + Math.random().toString(36).slice(2, 8);
+        const thinkHtml = think ? `<div class="ai-think"><span class="ai-think-toggle" onclick="toggleThink(this,'${uid}')"><span class="think-icon">✦</span> กำลังคิด... <i class="bi bi-chevron-down think-chevron"></i></span><div class="ai-think-body" id="${uid}">${esc(think)}</div></div>` : '';;
+        return `<div class="msg-row ai"><div class="msg-avatar-sm">AI</div><div>${thinkHtml}<div class="msg-bubble">${esc(reply).replace(/\n/g,'<br>')}</div><span class="msg-time">${esc(m.time||'')}</span></div></div>`;
+      }
+      return `<div class="msg-row user"><div><div class="msg-bubble">${esc(m.text).replace(/\n/g,'<br>')}</div><span class="msg-time">${esc(m.time||'')} ✓✓</span></div></div>`;
+    }).join('');
+
+    if (added > 0) {
+      const rows = Array.from(wrap.querySelectorAll('.msg-row'));
+      rows.slice(-Math.min(added, 3)).forEach((row, idx) => {
+        row.classList.add('msg-enter');
+        row.style.setProperty('--msg-stagger', (idx * 70) + 'ms');
+      });
+    }
+
+    msgRenderState[ticketKey] = msgs.length;
+    wrap.scrollTop = wrap.scrollHeight;
+    requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
+  }
+
+  function parseThink(text) {
+    const m = (text || '').match(/<think>([\s\S]*?)<\/think>\s*/i);
+    if (m) {
+      const think = m[1].trim();
+      const reply = text.replace(m[0], '').trim();
+      return { think, reply };
+    }
+    return { think: '', reply: text };
+  }
+
+  function toggleThink(btn, id) {
+    const body = document.getElementById(id);
+    if (!body) return;
+    const open = body.classList.toggle('open');
+    btn.classList.toggle('open', open);
+  }
+
+  async function createOdooTicket(title, description, projectCode, images = []) {
+    const token = localStorage.getItem('bt_token');
+    if (!token) return null;
+    const userStr = localStorage.getItem('bt_user');
+    const user = userStr ? JSON.parse(userStr) : {};
+    try {
+      const res = await fetch('/api/helpdesk/ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({
+          title,
+          case_subject: title,
+          description,
+          case_desc: description,
+          channel: 'Website',
+          // contact info from logged-in user
+          contact_name: user.full_name || '',
+          email: user.email || '',
+          tel: user.phone || '',
+          activity_status: 1,
+          activity_description: description,
+          // images as array of base64 strings
+          images: images,
+        }),
+      });
+      const data = await res.json();
+      return data.ok ? (data.case_ticket_id || data.odoo_ticket_id) : null;
+    } catch (_) {}
+  }
+
+  async function createHelpdeckKnowledgeFromForm(t) {
+    const token = localStorage.getItem('bt_token');
+    if (!token) return null;
+    const title = `[${t.projectCode}] ${t.bugType} - ${t.area}`;
+    const content = [
+      `Ticket: ${t.id}`,
+      `Project: ${t.projectCode} - ${t.projectName}`,
+      `Bug Type: ${t.bugType}`,
+      `Area: ${t.area}`,
+      `Reported: ${t.reportDate || '-'} ${t.reportTime || '-'}`,
+      `Locations: ${(t.locations || []).join(', ') || '-'}`,
+      `Issue: ${t.issue || '-'}`,
+      `Attachments: ${(t.files || []).join(', ') || '-'}`,
+      `Status: ${t.status || 'open'}`,
+    ].join('\n');
+    const tags = [t.projectCode, t.bugType, ...(t.locations || [])].filter(Boolean).join(',');
+
+    try {
+      const res = await fetch('/api/helpdeck-knowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ title, content, tags }),
+      });
+      const data = await res.json();
+      return data.ok ? data.id : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function seedProjectSelect() {
+    const el = document.getElementById('frmProjectCode');
+    const bugEl = document.getElementById('frmBugType');
+    const areaEl = document.getElementById('frmArea');
+    const locEl = document.getElementById('frmLocations');
+    if (!el || !bugEl || !areaEl || !locEl) return;
+
+    el.innerHTML = `<option value="">????????????</option>` + PROJECTS.map(p => `<option value="${esc(p.code)}">${esc(p.code)}</option>`).join('');
+    bugEl.innerHTML = `<option value="">เลือกประเภท</option>` + BUG_TYPES.map(v => `<option>${esc(v)}</option>`).join('');
+    locEl.innerHTML = LOCATIONS.map(v => `<option>${esc(v)}</option>`).join('');
+    if (locEl.options.length > 0) locEl.options[0].selected = true;
+    syncProjectName();
+  }
+
+  function parseOptionType(tags) {
+    const t = String(tags || '').toLowerCase();
+    if (t.includes('option:project')) return 'project';
+    if (t.includes('option:bug_type')) return 'bug_type';
+    if (t.includes('option:module')) return 'module';
+    if (t.includes('option:location')) return 'location';
+    return '';
+  }
+
+  async function loadFormOptionsFromKnowledge() {
+    const token = localStorage.getItem('bt_token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/helpdeck-knowledge', {
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      });
+      const data = await res.json();
+      if (!data.ok) return;
+
+      const rows = data.data || [];
+      const prj = [];
+      const bt = [];
+      const md = [];
+      const lc = [];
+
+      rows.forEach(r => {
+        const type = parseOptionType(r.tags);
+        if (type === 'project') {
+          prj.push({ code: (r.title || '').trim(), name: (r.content || '').trim() || 'ระบบสาระสนเทศ อิเลขทรอนิก' });
+        } else if (type === 'bug_type') {
+          if ((r.title || '').trim()) bt.push((r.title || '').trim());
+        } else if (type === 'module') {
+          if ((r.title || '').trim()) md.push((r.title || '').trim());
+        } else if (type === 'location') {
+          if ((r.title || '').trim()) lc.push((r.title || '').trim());
+        }
+      });
+
+      if (prj.length) PROJECTS = prj;
+      if (bt.length) BUG_TYPES = [...new Set(bt)];
+      if (md.length) MODULES = [...new Set(md)];
+      if (lc.length) LOCATIONS = [...new Set(lc)];
+    } catch (_) {
+      // Use default hardcoded values when API fails.
+    }
+  }
+
+  function syncProjectName() {
+    const code = document.getElementById('frmProjectCode')?.value;
+    const p = PROJECTS.find(x => x.code === code);
+    document.getElementById('frmProjectName').textContent = p ? p.name : '-';
+  }
+
+  function previewUploads() {
+    const files = Array.from(document.getElementById('frmImages').files || []);
+    document.getElementById('frmUploadList').innerHTML = files.map(f => `<span class="hd-upload-chip">${esc(f.name)}</span>`).join('');
+  }
+
+  function openTicketForm() {
+    const dateEl = document.getElementById('frmReportDate');
+    const timeEl = document.getElementById('frmReportTime');
+    if (dateEl) dateEl.value = nowDate();
+    if (timeEl) timeEl.value = nowTime();
+    document.getElementById('ticketModal').classList.add('open');
+  }
+
+  function closeTicketForm() {
+    document.getElementById('ticketModal').classList.remove('open');
+  }
+
+  async function submitTicketForm(ev) {
+    ev.preventDefault();
+    const code = document.getElementById('frmProjectCode').value;
+    const p = PROJECTS.find(x => x.code === code) || { code, name: '-' };
+    const bugType = document.getElementById('frmBugType').value;
+    const area = document.getElementById('frmArea').value.trim();
+    const reportDate = document.getElementById('frmReportDate').value || nowDate();
+    const reportTime = document.getElementById('frmReportTime').value || nowTime();
+    const locations = Array.from(document.getElementById('frmLocations').selectedOptions || []).map(x => x.value);
+    const issue = document.getElementById('frmIssue').value.trim();
+    const files = Array.from(document.getElementById('frmImages').files || []).map(f => f.name);
+    if (!bugType || !area || !issue || locations.length === 0) return;
+
+    const data = getTickets();
+    const newId = 'HD-' + (25000 + data.length + 1);
+    const ticket = {
+      id: newId,
+      knowledgeId: null,
+      name: p.code,
+      projectCode: p.code,
+      projectName: p.name,
+      bugType,
+      area,
+      reportDate,
+      reportTime,
+      locations,
+      issue,
+      files,
+      assignee: 'AI Journey',
+      selectedDev: '',
+      status: 'open',
+      flowStep: 'suggest-fix',
+      color: getColor(p.code),
+      time: nowTime(),
+      preview: issue,
+      messages: [
+        {
+          type: 'ticket-summary', role: 'ai', time: nowTime(),
+          projectCode: p.code, projectName: p.name,
+          bugType, area, reportDate, reportTime, locations, issue
+        },
+        { role: 'ai', text: '🔍 กำลังวิเคราะห์ปัญหาและเตรียมขั้นตอนแก้ไข...', time: nowTime(), isTyping: true }
+      ]
+    };
+
+    // บันทึก Knowledge Base แบบ non-blocking (ไม่รอ PG)
+    createHelpdeckKnowledgeFromForm(ticket).then(id => {
+      if (id) {
+        const t2 = getTickets().find(x => x.id === ticket.id);
+        if (t2) {
+          t2.knowledgeId = id;
+          t2.messages.push({ role: 'ai', text: `📎 บันทึกข้อมูลไปยัง Knowledge Base แล้ว (ID: ${id})`, time: nowTime() });
+          saveTickets();
+          renderMessages(t2.messages);
+        }
+      }
+    }).catch(() => {});
+
+    data.unshift(ticket);
+    saveTickets();
+    renderList();
+    openTicket(ticket.id);
+    closeTicketForm();
+    document.getElementById('ticketForm').reset();
+    document.getElementById('frmUploadList').innerHTML = '';
+    syncProjectName();
+
+    // ── ดึงคำถามเพิ่มเติมจาก AI (ขั้นตอนที่ 1: ถามก่อนเสนอวิธีแก้) ──
+    const aiUserMsg = `ได้รับ Ticket แจ้งปัญหาดังนี้:
+▪ โครงการ: ${p.code} - ${p.name}
+▪ ประเภทปัญหา: ${bugType}
+▪ โมดูล/หน้าจอ: ${area}
+▪ สถานที่: ${locations.join(', ')}
+▪ รายละเอียด: ${issue}
+
+กรุณาถามข้อมูลเพิ่มเติมเพื่อให้เข้าใจปัญหาชัดขึ้นก่อน (อย่าเสนอวิธีแก้ตอนนี้)`;
+    try {
+      const initCtrl = new AbortController();
+      const initTimeout = setTimeout(() => initCtrl.abort(), 60000);
+      let aiRes;
+      try {
+        aiRes = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bt_token'), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [{ role: 'user', text: aiUserMsg }] }),
+          signal: initCtrl.signal,
+        });
+      } finally {
+        clearTimeout(initTimeout);
+      }
+      const aiData = await aiRes.json();
+      ticket.messages = ticket.messages.filter(m => !m.isTyping);
+      const reply = aiData.ok ? aiData.reply : '⚠️ ไม่สามารถดึงคำแนะนำได้ในขณะนี้ กรุณาพิมพ์อธิบายปัญหาเพิ่มเติมได้เลยครับ';
+      ticket.messages.push({ role: 'ai', text: reply, time: nowTime() });
+    } catch (_) {
+      ticket.messages = ticket.messages.filter(m => !m.isTyping);
+      const isTimeout = _?.name === 'AbortError';
+      ticket.messages.push({ role: 'ai', text: isTimeout ? '⏱️ AI ใช้เวลานาน กรุณาพิมพ์อธิบายปัญหาในช่องแชทได้เลยครับ' : '⚠️ ไม่สามารถเชื่อมต่อ AI ได้ในขณะนี้ กรุณาพิมพ์อธิบายปัญหาเพิ่มเติมในช่องแชทได้เลยครับ', time: nowTime() });
+    }
+    saveTickets();
+    renderMessages(ticket.messages);
+    renderList();
+  }
+
+  async function submitTicketToOdoo(t) {
+    const title = `[${t.projectCode}] ${t.bugType} - ${t.area}`;
+    const desc = [
+      `Ticket: ${t.id}`,
+      `Project: ${t.projectCode} - ${t.projectName}`,
+      `Bug Type: ${t.bugType}`,
+      `Area: ${t.area}`,
+      `Reported Date: ${t.reportDate || '-'}`,
+      `Reported Time: ${t.reportTime || '-'}`,
+      `Locations: ${(t.locations || []).join(', ') || '-'}`,
+      `Issue: ${t.issue}`,
+      `Attachments: ${t.files.length ? t.files.join(', ') : '-'}`,
+      `Selected Dev: ${t.selectedDev || '-'}`,
+      '',
+      'Conversation:',
+      ...t.messages.map(m => `[${m.role}] ${m.text}`),
+    ].join('\n');
+    return createOdooTicket(title, desc, t.projectCode, t.imagesBase64 || []);
+  }
+
+  async function selectOption(btn, opt) {
+    btn.closest('.ai-card')?.querySelectorAll('.ai-opt-btn').forEach(b => b.disabled = true);
+    const qrBar = document.getElementById('hd-quickreply');
+    if (qrBar) qrBar.querySelectorAll('.hd-qr-chip').forEach(b => b.disabled = true);
+
+    const t = getTickets().find(x => x.id === currentTicketId);
+    if (!t) return;
+    t.messages.push({ role:'user', text: opt, time: nowTime() });
+    t.preview = opt;
+    t.time = nowTime();
+
+    if (t.flowStep === 'suggest-fix') {
+      if (opt === 'แก้ได้แล้ว') {
+        t.flowStep = 'done';
+        t.status = 'resolved';
+        t.messages.push({ role:'ai', text:'🎉 ยอดเยี่ยมครับ! ดีใจที่ปัญหาได้รับการแก้ไขสำเร็จแล้ว หากมีปัญหาอื่นสามารถเปิด Ticket ใหม่ได้เลยนะครับ 😊', time: nowTime() });
+        saveTickets();
+        renderMessages(t.messages);
+        renderList();
+        // disable input
+        const inp = document.getElementById('msg-input');
+        if (inp) { inp.disabled = true; inp.placeholder = 'บทสนทนานี้จบแล้ว'; }
+        return;
+      }
+      if (opt === 'ยังไม่ได้เลย') {
+        t.flowStep = 'pick-dev';
+        t.messages.push({
+          type: 'ai-card', role: 'ai', time: nowTime(),
+          text: '🔧 รับทราบครับ ขอส่งเรื่องให้ทีม Dev ช่วยดูแลต่อนะครับ กรุณาเลือกผู้รับผิดชอบ',
+          options: DEV_OPTIONS
+        });
+        saveTickets();
+        renderMessages(t.messages);
+        renderList();
+        return;
+      }
+      if (opt === 'ลองทำครบแล้ว') {
+        t.flowStep = 'triage';
+        t.messages.push({
+          type: 'ai-card', role: 'ai', time: nowTime(),
+          text: '✅ ดีมากครับ! ลองทำครบทุกขั้นตอนแล้ว ผลการแก้ไขเป็นอย่างไรบ้าง?',
+          options: ['สำเร็จแล้ว', 'ยังไม่สำเร็จ']
+        });
+      } else {
+        t.messages.push({ role: 'ai', text: '⏳ ไม่เป็นไรครับ ลองทำตามขั้นตอนที่แนะนำก่อนนะครับ แล้วค่อยกลับมาบอกผลได้เลย 😊', time: nowTime() });
+      }
+      saveTickets();
+      renderMessages(t.messages);
+      renderList();
+      return;
+    }
+
+    if (t.flowStep === 'triage') {
+      if (opt === 'สำเร็จแล้ว') {
+        t.flowStep = 'done';
+        t.status = 'resolved';
+        t.assignee = 'AI Journey';
+        t.messages.push({ role:'ai', text:'🎉 ยอดเยี่ยมครับ! ปัญหาได้รับการแก้ไขสำเร็จแล้ว ระบบจะปิดงานนี้ให้อัตโนมัติ', time: nowTime() });
+      } else {
+        t.flowStep = 'pick-dev';
+        t.messages.push({ type:'ai-card', role:'ai', text:'🔧 รับทราบครับ ดูเหมือนปัญหานี้ต้องการความช่วยเหลือจากทีม Dev กรุณาเลือกผู้รับผิดชอบที่จะเข้ามาดูแลต่อ', options: DEV_OPTIONS, time: nowTime() });
+      }
+      saveTickets();
+      renderMessages(t.messages);
+      renderList();
+      return;
+    }
+
+    if (t.flowStep === 'pick-dev') {
+      t.selectedDev = opt;
+      t.assignee = opt;
+      t.flowStep = 'confirm-send';
+      t.messages.push({
+        type:'ai-card', role:'ai', time: nowTime(),
+        text: `สรุปก่อนส่ง Ticket:\nโครงการ: ${t.projectCode} - ${t.projectName}\nประเภทบัค: ${t.bugType}\nโมดูล: ${t.area}\nวันที่/เวลา: ${t.reportDate || '-'} ${t.reportTime || '-'}\nสถานที่: ${(t.locations || []).join(', ') || '-'}\nผู้ช่วยเหลือ: ${opt}\n\nยืนยันส่งเข้า Helpdesk/Odoo หรือไม่?`,
+        options: ['ยืนยันส่ง Ticket', 'ยังไม่ส่ง']
+      });
+      saveTickets();
+      renderMessages(t.messages);
+      renderList();
+      return;
+    }
+
+    if (t.flowStep === 'confirm-send') {
+      if (opt === 'ยังไม่ส่ง') {
+        t.messages.push({ role:'ai', text:'รับทราบครับ คุณสามารถพิมพ์ข้อมูลเพิ่มเติมได้ แล้วค่อยกดยืนยันอีกครั้ง', time: nowTime() });
+        saveTickets();
+        renderMessages(t.messages);
+        renderList();
+        return;
+      }
+      t.messages.push({ role:'ai', text:'กำลังส่ง Ticket ไปยังระบบ Odoo ...', time: nowTime() });
+      saveTickets();
+      renderMessages(t.messages);
+
+      const odooId = await submitTicketToOdoo(t);
+      if (odooId) {
+        t.status = 'pending';
+        t.flowStep = 'sent';
+        t.messages.push({ role:'ai', text:`✅ ส่ง Ticket สำเร็จ เลขที่ Odoo: ${odooId}`, time: nowTime() });
+        // Show success overlay
+        document.getElementById('suc-ticket-id').textContent = t.id || '-';
+        document.getElementById('suc-odoo-id').textContent = odooId;
+        document.getElementById('suc-project').textContent = (t.projectCode ? t.projectCode + (t.projectName ? ' - ' + t.projectName : '') : '-');
+        document.getElementById('suc-bugtype').textContent = t.bugType || '-';
+        document.getElementById('suc-assignee').textContent = t.assignee || '-';
+        document.getElementById('suc-view-btn').href = '/ticket.html#' + encodeURIComponent(t.id);
+        const ov = document.getElementById('odoo-success-overlay');
+        ov.style.display = 'flex';
+        // Replay check animation
+        ov.querySelectorAll('.suc-circle,.suc-check').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+        // switch to sent tab
+        switchTab('sent');
+      } else {
+        t.messages.push({ role:'ai', text:'ส่ง Ticket ไม่สำเร็จชั่วคราว กรุณาลองกดยืนยันอีกครั้งภายหลัง', time: nowTime() });
+      }
+      saveTickets();
+      renderMessages(t.messages);
+      renderList();
+      return;
+    }
+
+    saveTickets();
+    renderMessages(t.messages);
+    renderList();
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = 'auto';
+    input.style.overflowY = 'hidden';
+    const t = getTickets().find(x => x.id === currentTicketId);
+    if (!t) return;
+    t.messages.push({ role:'user', text, time: nowTime() });
+    t.preview = text;
+    t.time = nowTime();
+    saveTickets();
+    renderMessages(t.messages);
+    renderList();
+
+    // Show typing indicator
+    const typingId = 'typing_' + Date.now();
+    t.messages.push({ role:'ai', text:'...', time: nowTime(), id: typingId, isTyping: true });
+    renderMessages(t.messages);
+
+    try {
+      const aiContext = t.messages.filter(m => !m.isTyping && (m.role === 'user' || m.role === 'ai') && (m.text || '').trim());
+      const ticketContext = [
+        t.projectCode  ? `Project: ${t.projectCode}${t.projectName ? ' - ' + t.projectName : ''}` : null,
+        t.bugType      ? `Bug Type: ${t.bugType}` : null,
+        t.area         ? `Module/Page: ${t.area}` : null,
+        t.locations?.length ? `Location: ${t.locations.join(', ')}` : null,
+        t.issue        ? `Issue Detail: ${t.issue}` : null,
+      ].filter(Boolean).join('\n');
+      const aiCtrl = new AbortController();
+      const aiTimeout = setTimeout(() => aiCtrl.abort(), 60000); // 60s timeout
+      let res;
+      try {
+        res = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bt_token'), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: aiContext, ticketContext }),
+          signal: aiCtrl.signal,
+        });
+      } finally {
+        clearTimeout(aiTimeout);
+      }
+      const d = await res.json();
+      // Remove typing indicator
+      t.messages = t.messages.filter(m => !m.isTyping);
+      const reply = d.ok ? d.reply : ('ขออภัย ไม่สามารถตอบได้ในขณะนี้ (' + (d.error || 'unknown error') + ')');
+      t.messages.push({ role:'ai', text: reply, time: nowTime() });
+
+      // After AI proposes solutions, show "did it work?" card once
+      const hasClosing = /ลองทำดู|แจ้งผลกลับ|ลองทำตาม/.test(reply);
+      const alreadyAsked = t.messages.some(m => m.type === 'ai-card' && (m.options||[]).includes('แก้ได้แล้ว'));
+      if (hasClosing && !alreadyAsked) {
+        t.messages.push({
+          type: 'ai-card', role: 'ai', time: nowTime(),
+          text: 'ลองทำดูแล้วเป็นยังไงบ้างครับ?',
+          options: ['แก้ได้แล้ว', 'ยังไม่ได้เลย']
+        });
+      }
+    } catch(e) {
+      t.messages = t.messages.filter(m => !m.isTyping);
+      const isTimeout = e?.name === 'AbortError';
+      t.messages.push({ role:'ai', text: isTimeout ? '⏱️ AI ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้งครับ' : 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อ AI', time: nowTime() });
+    } finally {
+      // ensure typing indicator always removed
+      t.messages = t.messages.filter(m => !m.isTyping);
+    }
+    saveTickets();
+    renderMessages(t.messages);
+    renderList();
+  }
+
+  function backToList() {
+    document.getElementById('hd-right').classList.remove('mobile-open');
+    document.getElementById('hd-left').classList.remove('mobile-hidden');
+    document.getElementById('hd-ticket-form')?.classList.add('hidden');
+    currentTicketId = null;
+    renderList();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    (async () => {
+      // โหลด form options แบบ non-blocking — ไม่รอ PG ให้หน้าค้าง
+      loadFormOptionsFromKnowledge().then(() => seedProjectSelect()).catch(() => {});
+      seedProjectSelect(); // seed ทันทีด้วย defaults ก่อน
+      renderList();
+      // เปิด ticket จาก URL hash เช่น /help-desk.html#HD-001
+      const hash = decodeURIComponent(location.hash.slice(1));
+      if (hash) {
+        const t = getTickets().find(x => x.id === hash);
+        if (t) openTicket(t.id);
+      }
+    })();
+  });
+</script>
+<script src="/help-desk-v2.js"></script>
+</body>
+</html>
+

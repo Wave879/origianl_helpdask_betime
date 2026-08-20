@@ -1,0 +1,133 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Certificates — Betime Solution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head><body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+<main class="bt-main-content">
+<div class="bt-page-header"><h2>Certificates</h2>
+  <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="showAddModal()">+ เพิ่มใบรับรอง</button>
+</div>
+<div class="bt-kpi-grid">
+  <div class="bt-card"><div class="bt-card-title">ใบรับรองทั้งหมด</div><div class="bt-card-value" id="k-total">-</div><div class="bt-card-sub">ใบ</div></div>
+  <div class="bt-card"><div class="bt-card-title">ยังมีผล</div><div class="bt-card-value" id="k-active" style="color:var(--bt-success)">-</div><div class="bt-card-sub">ใบ</div></div>
+  <div class="bt-card"><div class="bt-card-title">หมดอายุ 90 วัน</div><div class="bt-card-value" id="k-soon" style="color:var(--bt-warning)">-</div><div class="bt-card-sub">ใบ</div></div>
+  <div class="bt-card"><div class="bt-card-title">หมดอายุแล้ว</div><div class="bt-card-value" id="k-expired" style="color:var(--bt-danger)">-</div><div class="bt-card-sub">ใบ</div></div>
+</div>
+<div class="bt-card">
+  <div class="bt-section-header"><h2>รายการใบรับรอง</h2></div>
+  <table class="bt-table"><thead><tr><th>ใบรับรอง</th><th>ประเภท</th><th>ออกให้</th><th>ออกโดย</th><th>วันออก</th><th>วันหมด</th><th>สถานะ</th><th></th></tr></thead>
+  <tbody id="cert-rows"><tr><td colspan="8" style="text-align:center;color:#888">กำลังโหลด...</td></tr></tbody></table>
+</div>
+
+<!-- Add Modal -->
+<div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+  <div class="bt-card" style="width:440px;max-width:95vw">
+    <h4 style="margin:0 0 16px">เพิ่มใบรับรอง</h4>
+    <div class="bt-form-group"><label class="bt-label">ชื่อใบรับรอง</label><input id="m-name" class="bt-input" placeholder="เช่น PMP Certification"/></div>
+    <div class="bt-form-group"><label class="bt-label">ประเภท</label>
+      <select id="m-type" class="bt-select"><option value="ISO">ISO</option><option value="License">License</option><option value="Training">Training</option><option value="Other">Other</option></select></div>
+    <div class="bt-form-group"><label class="bt-label">ออกให้ (พนักงาน/หน่วยงาน)</label><input id="m-issued-to" class="bt-input" placeholder="ชื่อพนักงาน"/></div>
+    <div class="bt-form-group"><label class="bt-label">ออกโดย</label><input id="m-issued-by" class="bt-input" placeholder="หน่วยงานที่ออกใบรับรอง"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="bt-form-group"><label class="bt-label">วันที่ออก</label><input id="m-issue-date" class="bt-input" type="date"/></div>
+      <div class="bt-form-group"><label class="bt-label">วันหมดอายุ</label><input id="m-expiry-date" class="bt-input" type="date"/></div>
+    </div>
+    <div class="bt-form-group"><label class="bt-label">หมายเหตุ</label><textarea id="m-notes" class="bt-textarea" rows="2"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="bt-btn bt-btn-outline" onclick="hideModal()">ยกเลิก</button>
+      <button class="bt-btn bt-btn-primary" onclick="saveCert()">บันทึก</button>
+    </div>
+  </div>
+</div>
+</main></div>
+<script src="/config.js"></script><script src="/shared.js"></script><script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('certificates.html','Certificates');
+
+  const token = () => localStorage.getItem('bt_token');
+  const apiReq = (path, opts={}) => fetch('/api'+path, {
+    headers: {'Authorization':'Bearer '+token(), 'Content-Type':'application/json'}, ...opts
+  });
+
+  let allData = [];
+
+  function certStatus(expiry) {
+    if (!expiry) return {label:'ไม่ทราบ', cls:'bt-badge-grey'};
+    const diff = (new Date(expiry) - new Date()) / 86400000;
+    if (diff < 0)   return {label:'หมดอายุ', cls:'bt-badge-red'};
+    if (diff < 90)  return {label:`ใกล้หมด (${Math.round(diff)} วัน)`, cls:'bt-badge-orange'};
+    return {label:'ยังมีผล', cls:'bt-badge-green'};
+  }
+
+  function renderKpis() {
+    const statuses = allData.map(r => certStatus(r.expiry_date));
+    document.getElementById('k-total').textContent   = allData.length;
+    document.getElementById('k-active').textContent  = statuses.filter(s=>s.cls==='bt-badge-green').length;
+    document.getElementById('k-soon').textContent    = statuses.filter(s=>s.cls==='bt-badge-orange').length;
+    document.getElementById('k-expired').textContent = statuses.filter(s=>s.cls==='bt-badge-red').length;
+  }
+
+  function renderTable() {
+    document.getElementById('cert-rows').innerHTML = allData.map(r => {
+      const s = certStatus(r.expiry_date);
+      return `<tr>
+        <td style="font-weight:600">${r.cert_name||'-'}</td>
+        <td><span class="bt-badge bt-badge-info">${r.cert_type||'-'}</span></td>
+        <td>${r.issued_to||'-'}</td>
+        <td style="color:#64748B">${r.issued_by||'-'}</td>
+        <td style="color:#64748B">${r.issue_date||'-'}</td>
+        <td>${r.expiry_date||'-'}</td>
+        <td><span class="bt-badge ${s.cls}">${s.label}</span></td>
+        <td><button class="bt-btn bt-btn-outline bt-btn-sm" onclick="deleteCert(${r.id})"><i class="bi bi-trash"></i></button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" style="text-align:center;color:#888">ไม่มีข้อมูล</td></tr>';
+  }
+
+  async function deleteCert(id) {
+    if (!confirm('ลบใบรับรองนี้?')) return;
+    try {
+      const res = await apiReq('/certifications/'+id, {method:'DELETE'});
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      BT.notify('ลบแล้ว','success'); load();
+    } catch(e) { BT.notify('ลบไม่สำเร็จ','danger'); }
+  }
+
+  function showAddModal() { document.getElementById('add-modal').style.display = 'flex'; }
+  function hideModal()    { document.getElementById('add-modal').style.display = 'none'; }
+
+  async function saveCert() {
+    const body = {
+      cert_name:   document.getElementById('m-name').value.trim(),
+      cert_type:   document.getElementById('m-type').value,
+      issued_to:   document.getElementById('m-issued-to').value.trim(),
+      issued_by:   document.getElementById('m-issued-by').value.trim(),
+      issue_date:  document.getElementById('m-issue-date').value,
+      expiry_date: document.getElementById('m-expiry-date').value,
+      notes:       document.getElementById('m-notes').value.trim(),
+    };
+    if (!body.cert_name) { BT.notify('กรุณากรอกชื่อใบรับรอง','warning'); return; }
+    try {
+      const res = await apiReq('/certifications',{method:'POST',body:JSON.stringify(body)});
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      hideModal();
+      BT.notify('เพิ่มใบรับรองแล้ว','success'); load();
+    } catch(e) { BT.notify('เกิดข้อผิดพลาด: '+e.message,'danger'); }
+  }
+
+  async function load() {
+    try {
+      const res = await apiReq('/certifications');
+      const d = await res.json();
+      allData = d.ok && d.data?.length ? d.data : [];
+    } catch(e) { allData = []; }
+    renderKpis(); renderTable();
+  }
+
+  document.addEventListener('DOMContentLoaded', load);
+</script>
+</body></html>

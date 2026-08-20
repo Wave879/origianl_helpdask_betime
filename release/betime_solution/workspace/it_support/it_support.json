@@ -1,0 +1,86 @@
+{
+ "name": "IT Support",
+ "label": "IT Support",
+ "module": "IT Support",
+ "icon": "fa fa-desktop",
+ "is_default": 0,
+ "shortcuts": [
+  {
+   "label": "IT Ticket",
+   "link_to": "IT Ticket",
+   "type": "DocType",
+   "icon": "fa fa-ticket"
+  },
+  {
+   "label": "แจ้งปัญหาใหม่",
+   "link_to": "IT Ticket",
+   "type": "DocType",
+   "icon": "fa fa-plus",
+   "doc_view": "new"
+  },
+  {
+   "label": "IT Asset",
+   "link_to": "IT Asset",
+   "type": "DocType",
+   "icon": "fa fa-laptop"
+  },
+  {
+   "label": "SLA Policy",
+   "link_to": "IT SLA Policy",
+   "type": "DocType",
+   "icon": "fa fa-clock-o"
+  },
+  {
+   "label": "IT Self Service",
+   "link_to": "/betime/it-support",
+   "type": "URL",
+   "icon": "fa fa-user"
+  }
+ ],
+ "links": [
+  {
+   "label": "Tickets",
+   "items": [
+    {
+     "label": "IT Ticket",
+     "link_to": "IT Ticket",
+     "type": "DocType",
+     "description": "แจ้งปัญหาและ Request IT"
+    }
+   ]
+  },
+  {
+   "label": "Assets",
+   "items": [
+    {
+     "label": "IT Asset",
+     "link_to": "IT Asset",
+     "type": "DocType",
+     "description": "ทะเบียนทรัพย์สิน IT"
+    }
+   ]
+  },
+  {
+   "label": "Configuration",
+   "items": [
+    {
+     "label": "IT SLA Policy",
+     "link_to": "IT SLA Policy",
+     "type": "DocType",
+     "description": "กำหนด SLA สำหรับแต่ละประเภท Ticket"
+    }
+   ]
+  },
+  {
+   "label": "Portal",
+   "items": [
+    {
+     "label": "IT Self Service Portal",
+     "link_to": "/betime/it-support",
+     "type": "URL",
+     "description": "หน้าเว็บสำหรับแจ้งปัญหา IT"
+    }
+   ]
+  }
+ ]
+}

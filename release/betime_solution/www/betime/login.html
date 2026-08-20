@@ -1,0 +1,309 @@
+{% extends "templates/web.html" %}
+{% block title %}เข้าสู่ระบบ Betime Solution{% endblock %}
+{% block page_content %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --canvas: #faf9f7;
+      --surface: rgba(255,255,255,0.92);
+      --ink: #232529;
+      --muted: #696f7b;
+      --border: #cfcfcf;
+      --lime: #123A7A;
+      --lime-soft: #EEF4FF;
+      --orange: #d8723c;
+      --shadow: rgba(34, 40, 42, 0.08) 0px 18px 55px 0px;
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(91, 141, 239, 0.22), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(216, 114, 60, 0.18), transparent 26%),
+        var(--canvas);
+      min-height: 100vh;
+      display: flex;
+      color: var(--ink);
+    }
+
+    .left-panel {
+      flex: 1;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,0.65) 0%, rgba(238,244,255,0.82) 48%, rgba(255,244,234,0.72) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 60px 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -90px; right: -90px;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 99, 31, 0.18), rgba(255, 99, 31, 0));
+    }
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: -60px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(91, 141, 239, 0.24), rgba(91, 141, 239, 0));
+    }
+    .brand-logo {
+      width: 56px; height: 56px;
+      background: #fff;
+      border: 1px solid rgba(207,207,207,0.9);
+      box-shadow: var(--shadow);
+      border-radius: 16px;
+      display: grid; place-items: center;
+      font-size: 1.35rem; font-weight: 800; color: var(--ink);
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+    .brand-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.08;
+      margin-bottom: 16px;
+      max-width: 440px;
+      position: relative;
+      z-index: 1;
+    }
+    .brand-sub {
+      font-size: 1.02rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 430px;
+      position: relative;
+      z-index: 1;
+    }
+    .feature-list {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--ink);
+      font-size: 0.95rem;
+    }
+    .feature-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--lime);
+      flex-shrink: 0;
+      box-shadow: 0 0 0 6px rgba(91, 141, 239, 0.12);
+    }
+
+    .right-panel {
+      width: 520px;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 48px;
+      border-left: 1px solid rgba(207,207,207,0.75);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+    .form-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .form-sub {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 36px;
+      line-height: 1.5;
+    }
+
+    .field { margin-bottom: 20px; }
+    .field label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 9.89577px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      background: #fff;
+    }
+    .field input:focus {
+      border-color: var(--lime);
+      box-shadow: 0 0 0 3px rgba(91,141,239,0.16);
+    }
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 48px; }
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+    }
+    .password-toggle:hover {
+      background: rgba(91, 141, 239, 0.14);
+      color: var(--ink);
+    }
+    .caps-warning {
+      display: none;
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--orange);
+    }
+
+    .form-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+    }
+    .remember {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--muted); cursor: pointer;
+    }
+    .remember input[type=checkbox] { accent-color: var(--lime); width: 16px; height: 16px; }
+    .forgot { color: var(--ink); text-decoration: none; font-weight: 600; }
+    .forgot:hover { text-decoration: underline; }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--lime-soft);
+      color: var(--ink);
+      border: 1px solid var(--lime);
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(91, 141, 239, 0.16);
+    }
+    .btn-login:hover { background: #dce9ff; }
+    .btn-login:active { transform: scale(0.99); }
+    .btn-login:disabled { background: #edf2ff; border-color: #c7d7ff; cursor: not-allowed; box-shadow: none; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--muted); font-size: 0.82rem;
+      margin-bottom: 20px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .btn-ms {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--ink);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    .btn-ms:hover { background: #fafafa; border-color: var(--lime); color: var(--ink); text-decoration: none; transform: translateY(-1px); }
+
+    .error-msg {
+      display: none;
+      background: #fff7ed;
+      border: 1px solid rgba(216,114,60,0.35);
+      color: #9a3412;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+    }
+
+    .form-footer {
+      margin-top: 32px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 860px) {
+      body { display: block; }
+      .left-panel {
+        min-height: 260px;
+        padding: 40px 28px;
+      }
+      .right-panel {
+        width: 100%;
+        padding: 40px 28px;
+        border-left: none;
+        border-top: 1px solid rgba(207,207,207,0.75);
+      }
+      .brand-title { font-size: 2rem; }
+      .feature-list { margin-top: 28px; }
+    }
+  </style>
+
+<div class="bt-login-card">
+  <div class="bt-login-logo">BT</div>
+  <div class="bt-login-title">Betime Solution</div>
+  <div class="bt-login-sub">Enterprise Platform — เข้าสู่ระบบด้วยบัญชีองค์กร</div>
+
+  {% if microsoft_login_url %}
+  <a href="{{ microsoft_login_url }}" class="bt-ms-btn">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <rect x="1" y="1" width="10" height="10" fill="#F35325"/>
+      <rect x="13" y="1" width="10" height="10" fill="#81BC06"/>
+      <rect x="1" y="13" width="10" height="10" fill="#05A6F0"/>
+      <rect x="13" y="13" width="10" height="10" fill="#FFBA08"/>
+    </svg>
+    เข้าสู่ระบบด้วย Microsoft
+  </a>
+  {% else %}
+  <div class="bt-alert bt-alert-warning" style="text-align:left;margin-bottom:16px">
+    ⚠️ Microsoft SSO ยังไม่ได้ตั้งค่า กรุณาตั้งค่า <code>microsoft_oauth_client_id</code> ใน site_config
+  </div>
+  {% endif %}
+
+  <div class="bt-divider">หรือ</div>
+  <a href="/login" class="bt-frappe-login">🔑 เข้าสู่ระบบด้วย Username/Password</a>
+</div>
+{% endblock %}

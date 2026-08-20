@@ -1,0 +1,101 @@
+{% extends "betime_solution/templates/includes/bt_base.html" %}
+{% block bt_content %}
+
+<div class="bt-page-header">
+  <h2>🖥️ Staff Dashboard</h2>
+  <span style="color:#888;font-size:0.85rem">สวัสดี, {{ full_name }}</span>
+</div>
+
+<!-- Personal KPIs -->
+<div class="bt-kpi-grid">
+  <div class="bt-card">
+    <div class="bt-card-title">งานของฉัน</div>
+    <div class="bt-card-value">{{ data.my_tasks_total }}</div>
+    <div class="bt-card-sub">{{ data.my_tasks_overdue }} เกินกำหนด</div>
+  </div>
+  <div class="bt-card">
+    <div class="bt-card-title">กิจกรรมวันนี้</div>
+    <div class="bt-card-value" style="color:var(--bt-accent)">{{ data.today_events }}</div>
+    <div class="bt-card-sub">รายการในปฏิทิน</div>
+  </div>
+  <div class="bt-card">
+    <div class="bt-card-title">OT ของฉัน (เดือนนี้)</div>
+    <div class="bt-card-value" style="color:var(--bt-warning)">{{ data.my_ot_hours }}</div>
+    <div class="bt-card-sub">ชั่วโมง OT</div>
+  </div>
+  <div class="bt-card">
+    <div class="bt-card-title">งานเสร็จแล้ว</div>
+    <div class="bt-card-value" style="color:var(--bt-success)">{{ data.my_tasks_done }}</div>
+    <div class="bt-card-sub">รายการ</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px">
+  <!-- My Tasks -->
+  <div class="bt-card">
+    <div class="bt-section-header">
+      <h2>✅ งานของฉัน</h2>
+      <a href="/betime/my-tasks" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+    </div>
+    {% if data.my_tasks %}
+    <table class="bt-table">
+      <thead><tr><th>งาน</th><th>โครงการ</th><th>Priority</th><th>กำหนด</th></tr></thead>
+      <tbody>
+        {% for t in data.my_tasks[:8] %}
+        {% set days = frappe.utils.date_diff(t.deadline, frappe.utils.today()) if t.deadline else 999 %}
+        <tr>
+          <td><a href="/app/smart-task/{{ t.name }}">{{ t.task_name }}</a></td>
+          <td>{{ t.project or '-' }}</td>
+          <td><span class="bt-badge bt-badge-{{ 'red' if t.priority == 'Critical' else 'orange' if t.priority == 'High' else 'blue' }}">{{ t.priority }}</span></td>
+          <td style="color: {{ '#C62828' if days < 0 else '#E65100' if days <= 2 else 'inherit' }}">
+            {{ frappe.utils.format_date(t.deadline) if t.deadline else '-' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#888;text-align:center">ไม่มีงาน</p>
+    {% endif %}
+  </div>
+
+  <!-- Today's Calendar -->
+  <div class="bt-card">
+    <div class="bt-section-header"><h2>📅 วันนี้</h2></div>
+    {% if data.today_calendar %}
+    {% for ev in data.today_calendar %}
+    <div style="padding:10px 0;border-bottom:1px solid var(--bt-border)">
+      <div style="font-weight:600;font-size:0.9rem">{{ ev.title }}</div>
+      <div style="font-size:0.8rem;color:#888">
+        {{ frappe.utils.format_time(ev.start_datetime) if ev.start_datetime else '' }}
+        {% if ev.room %} · {{ ev.room }}{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color:#888;text-align:center;font-size:0.85rem">ไม่มีกิจกรรมวันนี้</p>
+    {% endif %}
+    <div style="margin-top:12px">
+      <a href="/app/smart-calendar" class="bt-btn bt-btn-outline bt-btn-sm" style="width:100%;justify-content:center">
+        เปิดปฏิทิน
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Notifications -->
+<div class="bt-card">
+  <div class="bt-section-header"><h2>🔔 การแจ้งเตือนล่าสุด</h2></div>
+  {% if data.notifications %}
+  {% for n in data.notifications %}
+  <div class="bt-alert bt-alert-{{ n.type or 'info' }}" style="margin-bottom:8px">
+    {{ n.message }}
+    <span style="margin-left:auto;font-size:0.75rem;color:#888">{{ frappe.utils.pretty_date(n.creation) }}</span>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p style="color:#888;text-align:center">ไม่มีการแจ้งเตือน</p>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Set up — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-sliders2"></i> User Set up</h2></div>
+
+    <div class="bt-card" style="margin-bottom:20px">
+      <div class="bt-section-header"><h2>ตั้งค่าบัญชี</h2></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <label class="bt-label">ภาษา</label>
+          <select class="bt-select">
+            <option>ไทย</option>
+            <option>English</option>
+          </select>
+        </div>
+        <div>
+          <label class="bt-label">รูปแบบเวลา</label>
+          <select class="bt-select">
+            <option>24 ชั่วโมง</option>
+            <option>12 ชั่วโมง</option>
+          </select>
+        </div>
+        <div>
+          <label class="bt-label">รูปแบบวันที่</label>
+          <select class="bt-select">
+            <option>DD/MM/YYYY</option>
+            <option>YYYY-MM-DD</option>
+          </select>
+        </div>
+        <div>
+          <label class="bt-label">การแจ้งเตือน</label>
+          <select class="bt-select">
+            <option>เปิดทั้งหมด</option>
+            <option>เฉพาะสำคัญ</option>
+            <option>ปิดทั้งหมด</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button class="bt-btn bt-btn-primary" onclick="BT.toast('บันทึกการตั้งค่าสำเร็จ', 'success')"><i class="bi bi-save"></i> บันทึก</button>
+      </div>
+    </div>
+
+    <div class="bt-card">
+      <div class="bt-section-header"><h2>ความปลอดภัย</h2></div>
+      <p style="color:var(--bt-muted);line-height:1.8">แนะนำให้เปลี่ยนรหัสผ่านทุก 90 วัน และเปิดใช้งานการยืนยันตัวตนหลายขั้นตอนเมื่อระบบรองรับ</p>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('setup.html', 'User Preferences');
+</script>
+</body>
+</html>

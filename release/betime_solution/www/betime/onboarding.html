@@ -1,0 +1,99 @@
+{% extends "betime_solution/templates/includes/bt_base.html" %}
+{% block bt_content %}
+
+<div class="bt-page-header">
+  <h2>👋 ยินดีต้อนรับ, {{ full_name }}</h2>
+</div>
+
+{% if is_complete %}
+<div class="bt-alert bt-alert-success">
+  ✅ โปรไฟล์ของคุณพร้อมแล้ว — <a href="/betime/staff-dashboard">ไปยัง Dashboard</a>
+</div>
+{% else %}
+<div class="bt-alert bt-alert-info">
+  📝 กรุณากรอกข้อมูลเพื่อเริ่มต้นใช้งานระบบ
+</div>
+
+<div class="bt-card" style="max-width:600px">
+  <h4>ตั้งค่าโปรไฟล์ครั้งแรก</h4>
+  <form id="onboarding-form">
+    <div class="bt-form-group">
+      <label class="bt-label">ชื่อ-นามสกุล (ภาษาไทย)</label>
+      <input type="text" id="ob-fullname" class="bt-input" value="{{ full_name }}" required>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="bt-form-group">
+        <label class="bt-label">แผนก</label>
+        <input type="text" id="ob-dept" class="bt-input" placeholder="เช่น Technology, Finance" required>
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">ตำแหน่ง</label>
+        <input type="text" id="ob-position" class="bt-input" placeholder="เช่น Senior Developer" required>
+      </div>
+    </div>
+    <div class="bt-form-group">
+      <label class="bt-label">โทรศัพท์</label>
+      <input type="tel" id="ob-phone" class="bt-input" placeholder="0812345678">
+    </div>
+    <div class="bt-form-group">
+      <label class="bt-label">LINE ID (สำหรับรับการแจ้งเตือน)</label>
+      <input type="text" id="ob-line" class="bt-input" placeholder="your_line_id">
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg" style="width:100%">
+      🚀 เริ่มต้นใช้งาน Betime Solution
+    </button>
+  </form>
+</div>
+{% endif %}
+
+<!-- Quick start guide -->
+<div style="margin-top:2rem">
+  <h4>🗺️ เริ่มต้นด้วยขั้นตอนเหล่านี้</h4>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:1rem">
+    <div class="bt-card" style="padding:20px;border-top:4px solid var(--bt-primary)">
+      <div style="font-size:2rem;margin-bottom:8px">📋</div>
+      <strong>ดู Dashboard</strong>
+      <p style="font-size:0.85rem;color:#666;margin:6px 0 12px">ตรวจสอบงานและโครงการของคุณ</p>
+      <a href="/betime/staff-dashboard" class="bt-btn bt-btn-primary bt-btn-sm">ไป Dashboard</a>
+    </div>
+    <div class="bt-card" style="padding:20px;border-top:4px solid var(--bt-success)">
+      <div style="font-size:2rem;margin-bottom:8px">✅</div>
+      <strong>ดู Tasks ของฉัน</strong>
+      <p style="font-size:0.85rem;color:#666;margin:6px 0 12px">งานที่ได้รับมอบหมาย</p>
+      <a href="/betime/my-tasks" class="bt-btn bt-btn-success bt-btn-sm">ดู Tasks</a>
+    </div>
+    <div class="bt-card" style="padding:20px;border-top:4px solid var(--bt-warning)">
+      <div style="font-size:2rem;margin-bottom:8px">📅</div>
+      <strong>ปฏิทินกิจกรรม</strong>
+      <p style="font-size:0.85rem;color:#666;margin:6px 0 12px">นัดหมายและกิจกรรม</p>
+      <a href="/app/smart-calendar" class="bt-btn bt-btn-warning bt-btn-sm">ดูปฏิทิน</a>
+    </div>
+    <div class="bt-card" style="padding:20px;border-top:4px solid var(--bt-accent)">
+      <div style="font-size:2rem;margin-bottom:8px">🤖</div>
+      <strong>Help Desk AI</strong>
+      <p style="font-size:0.85rem;color:#666;margin:6px 0 12px">ถามคำถาม — AI ตอบให้</p>
+      <a href="/betime/help-desk" class="bt-btn bt-btn-outline bt-btn-sm">เปิด Help Desk</a>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+document.getElementById('onboarding-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        await BT.call('betime_solution.api.portal.save_onboarding', {
+            full_name: document.getElementById('ob-fullname').value,
+            department: document.getElementById('ob-dept').value,
+            position: document.getElementById('ob-position').value,
+            phone: document.getElementById('ob-phone').value,
+            line_id: document.getElementById('ob-line').value,
+        });
+        BT.notify('✅ บันทึกข้อมูลสำเร็จ', 'success');
+        setTimeout(() => location.href = '/betime/staff-dashboard', 1500);
+    } catch (e) {
+        BT.notify('เกิดข้อผิดพลาด: ' + e.message, 'error');
+    }
+});
+</script>
+{% endblock %}

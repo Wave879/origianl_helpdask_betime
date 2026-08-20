@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notifications — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    /* ── Company Announcements ── */
+    .ca-grid { display:grid; grid-template-columns:320px minmax(0,1fr); gap:16px; align-items:start; }
+    .ca-grid.readonly { grid-template-columns:1fr; }
+    .ca-panel-title { margin:0 0 12px; font-size:1.02rem; font-weight:800; color:var(--bt-text); }
+    .ca-create-top-btn { display:none; }
+    .ca-create-top-btn.show { display:inline-flex; }
+    .ca-form { display:flex; flex-direction:column; gap:12px; }
+    .ca-label { display:block; font-size:0.76rem; font-weight:700; color:var(--bt-muted); margin-bottom:6px; letter-spacing:0.03em; text-transform:uppercase; }
+    .ca-input { width:100%; box-sizing:border-box; border:1px solid var(--bt-border); border-radius:10px; font-family:inherit; font-size:0.9rem; padding:10px 12px; background:#fff; color:var(--bt-text); }
+    .ca-input:focus { outline:none; border-color:var(--bt-primary); box-shadow:0 0 0 3px rgba(234,88,12,0.14); }
+    .ca-preview-wrap { margin-top:2px; border:1px dashed var(--bt-border); border-radius:10px; padding:8px; display:none; background:#f8fafc; }
+    .ca-preview-wrap img { width:100%; max-height:180px; object-fit:cover; border-radius:8px; display:block; }
+    .ca-list { display:flex; flex-direction:column; gap:14px; }
+    .ca-item { border:1px solid var(--bt-border); border-radius:14px; padding:14px; background:#fff; box-shadow:0 2px 10px rgba(15,23,42,0.06); }
+    .ca-item.unread { border-color:#fed7aa; background:#fffaf4; }
+    .ca-post-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .ca-author { display:flex; align-items:center; gap:10px; min-width:0; }
+    .ca-avatar { width:38px; height:38px; border-radius:999px; background:linear-gradient(135deg,#f97316 0%,#3b82f6 100%); color:#fff; display:grid; place-items:center; font-size:0.82rem; font-weight:800; flex-shrink:0; }
+    .ca-author-text { min-width:0; }
+    .ca-author-text strong { display:block; color:var(--bt-text); font-size:0.9rem; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ca-author-text small { display:flex; align-items:center; gap:6px; margin-top:2px; color:var(--bt-muted); font-size:0.75rem; white-space:nowrap; }
+    .ca-level { width:8px; height:8px; border-radius:999px; flex-shrink:0; }
+    .ca-level.info { background:#3b82f6; } .ca-level.warning { background:#f59e0b; } .ca-level.ok { background:#10b981; }
+    .ca-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .ca-actions button { border:1px solid var(--bt-border); background:#fff; color:#334155; border-radius:8px; height:30px; padding:0 10px; font-size:0.77rem; font-weight:700; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:6px; }
+    .ca-actions button:hover { background:#f8fafc; }
+    .ca-post-content { padding-left:48px; }
+    .ca-title { margin:0; font-size:1.02rem; color:var(--bt-text); font-weight:800; line-height:1.4; }
+    .ca-meta { margin-top:6px; font-size:0.9rem; color:var(--bt-muted); line-height:1.6; white-space:pre-wrap; }
+    .ca-media { margin-top:10px; border:1px solid var(--bt-border); border-radius:10px; overflow:hidden; background:#f8fafc; }
+    .ca-media img { width:100%; max-height:360px; object-fit:cover; display:block; }
+    .ca-reactions { margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--bt-border); padding-top:10px; flex-wrap:wrap; }
+    .ca-empty { text-align:center; color:var(--bt-muted); border:1px dashed var(--bt-border); border-radius:10px; padding:18px; font-size:0.9rem; }
+    @media (max-width:980px) { .ca-grid { grid-template-columns:1fr; } }
+    @media (max-width:640px) { .ca-post-content { padding-left:0; } .ca-post-head { align-items:flex-start; } .ca-actions { width:100%; } }
+
+    /* ── LINE Group ── */
+    .lg-page-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+    .lg-title-wrap h2 { margin:0; font-size:1.6rem; font-weight:800; color:#0f172a; }
+    .lg-subtitle { margin-top:4px; color:#64748b; font-size:1rem; font-weight:600; }
+    .lg-tools { display:flex; gap:10px; flex-wrap:wrap; }
+    .lg-search { width:260px; max-width:100%; height:44px; border-radius:12px; border:1px solid #cfd8e3; background:#f6f8fb; display:flex; align-items:center; padding:0 12px; gap:8px; }
+    .lg-search input { border:0; outline:0; width:100%; background:transparent; font:inherit; color:#1e293b; font-size:0.92rem; font-weight:600; }
+    .lg-icon-btn { height:44px; border-radius:12px; border:1px solid #cfd8e3; background:#f6f8fb; color:#334155; font-weight:700; font-size:0.94rem; padding:0 16px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+    .lg-layout { display:grid; grid-template-columns:320px 1fr; gap:22px; align-items:start; }
+    .lg-card { background:#fff; border-radius:16px; border:1px solid #dce3ec; box-shadow:0 1px 1px rgba(15,23,42,0.03); }
+    .lg-sidebar { padding:16px; }
+    .lg-sidebar-title { color:#0f172a; font-size:1.4rem; font-weight:800; margin:0; line-height:1; }
+    .lg-sidebar-sub { color:#475569; margin-top:6px; font-size:1rem; font-weight:600; }
+    .lg-list { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .lg-item { border:1px solid #d6dee9; border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px; background:#f8fafc; cursor:pointer; transition:0.2s ease; width:100%; text-align:left; font-family:inherit; }
+    .lg-item:hover { border-color:#f59e0b; }
+    .lg-item.active { background:#ff7a11; border-color:#ff7a11; color:#fff; box-shadow:0 8px 24px rgba(249,115,22,0.3); }
+    .lg-ava { width:44px; height:44px; border-radius:14px; display:grid; place-items:center; font-size:1.2rem; background:#fde047; flex-shrink:0; }
+    .lg-item.active .lg-ava { background:#fde047; color:#0f172a; }
+    .lg-item-name { font-size:1.04rem; font-weight:800; line-height:1.2; }
+    .lg-item-tag { font-size:0.86rem; margin-top:2px; font-weight:600; opacity:0.95; }
+    .lg-item-meta { margin-top:6px; font-size:0.86rem; font-weight:700; display:flex; align-items:center; gap:5px; opacity:0.95; }
+    .lg-main { display:flex; flex-direction:column; gap:18px; }
+    .lg-project { padding:20px 22px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:center; }
+    .lg-project-left { display:flex; align-items:center; gap:14px; min-width:280px; }
+    .lg-project-icon { width:50px; height:56px; border-radius:12px; background:#fde047; display:grid; place-items:center; font-size:1.2rem; flex-shrink:0; }
+    .lg-project-name { margin:0; font-size:1.4rem; line-height:1; letter-spacing:-0.02em; color:#0f172a; font-weight:900; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .lg-pill { display:inline-flex; align-items:center; border-radius:999px; font-size:0.82rem; padding:5px 11px; font-weight:800; }
+    .lg-pill.orange { background:#f59e0b; color:#fff; }
+    .lg-project-meta { margin-top:8px; color:#475569; font-size:0.95rem; font-weight:700; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .lg-btn { border-radius:12px; border:1px solid #cfd8e3; background:#f8fafc; color:#334155; padding:10px 16px; font-size:0.95rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:7px; font-family:inherit; }
+    .lg-task { overflow:hidden; }
+    .lg-task-head { padding:14px 16px; border-bottom:1px solid #e5eaf1; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .lg-task-title { margin:0; font-size:1.3rem; color:#0f172a; font-weight:900; line-height:1; }
+    .lg-task-tools { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .lg-select { height:36px; border-radius:10px; border:1px solid #cfd8e3; background:#f8fafc; color:#334155; padding:0 10px; font-size:0.86rem; font-weight:700; min-width:190px; font-family:inherit; }
+    .lg-btn.small { height:36px; padding:0 12px; font-size:0.84rem; border-radius:10px; }
+    .lg-btn.warn { border-color:#fbbf24; color:#9a3412; background:#fff7ed; }
+    .lg-btn.danger { border-color:#fca5a5; color:#b91c1c; background:#fff1f2; }
+    .lg-chips { padding:12px 16px 0; display:flex; gap:8px; flex-wrap:wrap; }
+    .lg-chip { display:inline-flex; align-items:center; gap:7px; border-radius:999px; border:1px solid #cbd5e1; padding:6px 10px; font-size:0.86rem; color:#334155; font-weight:800; background:#f8fafc; }
+    .lg-chip.active { background:#ff7a11; border-color:#ff7a11; color:#fff; }
+    .lg-chip b { background:rgba(255,255,255,0.25); border-radius:999px; padding:0 7px; font-size:0.8rem; line-height:1.6; }
+    .lg-chip:not(.active) b { background:#e2e8f0; color:#475569; }
+    .lg-empty { min-height:180px; display:grid; place-items:center; color:#64748b; font-size:1.2rem; font-weight:700; text-align:center; padding:24px; }
+    .lg-empty i { display:block; font-size:2.4rem; color:#c1ccdb; margin-bottom:10px; }
+    @media (max-width:1200px) { .lg-layout { grid-template-columns:1fr; } }
+    @media (max-width:860px) { .lg-title-wrap h2,.lg-sidebar-title,.lg-project-name,.lg-task-title { font-size:1.1rem; } .lg-search { width:100%; } .lg-tools { width:100%; } }
+
+    /* ── Task LINE Group ── */
+    .task-rule-card { background:#fff; border-radius:14px; box-shadow:var(--bt-shadow); padding:20px 24px; border-left:4px solid #06C755; transition:box-shadow 0.2s; }
+    .task-rule-card:hover { box-shadow:0 6px 24px rgba(6,199,85,0.1); }
+    .rule-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .rule-title { font-weight:700; font-size:0.92rem; color:var(--bt-text); }
+    .rule-meta { font-size:0.78rem; color:var(--bt-muted); margin-top:4px; }
+    .rule-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .bt-toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+    .bt-toggle input { opacity:0; width:0; height:0; }
+    .bt-toggle-slider { position:absolute; inset:0; background:#cbd5e1; border-radius:24px; cursor:pointer; transition:background 0.2s; }
+    .bt-toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+    .bt-toggle input:checked + .bt-toggle-slider { background:#06C755; }
+    .bt-toggle input:checked + .bt-toggle-slider::before { transform:translateX(20px); }
+    .trigger-chip { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:600; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+    .msg-preview { background:#f8fafc; border-radius:10px; padding:14px 16px; font-size:0.82rem; color:var(--bt-text); border:1px solid var(--bt-border); font-family:monospace; white-space:pre-line; margin-top:10px; position:relative; }
+    .msg-preview::before { content:'ตัวอย่างข้อความ LINE'; display:block; font-family:'Sarabun',sans-serif; font-size:0.68rem; font-weight:700; color:#06C755; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-bell"></i> Notifications</h2></div>
+
+    <!-- Tab Bar -->
+    <div class="bt-tabs" style="flex-wrap:wrap;gap:4px">
+      <button class="bt-tab active"  id="nb-line"       onclick="showNTab('line',this)">📱 LINE Alerts</button>
+      <button class="bt-tab"         id="nb-announce"   onclick="showNTab('announce',this)">📣 ประกาศบริษัท</button>
+      <button class="bt-tab"         id="nb-linegroup"  onclick="showNTab('linegroup',this)">👥 LINE Group</button>
+      <button class="bt-tab"         id="nb-taskline"   onclick="showNTab('taskline',this)">✅ Task LINE Group</button>
+      <button class="bt-tab"         id="nb-teams"      onclick="showNTab('teams',this)">💬 Teams</button>
+      <button class="bt-tab"         id="nb-email"      onclick="showNTab('email',this)">📧 Email Alerts</button>
+      <button class="bt-tab"         id="nb-escalation" onclick="showNTab('escalation',this)">🚨 Escalations</button>
+    </div>
+
+    <!-- ── 1. LINE Alerts ── -->
+    <div id="noti-line">
+      <div class="bt-card" style="margin-bottom:16px"><h4>📱 ส่ง LINE Notification</h4>
+        <div class="bt-form-group"><label class="bt-label">ข้อความ</label><textarea id="line-msg" class="bt-input" rows="3"></textarea></div>
+        <button class="bt-btn bt-btn-primary" onclick="sendLine()">📨 ส่ง LINE</button>
+      </div>
+      <div class="bt-card"><div id="line-hist"><p style="color:#888;text-align:center;padding:20px">ไม่มีประวัติการส่ง</p></div></div>
+    </div>
+
+    <!-- ── 2. ประกาศบริษัท ── -->
+    <div id="noti-announce" style="display:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        <button id="create-post-btn" class="bt-btn bt-btn-primary bt-btn-sm ca-create-top-btn" onclick="openCreatePost()"><i class="bi bi-plus-lg"></i> สร้างโพส</button>
+        <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="markAllRead()"><i class="bi bi-check2-all"></i> อ่านแล้วทั้งหมด</button>
+        <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="loadAnnouncements()"><i class="bi bi-arrow-clockwise"></i> รีเฟรช</button>
+      </div>
+      <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));margin-bottom:16px">
+        <div class="bt-card"><div class="bt-card-title">ทั้งหมด</div><div class="bt-card-value" id="k-total">0</div><div class="bt-card-sub">ประกาศ</div></div>
+        <div class="bt-card"><div class="bt-card-title">ยังไม่อ่าน</div><div class="bt-card-value" id="k-unread" style="color:var(--bt-danger)">0</div><div class="bt-card-sub">รายการ</div></div>
+        <div class="bt-card"><div class="bt-card-title">สำคัญ</div><div class="bt-card-value" id="k-warning" style="color:var(--bt-warning)">0</div><div class="bt-card-sub">warning</div></div>
+      </div>
+      <div class="ca-grid" id="ca-grid">
+        <div class="bt-card" id="ca-create-card">
+          <h3 class="ca-panel-title">สร้างประกาศใหม่</h3>
+          <form class="ca-form" onsubmit="addAnnouncement(event)">
+            <div><label class="ca-label">หัวข้อประกาศ</label><input id="f-ca-title" class="ca-input" required placeholder="เช่น แจ้งวันหยุดพิเศษ"></div>
+            <div><label class="ca-label">ระดับ</label><select id="f-ca-level" class="ca-input"><option value="info">Info</option><option value="warning">Warning</option><option value="ok">OK</option></select></div>
+            <div><label class="ca-label">รายละเอียด</label><textarea id="f-ca-note" rows="4" class="ca-input" placeholder="ข้อความประกาศ"></textarea></div>
+            <div><label class="ca-label">รูปภาพ (อัปโหลด)</label><input id="f-ca-image-file" type="file" accept="image/*" class="ca-input" onchange="handleImageFile(event)"></div>
+            <div><label class="ca-label">ไฟล์หรือ URL ที่ต้องการแนบ</label><input id="f-ca-link-url" class="ca-input" placeholder="https://..."></div>
+            <div><label class="ca-label">หรือใส่ลิงก์รูปภาพ</label><input id="f-ca-image-url" class="ca-input" placeholder="https://example.com/image.jpg" oninput="handleImageUrlPreview()"></div>
+            <div id="ca-image-preview-wrap" class="ca-preview-wrap"><img id="ca-image-preview" alt="preview"></div>
+            <button type="submit" class="bt-btn bt-btn-primary"><i class="bi bi-plus-lg"></i> เพิ่มประกาศ</button>
+          </form>
+        </div>
+        <div class="bt-card">
+          <div class="bt-section-header"><h2>รายการประกาศ</h2><small style="color:var(--bt-muted)">เชื่อม Navbar อัตโนมัติ</small></div>
+          <div id="ca-list" class="ca-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3. LINE Group ── -->
+    <div id="noti-linegroup" style="display:none">
+      <section class="lg-page-head">
+        <div class="lg-title-wrap">
+          <h2>โครงการ</h2>
+          <div class="lg-subtitle">จัดการงานตาม LINE Group</div>
+        </div>
+        <div class="lg-tools">
+          <label class="lg-search">
+            <i class="bi bi-search" style="color:#94a3b8"></i>
+            <input id="lg-search-input" type="text" placeholder="ค้นหางาน...">
+          </label>
+          <button class="lg-icon-btn" onclick="syncAllGroups()"><i class="bi bi-send"></i> Sync ทุกกลุ่ม</button>
+        </div>
+      </section>
+      <section class="lg-layout">
+        <aside class="lg-card lg-sidebar">
+          <h3 class="lg-sidebar-title">กลุ่มโครงการ</h3>
+          <div class="lg-sidebar-sub" id="group-counter">ทั้งหมด 0 กลุ่ม</div>
+          <div id="group-list" class="lg-list"></div>
+        </aside>
+        <section class="lg-main">
+          <article class="lg-card lg-project" id="project-head"></article>
+          <article class="lg-card lg-task">
+            <div class="lg-task-head">
+              <h3 class="lg-task-title">รายการงาน</h3>
+              <div class="lg-task-tools">
+                <select class="lg-select" id="group-select"></select>
+                <button class="lg-btn small" onclick="inviteGroup()"><i class="bi bi-send"></i> ชิงก์กลุ่มนี้</button>
+                <button class="lg-btn small" onclick="syncMembers()"><i class="bi bi-arrow-repeat"></i> รับสมาชิก</button>
+                <button class="lg-btn small warn" onclick="archiveTasks()"><i class="bi bi-archive"></i> จัดเก็บ task กลุ่มนี้</button>
+                <button class="lg-btn small danger" onclick="removeGroup()"><i class="bi bi-trash"></i> ลบกลุ่มนี้</button>
+              </div>
+            </div>
+            <div class="lg-chips" id="task-chips"></div>
+            <div class="lg-empty" id="task-empty"></div>
+          </article>
+        </section>
+      </section>
+    </div>
+
+    <!-- ── 4. Task LINE Group ── -->
+    <div id="noti-taskline" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <p style="color:var(--bt-muted);font-size:0.88rem;margin:0">กำหนดเงื่อนไขการส่งแจ้งเตือน Task อัตโนมัติไปยัง LINE Group ที่เลือก</p>
+        <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="openAddModal()" style="background:#06C755"><i class="bi bi-plus-lg"></i> เพิ่ม Rule</button>
+      </div>
+      <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:24px">
+        <div class="bt-card"><div class="bt-card-title">Rule ทั้งหมด</div><div class="bt-card-value" id="kpi-total" style="color:#06C755">—</div><div class="bt-card-sub">รายการ</div></div>
+        <div class="bt-card"><div class="bt-card-title">เปิดใช้งาน</div><div class="bt-card-value" id="kpi-on" style="color:var(--bt-success)">—</div><div class="bt-card-sub">rule</div></div>
+        <div class="bt-card"><div class="bt-card-title">ส่งไปแล้ววันนี้</div><div class="bt-card-value" id="kpi-sent" style="color:var(--bt-accent)">12</div><div class="bt-card-sub">ข้อความ</div></div>
+      </div>
+      <div id="rules-list" style="display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+
+    <!-- ── 5. Teams ── -->
+    <div id="noti-teams" style="display:none">
+      <div class="bt-card"><h4>💬 ส่ง Teams Notification</h4>
+        <div class="bt-form-group"><label class="bt-label">ข้อความ</label><textarea id="teams-msg" class="bt-input" rows="3"></textarea></div>
+        <div class="bt-form-group"><label class="bt-label">Webhook URL</label><input type="url" id="teams-url" class="bt-input" placeholder="https://..."></div>
+        <button class="bt-btn bt-btn-primary" onclick="sendTeams()">💬 ส่ง Teams</button>
+      </div>
+    </div>
+
+    <!-- ── 6. Email Alerts ── -->
+    <div id="noti-email" style="display:none">
+      <div class="bt-card"><h4>📧 ส่ง Email Alert</h4>
+        <div class="bt-form-group"><label class="bt-label">ถึง</label><input type="email" id="email-to" class="bt-input"></div>
+        <div class="bt-form-group"><label class="bt-label">หัวข้อ</label><input type="text" id="email-subject" class="bt-input"></div>
+        <div class="bt-form-group"><label class="bt-label">เนื้อหา</label><textarea id="email-body" class="bt-input" rows="5"></textarea></div>
+        <button class="bt-btn bt-btn-primary" onclick="sendEmail()">📧 ส่ง Email</button>
+      </div>
+    </div>
+
+    <!-- ── 7. Escalations ── -->
+    <div id="noti-escalation" style="display:none">
+      <div class="bt-card">
+        <div class="bt-section-header"><h2>🚨 Escalation Rules</h2></div>
+        <div class="bt-alert bt-alert-info">Escalation ส่งอัตโนมัติเมื่อ: SLA เกินกำหนด / Invoice ค้างชำระ / Task เกินกำหนด</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Task LINE Group Modal -->
+<div id="tl-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center">
+  <div class="bt-card" style="width:520px;max-width:95vw;max-height:92vh;overflow-y:auto;padding:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="margin:0;font-size:1rem" id="tl-modal-title">เพิ่ม Rule</h3>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888">✕</button>
+    </div>
+    <form onsubmit="saveRule(event)">
+      <input type="hidden" id="f-id">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div><label class="bt-label">ชื่อ Rule *</label><input id="f-name" class="bt-input" required placeholder="เช่น แจ้งงานเกินกำหนด"></div>
+        <div><label class="bt-label">LINE Group ที่ส่ง *</label><select id="f-group" class="bt-input"></select></div>
+        <div>
+          <label class="bt-label">Trigger — เมื่อไร</label>
+          <select id="f-trigger" class="bt-input" multiple size="4">
+            <option value="task_overdue">งานเกินกำหนด (Overdue)</option>
+            <option value="task_assigned">มีงานมอบหมายใหม่</option>
+            <option value="task_done">งานเสร็จสิ้น</option>
+            <option value="task_comment">มีความคิดเห็นใหม่</option>
+            <option value="priority_critical">Priority เป็น Critical</option>
+            <option value="deadline_3days">ใกล้ deadline 3 วัน</option>
+          </select>
+          <div style="font-size:0.72rem;color:var(--bt-muted);margin-top:4px">Ctrl+Click เพื่อเลือกหลายรายการ</div>
+        </div>
+        <div><label class="bt-label">Template ข้อความ</label><textarea id="f-msg" class="bt-input" rows="4" placeholder="🔔 แจ้งเตือน: {task_name}&#10;ผู้รับผิดชอบ: {assignee}&#10;กำหนด: {deadline}&#10;สถานะ: {status}"></textarea></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="bt-btn bt-btn-outline bt-btn-sm" onclick="closeModal()">ยกเลิก</button>
+        <button type="submit" class="bt-btn bt-btn-primary bt-btn-sm" style="background:#06C755">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+BT.initApp('notifications.html', 'Notifications');
+
+/* ── Tab Switching ───────────────────────────────────────────── */
+const ALL_TABS = ['line','announce','linegroup','taskline','teams','email','escalation'];
+let lineGroupInited = false, taskLineInited = false, announceInited = false;
+
+function showNTab(id, btn) {
+  ALL_TABS.forEach(t => { document.getElementById('noti-'+t).style.display = (t===id) ? 'block' : 'none'; });
+  document.querySelectorAll('.bt-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (id === 'announce'  && !announceInited)  { announceInited  = true; loadAnnouncements(); initAnnouncePermissions(); }
+  if (id === 'linegroup' && !lineGroupInited) { lineGroupInited = true; renderAllLG(); initLGSearch(); }
+  if (id === 'taskline'  && !taskLineInited)  { taskLineInited  = true; renderKPI(); renderRules(); }
+}
+
+/* ── 1. LINE Alerts ──────────────────────────────────────────── */
+async function sendLine() {
+  if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อน','warning'); return; }
+  try {
+    await BT.call('betime_solution.api.portal.send_line_notification', { message: document.getElementById('line-msg').value, to: '' });
+    BT.notify('✅ ส่ง LINE สำเร็จ','success');
+  } catch(e) { BT.notify(e.message,'error'); }
+}
+
+/* ── 2. ประกาศบริษัท ─────────────────────────────────────────── */
+const token = () => localStorage.getItem('bt_token');
+const apiReq = (path, opts={}) => fetch('/api'+path, {
+  headers: {'Authorization':'Bearer '+token(), 'Content-Type':'application/json'}, ...opts
+});
+const role = (localStorage.getItem('bt_role') || '').toLowerCase();
+const isSuperAdmin = role === 'super_admin' || role === 'superadmin' || role === 'ceo' || role === 'manager';
+let announceItems = [];
+
+function renderAnnounceKpi() {
+  document.getElementById('k-total').textContent   = announceItems.length;
+  document.getElementById('k-unread').textContent  = announceItems.filter(x => x.unread).length;
+  document.getElementById('k-warning').textContent = announceItems.filter(x => x.category === 'HR').length;
+}
+
+function renderAnnounceList() {
+  const el = document.getElementById('ca-list');
+  if (!announceItems.length) { el.innerHTML = '<div class="ca-empty">ยังไม่มีประกาศ</div>'; return; }
+  el.innerHTML = announceItems.map(it => {
+    const author   = it.author_name || it.created_by || 'BETIME Team';
+    const initials = author.trim().split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || 'BT';
+    const timeStr  = it.created_at ? new Date(it.created_at).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}) : '-';
+    return `
+    <article class="ca-item ${it.is_pinned ? 'unread' : ''}">
+      <div class="ca-post-head">
+        <div class="ca-author">
+          <span class="ca-avatar">${initials}</span>
+          <span class="ca-author-text">
+            <strong>${author}</strong>
+            <small><span class="ca-level ${it.category==='HR'?'warning':'info'}"></span>${timeStr}</small>
+          </span>
+        </div>
+        ${isSuperAdmin ? `<div class="ca-actions"><button onclick="removeAnnouncement(${it.id})" style="color:#b91c1c">ลบ</button></div>` : ''}
+      </div>
+      <div class="ca-post-content">
+        <h4 class="ca-title">${it.title || '-'}</h4>
+        <div class="ca-meta">${it.content || '-'}</div>
+        <div class="ca-reactions">
+          <span class="bt-badge bt-badge-info" style="font-size:0.75rem">${it.category||'General'}</span>
+          ${it.target_dept && it.target_dept !== 'all' ? `<span class="bt-badge bt-badge-grey" style="font-size:0.75rem">${it.target_dept}</span>` : ''}
+          ${it.is_pinned ? '<span class="bt-badge bt-badge-orange" style="font-size:0.75rem"><i class="bi bi-pin-fill"></i> ปักหมุด</span>' : ''}
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function renderAnnounceAll() { renderAnnounceKpi(); renderAnnounceList(); }
+
+async function addAnnouncement(ev) {
+  if (!isSuperAdmin) { BT.notify('เฉพาะ Admin/Manager เท่านั้น','warning'); return; }
+  ev.preventDefault();
+  const title    = document.getElementById('f-ca-title').value.trim();
+  const content  = document.getElementById('f-ca-note').value.trim();
+  const category = document.getElementById('f-ca-level').value;
+  if (!title) return;
+  try {
+    const res = await apiReq('/announcements', { method:'POST', body: JSON.stringify({ title, content, category }) });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error);
+    ev.target.reset();
+    BT.notify('เพิ่มประกาศเรียบร้อยแล้ว','success');
+    loadAnnouncements();
+  } catch(e) { BT.notify('เกิดข้อผิดพลาด: '+e.message,'danger'); }
+}
+
+async function removeAnnouncement(id) {
+  if (!confirm('ลบประกาศนี้?')) return;
+  try {
+    const res = await apiReq('/announcements/'+id, { method:'DELETE' });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error);
+    BT.notify('ลบแล้ว','success');
+    loadAnnouncements();
+  } catch(e) { BT.notify('ลบไม่สำเร็จ: '+e.message,'danger'); }
+}
+
+function openCreatePost() {
+  if (!isSuperAdmin) { BT.notify('เฉพาะ Admin/Manager เท่านั้น','warning'); return; }
+  const card = document.getElementById('ca-create-card');
+  if (card) card.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(() => document.getElementById('f-ca-title')?.focus(), 220);
+}
+
+function markAllRead() { BT.notify('อ่านแล้วทั้งหมด','success'); }
+
+async function loadAnnouncements() {
+  try {
+    const res = await apiReq('/announcements');
+    const d = await res.json();
+    announceItems = d.ok && d.data?.length ? d.data : [];
+  } catch(e) { announceItems = []; }
+  renderAnnounceAll();
+}
+
+function initAnnouncePermissions() {
+  const createCard = document.getElementById('ca-create-card');
+  const btn = document.getElementById('create-post-btn');
+  if (!isSuperAdmin) {
+    if (createCard) createCard.style.display = 'none';
+    if (btn) btn.classList.remove('show');
+  } else {
+    if (btn) btn.classList.add('show');
+  }
+}
+
+function handleImageFile(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('ca-image-preview').src = e.target.result;
+    document.getElementById('ca-image-preview-wrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleImageUrlPreview() {
+  const url = document.getElementById('f-ca-image-url').value.trim();
+  if (url) { document.getElementById('ca-image-preview').src = url; document.getElementById('ca-image-preview-wrap').style.display = 'block'; }
+  else { document.getElementById('ca-image-preview-wrap').style.display = 'none'; }
+}
+
+/* ── 3. LINE Group ───────────────────────────────────────────── */
+const GROUPS_DATA = [];
+let groups = JSON.parse(localStorage.getItem('bt_line_project_groups') || 'null') || GROUPS_DATA;
+let selectedGroupId = groups[0] ? groups[0].id : null;
+
+function saveGroups() { localStorage.setItem('bt_line_project_groups', JSON.stringify(groups)); }
+function currentGroup() { return groups.find(g => g.id === selectedGroupId) || groups[0] || null; }
+
+function renderGroupList(keyword='') {
+  const el = document.getElementById('group-list');
+  const text = (keyword||'').trim().toLowerCase();
+  const visible = groups.filter(g => g.name.toLowerCase().includes(text) || (g.tag||'').toLowerCase().includes(text));
+  document.getElementById('group-counter').textContent = `ทั้งหมด ${groups.length} กลุ่ม`;
+  if (!visible.length) { el.innerHTML = '<div style="padding:14px;color:#64748b;font-weight:700">ไม่พบกลุ่มที่ค้นหา</div>'; return; }
+  el.innerHTML = visible.map(g => `
+    <button class="lg-item ${g.id===selectedGroupId?'active':''}" onclick="selectGroup(${g.id})">
+      <span class="lg-ava">${g.icon||'💬'}</span>
+      <span style="min-width:0;text-align:left">
+        <div class="lg-item-name">${g.name}</div>
+        <div class="lg-item-tag">${g.tag||'-'}</div>
+        <div class="lg-item-meta"><i class="bi bi-people"></i> ${g.members||0} คน</div>
+      </span>
+    </button>`).join('');
+}
+
+function renderProjectHead() {
+  const g = currentGroup();
+  const el = document.getElementById('project-head');
+  if (!g) { el.innerHTML = '<div style="color:#64748b">ไม่มีข้อมูลกลุ่ม</div>'; return; }
+  el.innerHTML = `
+    <div class="lg-project-left">
+      <div class="lg-project-icon">${g.icon||'💬'}</div>
+      <div>
+        <h3 class="lg-project-name">${g.name} <i class="bi bi-pencil" style="font-size:0.9rem;color:#94a3b8"></i> <span class="lg-pill orange">${g.tag||'-'}</span></h3>
+        <div class="lg-project-meta">
+          <span><i class="bi bi-people"></i> ${g.members||0} คน</span>
+          <span>•</span>
+          <span><i class="bi bi-chat-left"></i> ${(g.tasks&&g.tasks.all)||0} งาน</span>
+        </div>
+      </div>
+    </div>
+    <button class="lg-btn" onclick="sendLineNow()"><i class="bi bi-send"></i> ส่ง LINE</button>`;
+}
+
+function renderTaskArea() {
+  const g = currentGroup();
+  const chips = document.getElementById('task-chips');
+  const empty = document.getElementById('task-empty');
+  const select = document.getElementById('group-select');
+  select.innerHTML = groups.map(x => `<option value="${x.id}" ${x.id===selectedGroupId?'selected':''}>${x.tag||x.name}</option>`).join('');
+  const stat = (g&&g.tasks)||{all:0,doing:0,done:0,archived:0};
+  chips.innerHTML = `
+    <span class="lg-chip active">ทั้งหมด <b>${stat.all||0}</b></span>
+    <span class="lg-chip">กำลังทำ <b>${stat.doing||0}</b></span>
+    <span class="lg-chip">เสร็จแล้ว <b>${stat.done||0}</b></span>
+    <span class="lg-chip">จัดเก็บ <b>${stat.archived||0}</b></span>`;
+  empty.innerHTML = (!g||!stat.all)
+    ? '<div><i class="bi bi-folder"></i>ไม่มีงานในกลุ่มนี้</div>'
+    : '<div><i class="bi bi-list-task"></i>ยังไม่มีข้อมูล LINE Group</div>';
+}
+
+function renderAllLG() { renderGroupList(document.getElementById('lg-search-input').value||''); renderProjectHead(); renderTaskArea(); }
+
+function initLGSearch() {
+  document.getElementById('lg-search-input').addEventListener('input', e => renderGroupList(e.target.value));
+  document.getElementById('group-select').addEventListener('change', e => { selectedGroupId = Number(e.target.value); renderAllLG(); });
+}
+
+function selectGroup(id) { selectedGroupId = Number(id); renderAllLG(); }
+function sendLineNow()   { const g=currentGroup(); BT.notify(`ส่งข้อความ LINE ไปที่ ${g?g.name:'กลุ่มที่เลือก'} แล้ว `, 'info'); }
+function syncAllGroups() { BT.notify('Sync ทุกกลุ่มเรียบร้อยแล้ว ', 'info'); }
+function inviteGroup()   { const g=currentGroup(); BT.notify(`ชิงก์กลุ่ม ${g?g.name:''} เรียบร้อยแล้ว `, 'info'); }
+function syncMembers()   { const g=currentGroup(); BT.notify(`รับสมาชิกกลุ่ม ${g?g.name:''} แล้ว `, 'info'); }
+function archiveTasks()  {
+  const g = currentGroup(); if (!g) return;
+  g.tasks.archived = (g.tasks.archived||0) + (g.tasks.doing||0);
+  g.tasks.doing = 0;
+  g.tasks.all = (g.tasks.done||0) + (g.tasks.archived||0);
+  saveGroups(); renderAllLG(); BT.notify(`จัดเก็บงานของ ${g.name} แล้ว `, 'info');
+}
+function removeGroup() {
+  const g = currentGroup(); if (!g) return;
+  if (!confirm(`ยืนยันการลบ ${g.name} ?`)) return;
+  groups = groups.filter(x => x.id !== g.id);
+  selectedGroupId = groups[0] ? groups[0].id : null;
+  saveGroups(); renderAllLG(); BT.notify('ลบกลุ่มเรียบร้อยแล้ว ', 'info');
+}
+
+/* ── 4. Task LINE Group ──────────────────────────────────────── */
+const TRIGGER_LABEL = {
+  task_overdue:     '⏰ งานเกินกำหนด',
+  task_assigned:    '📋 มอบหมายงานใหม่',
+  task_done:        '✅ งานเสร็จสิ้น',
+  task_comment:     '💬 ความคิดเห็นใหม่',
+  priority_critical:'🔴 Priority Critical',
+  deadline_3days:   '📅 ใกล้ deadline 3 วัน',
+};
+const RULES_DATA = [];
+let rules = JSON.parse(localStorage.getItem('bt_task_rules') || 'null') || RULES_DATA;
+const tlLineGroups = JSON.parse(localStorage.getItem('bt_line_groups') || 'null') || [
+  {id:1,name:'ทีมผู้บริหาร CEO',gid:'C_group_ceo_001'},
+  {id:2,name:'HR ทั้งองค์กร',   gid:'C_group_hr_002'},
+  {id:3,name:'ทีม IT Support',  gid:'C_group_it_003'},
+  {id:5,name:'พนักงานทั้งบริษัท',gid:'C_group_all_005'},
+];
+
+function saveRules() { localStorage.setItem('bt_task_rules', JSON.stringify(rules)); }
+
+function renderKPI() {
+  document.getElementById('kpi-total').textContent = rules.length;
+  document.getElementById('kpi-on').textContent    = rules.filter(r => r.on).length;
+}
+
+function renderRules() {
+  const el = document.getElementById('rules-list');
+  el.innerHTML = rules.map(r => `
+    <div class="task-rule-card">
+      <div class="rule-head">
+        <div style="flex:1">
+          <div class="rule-title">${r.name}</div>
+          <div class="rule-meta"><span style="color:#06C755;font-weight:600">↗ ${r.groupName}</span> &nbsp;·&nbsp; ${r.groupId}</div>
+          <div class="rule-tags">${(r.triggers||[]).map(t=>`<span class="trigger-chip">${TRIGGER_LABEL[t]||t}</span>`).join('')}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <label class="bt-toggle">
+            <input type="checkbox" ${r.on?'checked':''} onchange="toggleRule(${r.id},this.checked)">
+            <span class="bt-toggle-slider"></span>
+          </label>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="openEditModal(${r.id})" style="padding:5px 12px">แก้ไข</button>
+          <button onclick="fireTest(${r.id})" class="bt-btn bt-btn-sm" style="background:#f0fdf4;color:#15803d;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:0.8rem">ทดสอบ</button>
+          <button onclick="deleteRule(${r.id})" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem" title="ลบ">✕</button>
+        </div>
+      </div>
+      <div class="msg-preview">${r.msg}</div>
+    </div>`).join('');
+}
+
+function toggleRule(id, val) {
+  const r = rules.find(x => x.id === id);
+  if (r) { r.on = val; saveRules(); renderKPI(); renderRules(); BT.notify(val ? 'เปิด Rule แล้ว' : 'ปิด Rule แล้ว', 'info'); }
+}
+function fireTest(id) {
+  const r = rules.find(x => x.id === id); if (!r) return;
+  BT.notify(`✓ ส่งข้อความทดสอบ "${r.name}" ไปยัง ${r.groupName} `, 'success');
+}
+function deleteRule(id) {
+  if (!confirm('ยืนยันการลบ Rule นี้?')) return;
+  rules = rules.filter(x => x.id !== id); saveRules(); renderKPI(); renderRules();
+}
+function populateGroupSelect() {
+  const sel = document.getElementById('f-group');
+  sel.innerHTML = tlLineGroups.map(g => `<option value="${g.gid}" data-name="${g.name}">${g.name}</option>`).join('');
+}
+function openAddModal() {
+  populateGroupSelect();
+  document.getElementById('tl-modal-title').textContent = 'เพิ่ม Rule';
+  document.getElementById('f-id').value   = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-msg').value  = '🔔 แจ้งเตือน: {task_name}\n👤 ผู้รับผิดชอบ: {assignee}\n📅 กำหนด: {deadline}\nสถานะ: {status}';
+  Array.from(document.getElementById('f-trigger').options).forEach(o => o.selected = false);
+  document.getElementById('tl-modal').style.display = 'flex';
+}
+function openEditModal(id) {
+  const r = rules.find(x => x.id === id); if (!r) return;
+  populateGroupSelect();
+  document.getElementById('tl-modal-title').textContent = 'แก้ไข Rule';
+  document.getElementById('f-id').value    = r.id;
+  document.getElementById('f-name').value  = r.name;
+  document.getElementById('f-group').value = r.groupId;
+  document.getElementById('f-msg').value   = r.msg;
+  const sel = document.getElementById('f-trigger');
+  Array.from(sel.options).forEach(o => o.selected = (r.triggers||[]).includes(o.value));
+  document.getElementById('tl-modal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('tl-modal').style.display = 'none'; }
+function saveRule(e) {
+  e.preventDefault();
+  const id     = document.getElementById('f-id').value;
+  const selGrp = document.getElementById('f-group');
+  const selOpt = selGrp.options[selGrp.selectedIndex];
+  const triggers = Array.from(document.getElementById('f-trigger').options).filter(o => o.selected).map(o => o.value);
+  const data = {
+    name:      document.getElementById('f-name').value.trim(),
+    groupId:   selGrp.value,
+    groupName: selOpt ? selOpt.text : selGrp.value,
+    triggers,
+    msg:       document.getElementById('f-msg').value.trim(),
+  };
+  if (id) {
+    const idx = rules.findIndex(x => x.id === Number(id));
+    if (idx > -1) rules[idx] = {...rules[idx], ...data};
+  } else {
+    data.id = Date.now(); data.on = true;
+    rules.push(data);
+  }
+  saveRules(); renderKPI(); renderRules(); closeModal();
+  BT.notify('✓ บันทึก Rule เรียบร้อยแล้ว', 'success');
+}
+
+/* ── 5. Teams ────────────────────────────────────────────────── */
+async function sendTeams() {
+  if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อน','warning'); return; }
+  try {
+    await BT.call('betime_solution.api.portal.send_teams_notification', {
+      message: document.getElementById('teams-msg').value,
+      webhook_url: document.getElementById('teams-url').value
+    });
+    BT.notify('✅ ส่ง Teams สำเร็จ','success');
+  } catch(e) { BT.notify(e.message,'error'); }
+}
+
+/* ── 6. Email Alerts ─────────────────────────────────────────── */
+async function sendEmail() {
+  if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อน','warning'); return; }
+  try {
+    await BT.call('betime_solution.api.portal.send_email_alert', {
+      recipients: document.getElementById('email-to').value,
+      subject:    document.getElementById('email-subject').value,
+      message:    document.getElementById('email-body').value
+    });
+    BT.notify('✅ ส่ง Email สำเร็จ','success');
+  } catch(e) { BT.notify(e.message,'error'); }
+}
+
+/* ── Init ────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  const urlTab = new URLSearchParams(window.location.search).get('tab');
+  if (urlTab) {
+    const btn = document.getElementById('nb-' + urlTab);
+    if (btn) showNTab(urlTab, btn);
+  }
+});
+</script>
+</body>
+</html>

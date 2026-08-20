@@ -1,0 +1,165 @@
+{
+ "actions": [],
+ "autoname": "format:BT-EMP-{#####}",
+ "doctype": "DocType",
+ "module": "HR",
+ "name": "Employee Profile",
+ "naming_rule": "Expression",
+ "title_field": "full_name",
+ "search_fields": "full_name,employee_id,department",
+ "track_changes": 1,
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User Account",
+   "options": "User",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "employee_id",
+   "fieldtype": "Data",
+   "label": "รหัสพนักงาน",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "ชื่อ-สกุล",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Active",
+   "default": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sec_work",
+   "fieldtype": "Section Break",
+   "label": "ข้อมูลการทำงาน"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Data",
+   "label": "แผนก (Department)",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "position",
+   "fieldtype": "Data",
+   "label": "ตำแหน่ง (Position)",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "role_level",
+   "fieldtype": "Select",
+   "label": "ระดับสิทธิ์",
+   "options": "Staff\nSupervisor\nManager\nDepartment Head\nDirector\nCEO",
+   "default": "Staff",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "วันเริ่มงาน"
+  },
+  {
+   "fieldname": "sec_contact",
+   "fieldtype": "Section Break",
+   "label": "ติดต่อ"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "เบอร์โทร",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "line_id",
+   "fieldtype": "Data",
+   "label": "LINE ID"
+  },
+  {
+   "fieldname": "sec_skills",
+   "fieldtype": "Section Break",
+   "label": "ทักษะและใบรับรอง"
+  },
+  {
+   "fieldname": "skills",
+   "fieldtype": "Text",
+   "label": "ทักษะ (Skills)"
+  },
+  {
+   "fieldname": "col_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "certificates",
+   "fieldtype": "Text",
+   "label": "ใบรับรอง (Certificates)"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT HR",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 0, "print": 1
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 1, "create": 0, "delete": 0,
+   "report": 0, "export": 0, "print": 0
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "print": 1, "email": 1
+  }
+ ],
+ "sort_field": "full_name",
+ "sort_order": "ASC",
+ "links": [],
+ "states": []
+}

@@ -1,0 +1,112 @@
+{
+ "actions": [],
+ "autoname": "field:policy_name",
+ "doctype": "DocType",
+ "module": "IT Support",
+ "name": "IT SLA Policy",
+ "naming_rule": "By fieldname",
+ "title_field": "policy_name",
+ "track_changes": 1,
+ "fields": [
+  {
+   "fieldname": "policy_name",
+   "fieldtype": "Data",
+   "label": "ชื่อ Policy",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "ticket_type",
+   "fieldtype": "Select",
+   "label": "ประเภท Ticket",
+   "options": "\nIncident\nService Request\nChange Request\nProblem",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "ความเร่งด่วน",
+   "options": "\nLow\nMedium\nHigh\nCritical",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "ใช้งาน",
+   "default": 1
+  },
+  {
+   "fieldname": "sec_sla",
+   "fieldtype": "Section Break",
+   "label": "เวลา SLA (ชั่วโมง)"
+  },
+  {
+   "fieldname": "response_time_hours",
+   "fieldtype": "Float",
+   "label": "เวลาตอบสนอง (ชม.)",
+   "reqd": 1,
+   "default": 4
+  },
+  {
+   "fieldname": "resolution_time_hours",
+   "fieldtype": "Float",
+   "label": "เวลาแก้ไข (ชม.)",
+   "reqd": 1,
+   "default": 24
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "escalation_hours",
+   "fieldtype": "Float",
+   "label": "Escalate หลัง (ชม.)",
+   "default": 8
+  },
+  {
+   "fieldname": "escalate_to",
+   "fieldtype": "Link",
+   "label": "Escalate ไปยัง",
+   "options": "User"
+  },
+  {
+   "fieldname": "sec_description",
+   "fieldtype": "Section Break",
+   "label": "คำอธิบาย"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "รายละเอียด SLA"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 0, "create": 0, "delete": 0
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 0, "create": 0, "delete": 0
+  }
+ ],
+ "sort_field": "policy_name",
+ "sort_order": "ASC",
+ "links": [],
+ "states": []
+}

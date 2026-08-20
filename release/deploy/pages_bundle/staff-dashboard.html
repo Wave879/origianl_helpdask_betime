@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Dashboard — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-display"></i> Staff Dashboard</h2></div>
+    <div class="bt-kpi-grid">
+      <div class="bt-card"><div class="bt-card-title">งานของฉัน</div><div class="bt-card-value" id="s-tasks">—</div></div>
+      <div class="bt-card"><div class="bt-card-title">กิจกรรมวันนี้</div><div class="bt-card-value" id="s-events" style="color:var(--bt-accent)">—</div></div>
+      <div class="bt-card"><div class="bt-card-title">OT เดือนนี้</div><div class="bt-card-value" id="s-ot" style="color:var(--bt-warning)">—</div><div class="bt-card-sub">ชั่วโมง</div></div>
+      <div class="bt-card"><div class="bt-card-title">งานเสร็จแล้ว</div><div class="bt-card-value" id="s-done" style="color:var(--bt-success)">—</div></div>
+    </div>
+  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('staff-dashboard.html', 'My Work Today');
+      async function loadStaff() {
+      try {
+        const d = await BT.call('dashboard/staff', {}, 'GET');
+        document.getElementById('s-tasks').textContent = d.my_tasks_total ?? 0;
+        document.getElementById('s-events').textContent = d.today_events ?? 0;
+        document.getElementById('s-ot').textContent = d.my_ot_hours ?? 0;
+        document.getElementById('s-done').textContent = d.my_tasks_done ?? 0;
+      } catch(e) {
+        if (e.message === 'Unauthorized') { BT.handleUnauthorized(); return; }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadStaff);
+</script>
+</body>
+</html>

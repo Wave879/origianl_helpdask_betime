@@ -1,0 +1,1063 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Console — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    @keyframes btAdminRowIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes btAdminPopIn {
+      from { opacity: 0; transform: translateY(18px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    #users-list table tbody tr {
+      animation: btAdminRowIn .28s cubic-bezier(.2,.7,.2,1) both;
+      transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease;
+    }
+    #users-list table tbody tr:hover {
+      background: #f8fbff;
+      transform: translateX(4px);
+      box-shadow: inset 4px 0 0 var(--bt-accent, #5B8DEF);
+    }
+    #modal-user-detail {
+      opacity: 0;
+      transition: opacity .18s ease;
+    }
+    #modal-user-detail.is-open {
+      opacity: 1;
+    }
+    #modal-user-detail .user-popup-panel {
+      opacity: 0;
+      transform: translateY(18px) scale(.98);
+      transition: transform .24s cubic-bezier(.2,.7,.2,1), opacity .24s ease;
+    }
+    #modal-user-detail.is-open .user-popup-panel {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    #modal-user-detail .user-popup-side button {
+      transition: transform .18s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    #modal-user-detail .user-popup-side button:hover {
+      transform: translateX(4px);
+    }
+    #modal-user-detail .user-popup-section {
+      animation: btAdminPopIn .18s ease both;
+    }
+    .admin-users-card {
+      border: 1px solid #e6eaf1;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+      overflow: hidden;
+    }
+    .admin-users-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin: -24px -24px 18px;
+      padding: 22px 24px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+      border-bottom: 1px solid #e6eaf1;
+    }
+    .admin-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .admin-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      color: #0f172a;
+    }
+    .admin-subtitle {
+      margin: 6px 0 0;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .admin-toolbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 420px) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .master-toolbar {
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+    .master-shell {
+      border: 1px solid #e6eaf1;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .master-list {
+      max-height: 640px;
+      overflow: auto;
+      border-top: 1px solid #e6eaf1;
+    }
+    .master-list .bt-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      white-space: nowrap;
+    }
+    .master-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .master-form-grid .full {
+      grid-column: 1 / -1;
+    }
+    .master-row-editing {
+      background: #eef4ff !important;
+      box-shadow: inset 4px 0 0 #123a7a;
+    }
+    .master-json {
+      min-height: 140px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .admin-search-wrap {
+      position: relative;
+    }
+    .admin-search-wrap::before {
+      content: "⌕";
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 18px;
+      pointer-events: none;
+    }
+    .admin-search-wrap .bt-input {
+      padding-left: 38px;
+      max-width: none !important;
+      background: #fbfdff;
+      border-color: #dbe3ef;
+    }
+    .admin-table-wrap {
+      border: 1px solid #e6eaf1;
+      border-radius: 8px;
+      overflow: auto;
+      background: #fff;
+    }
+    .admin-table-wrap .bt-table th {
+      background: #f8fafc;
+      border-bottom-color: #dbe3ef;
+      white-space: nowrap;
+    }
+    .admin-table-wrap .bt-table td {
+      border-bottom-color: #edf1f6;
+    }
+    .admin-user-name {
+      color: #123a7a;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .admin-user-mail {
+      color: #64748b;
+      font-size: 12px;
+    }
+    .admin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .54);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .admin-modal-panel {
+      width: min(760px, 100%);
+      max-height: min(760px, 92vh);
+      overflow: auto;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 24px 80px rgba(15, 23, 42, .28);
+      border: 1px solid rgba(255,255,255,.7);
+    }
+    .admin-modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid #e6eaf1;
+      background: #fbfdff;
+    }
+    .admin-modal-head h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #0f172a;
+    }
+    .admin-modal-head p {
+      margin: 6px 0 0;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .admin-icon-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid #dbe3ef;
+      border-radius: 999px;
+      background: #fff;
+      color: #475569;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .admin-modal-body {
+      padding: 22px 24px 24px;
+    }
+    .admin-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .admin-form-grid .full {
+      grid-column: 1 / -1;
+    }
+    .admin-form-grid .bt-form-group {
+      margin-bottom: 0;
+    }
+    .admin-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .admin-choice {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      min-height: 82px;
+      padding: 13px 14px;
+      border: 1.5px solid #dbe3ef;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+    }
+    .admin-choice:hover {
+      border-color: #9db7e9;
+      background: #f8fbff;
+    }
+    .admin-choice.active {
+      border-color: #123a7a;
+      background: #eef4ff;
+      box-shadow: 0 0 0 3px rgba(18, 58, 122, .1);
+    }
+    .admin-choice input {
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .admin-choice strong {
+      display: block;
+      color: #0f172a;
+      font-size: 14px;
+    }
+    .admin-choice small {
+      display: block;
+      margin-top: 3px;
+      color: #64748b;
+      line-height: 1.45;
+      font-size: 12px;
+    }
+    .admin-password-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .admin-result-code {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 10px 0;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid #dbe3ef;
+      border-radius: 8px;
+    }
+    .admin-result-code code {
+      font-size: 20px;
+      letter-spacing: 2px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .admin-modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid #e6eaf1;
+    }
+    @media (max-width: 760px) {
+      .admin-users-head,
+      .admin-toolbar {
+        grid-template-columns: 1fr;
+      }
+      .admin-users-head {
+        flex-direction: column;
+      }
+      .admin-form-grid,
+      .admin-choice-grid {
+        grid-template-columns: 1fr;
+      }
+      .admin-password-row,
+      .admin-result-code {
+        grid-template-columns: 1fr;
+      }
+      .admin-modal-actions {
+        flex-direction: column-reverse;
+      }
+      .admin-modal-actions .bt-btn {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header" style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+      <h2 style="margin:0"><i class="bi bi-gear"></i> Admin Console</h2>
+      <a class="bt-btn bt-btn-secondary" href="/web/master-data">🧭 Master Data</a>
+    </div>
+    <div class="bt-tabs">
+      <button class="bt-tab active" id="ab-users" onclick="showAdmTab('users',this)">👥 Users</button>
+      <button class="bt-tab" id="ab-permissions" onclick="showAdmTab('permissions',this)">🔒 Permissions</button>
+      <button class="bt-tab" id="ab-ai" onclick="showAdmTab('ai',this)">🤖 AI Config</button>
+      <button class="bt-tab" id="ab-api" onclick="showAdmTab('api',this)">🔌 API</button>
+      <button class="bt-tab" id="ab-audit" onclick="showAdmTab('audit',this)">📋 Audit</button>
+    </div>
+    <div id="adm-users">
+      <div class="bt-card admin-users-card">
+        <div class="admin-users-head">
+          <div>
+            <div class="admin-eyebrow">User administration</div>
+            <h2 class="admin-title">ผู้ใช้งาน</h2>
+            <p class="admin-subtitle">เพิ่มบัญชี กำหนดสิทธิ์ และจัดการรหัสผ่านแรกเข้าสำหรับทีม</p>
+          </div>
+          <button class="bt-btn bt-btn-primary" onclick="openAddUser()">+ เพิ่มผู้ใช้</button>
+        </div>
+        <div class="admin-toolbar">
+          <div class="admin-search-wrap">
+            <input
+              id="user-search"
+              class="bt-input"
+              type="search"
+              placeholder="ค้นหาชื่อ, อีเมล, แผนก, role..."
+              oninput="renderUsers()"
+            >
+          </div>
+          <div style="color:#64748b;font-size:13px;text-align:right" id="users-count">-</div>
+        </div>
+        <div id="users-list"><p style="color:#888;text-align:center;padding:40px">กำลังโหลด...</p></div>
+      </div>
+    </div>
+
+    <!-- Modal: เพิ่มผู้ใช้ -->
+    <div id="modal-add-user" class="admin-modal">
+      <div class="admin-modal-panel">
+        <div class="admin-modal-head">
+          <div>
+            <h3>เพิ่มผู้ใช้งานใหม่</h3>
+            <p>ระบบจะสร้างรหัสผ่านแรกเข้าให้ แล้วบังคับให้ผู้ใช้ตั้งรหัสใหม่หลัง login ครั้งแรก</p>
+          </div>
+          <button type="button" class="admin-icon-btn" onclick="closeAddUser()" aria-label="Close">×</button>
+        </div>
+        <div class="admin-modal-body">
+        <div class="admin-form-grid">
+        <div class="bt-form-group full">
+          <label class="bt-label">Email <span style="color:red">*</span></label>
+          <input id="nu-email" type="email" class="bt-input" placeholder="example@betime.local">
+        </div>
+        <div class="bt-form-group">
+          <label class="bt-label">ชื่อ-นามสกุล</label>
+          <input id="nu-fullname" type="text" class="bt-input" placeholder="ชื่อเต็ม">
+        </div>
+        <div class="bt-form-group">
+          <label class="bt-label">Role</label>
+          <select id="nu-role" class="bt-input">
+            <option value="staff">Staff</option>
+            <option value="manager">Manager</option>
+            <option value="ceo">CEO</option>
+          </select>
+        </div>
+        <div class="bt-form-group">
+          <label class="bt-label">แผนก</label>
+          <input id="nu-dept" type="text" class="bt-input" placeholder="เช่น HR, Finance, IT">
+        </div>
+        <div class="bt-form-group full">
+          <label class="bt-label">ประเภทผู้ใช้</label>
+          <input id="nu-account-type" type="hidden" value="permanent">
+          <div class="admin-choice-grid">
+            <label class="admin-choice active" id="choice-permanent" onclick="setNewUserAccountType('permanent')">
+              <input type="radio" name="nu-account-choice" value="permanent" checked>
+              <span><strong>ถาวร</strong><small>บัญชีใช้งานต่อเนื่อง ไม่มีวันหมดอายุ</small></span>
+            </label>
+            <label class="admin-choice" id="choice-temporary" onclick="setNewUserAccountType('temporary')">
+              <input type="radio" name="nu-account-choice" value="temporary">
+              <span><strong>ชั่วคราว</strong><small>เหมาะกับ vendor, intern, หรือบัญชีเฉพาะช่วงเวลา</small></span>
+            </label>
+          </div>
+        </div>
+        <div class="bt-form-group full" id="nu-expiry-wrap" style="display:none">
+          <label class="bt-label">ใช้งานได้ถึงวันที่</label>
+          <input id="nu-expires-at" type="date" class="bt-input">
+          <p style="font-size:12px;color:#888;margin:4px 0 0">ถ้าไม่กำหนด ระบบจะตั้งให้หมดอายุใน 7 วัน</p>
+        </div>
+        <div class="bt-form-group full">
+          <label class="bt-label">รหัสผ่านแรกเข้า</label>
+          <div class="admin-password-row">
+            <input id="nu-pass" type="text" class="bt-input" placeholder="เว้นว่างเพื่อสร้างอัตโนมัติ">
+            <button type="button" class="bt-btn bt-btn-secondary" onclick="genPass()" title="สร้างรหัสผ่านอัตโนมัติ">🔀</button>
+          </div>
+          <p style="font-size:12px;color:#888;margin:4px 0 0">หากเว้นว่าง ระบบจะสร้างรหัสผ่านชั่วคราวให้ และบังคับเปลี่ยนในครั้งแรกที่เข้าใช้งาน</p>
+        </div>
+        </div>
+        <div id="nu-result" style="display:none;margin-top:18px"></div>
+        <div class="admin-modal-actions">
+          <button class="bt-btn bt-btn-secondary" onclick="closeAddUser()">ยกเลิก</button>
+          <button class="bt-btn bt-btn-primary" onclick="submitAddUser()">✅ สร้างผู้ใช้</button>
+        </div>
+        </div>
+      </div>
+    </div>
+    <div id="modal-user-detail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this) closeUserPopup()">
+      <div class="user-popup-panel" style="background:#fff;border-radius:16px;width:min(1080px,100%);min-height:640px;max-height:92vh;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.28);display:flex;position:relative">
+        <button type="button" onclick="closeUserPopup()" style="position:absolute;top:14px;right:14px;border:none;background:#f2f4f7;color:#444;width:36px;height:36px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2">×</button>
+        <aside class="user-popup-side" style="width:250px;background:linear-gradient(180deg,#fbfcfe 0%,#f3f6fb 100%);border-right:1px solid #e8ecf3;padding:24px 18px 18px;display:flex;flex-direction:column;gap:14px">
+          <div>
+            <div style="font-size:12px;color:#7b8794;letter-spacing:.08em;text-transform:uppercase">User Popup</div>
+            <div id="user-popup-name" style="font-size:22px;font-weight:700;line-height:1.2;margin-top:6px;color:#152130">-</div>
+            <div id="user-popup-email" style="font-size:13px;color:#667085;margin-top:4px">-</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+            <button type="button" class="bt-btn bt-btn-secondary" id="user-popup-tab-details" onclick="setUserPopupSection('details')" style="justify-content:flex-start;text-align:left">รายละเอียด</button>
+            <button type="button" class="bt-btn bt-btn-secondary" id="user-popup-tab-permissions" onclick="setUserPopupSection('permissions')" style="justify-content:flex-start;text-align:left">สิทธิ์</button>
+            <button type="button" class="bt-btn bt-btn-secondary" id="user-popup-tab-password" onclick="setUserPopupSection('password')" style="justify-content:flex-start;text-align:left">รหัสผ่าน</button>
+            <button type="button" class="bt-btn bt-btn-secondary" id="user-popup-tab-history" onclick="setUserPopupSection('history')" style="justify-content:flex-start;text-align:left">ประวัติ</button>
+          </div>
+          <div style="margin-top:auto;font-size:12px;color:#7b8794;line-height:1.6">
+            <div><strong>คำแนะนำ</strong></div>
+            <div>กดแต่ละหัวข้อทางซ้ายเพื่อสลับข้อมูล</div>
+          </div>
+        </aside>
+        <section class="user-popup-section" style="flex:1;padding:28px 28px 24px;overflow:auto;background:#fff">
+          <div id="user-popup-content"></div>
+        </section>
+      </div>
+    </div>
+    <div id="adm-permissions" style="display:none"><div class="bt-card"><div class="bt-section-header"><h2>Role Permissions</h2></div>
+      <div class="bt-alert bt-alert-info">จัดการ Permission แบบละเอียดทำได้ที่ Frappe Desk → Permission Manager</div>
+      <table class="bt-table"><thead><tr><th>Role</th><th>สิทธิ์</th></tr></thead><tbody>
+        <tr><td><strong>BT CEO</strong></td><td>ทุก DocType (Read Only)</td></tr>
+        <tr><td><strong>BT Manager</strong></td><td>ทุก DocType (Read/Write)</td></tr>
+        <tr><td><strong>BT Staff</strong></td><td>เฉพาะข้อมูลตนเอง</td></tr>
+        <tr><td><strong>BT Finance</strong></td><td>Finance DocTypes</td></tr>
+        <tr><td><strong>BT Admin</strong></td><td>ทุก DocType (Full)</td></tr>
+      </tbody></table>
+    </div></div>
+    <div id="adm-ai" style="display:none"><div class="bt-card"><div class="bt-section-header"><h2>AI Models Configuration</h2></div>
+      <div class="bt-alert bt-alert-info">ตั้งค่าใน <code>site_config.json</code> ของ Frappe — ดู <code>site_config_template.json</code></div>
+      <table class="bt-table"><thead><tr><th>บริการ</th><th>Config Key</th><th>สถานะ</th></tr></thead><tbody>
+        <tr><td>Azure OpenAI (GPT-4o)</td><td>azure_openai_endpoint</td><td id="ai-openai">—</td></tr>
+        <tr><td>Azure Speech-to-Text</td><td>azure_speech_key</td><td id="ai-stt">—</td></tr>
+        <tr><td>Azure Doc Intelligence</td><td>azure_doc_intelligence_endpoint</td><td id="ai-doc">—</td></tr>
+        <tr><td>Azure AI Search</td><td>azure_search_endpoint</td><td id="ai-search">—</td></tr>
+      </tbody></table>
+      <div style="margin-top:12px"><button class="bt-btn bt-btn-primary" onclick="checkAI()">🔍 ตรวจสถานะ</button></div>
+    </div></div>
+    <div id="adm-api" style="display:none"><div class="bt-card"><div class="bt-section-header"><h2>API Integrations</h2></div>
+      <div class="bt-form-group" style="margin-top:12px"><label class="bt-label">Frappe Backend URL</label>
+        <div style="display:flex;gap:8px"><input type="url" id="backend-input" class="bt-input" style="max-width:360px" placeholder="https://erp.yourdomain.com">
+        <button class="bt-btn bt-btn-primary" onclick="saveBackend()">💾 บันทึก</button></div>
+      </div>
+    </div></div>
+    <div id="adm-audit" style="display:none"><div class="bt-card"><div class="bt-section-header"><h2>Audit Logs</h2></div><div id="audit-list"><p style="color:#888;text-align:center;padding:40px">กำลังโหลด...</p></div></div></div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('admin.html', 'System Administration');
+  let adminUsers = [];
+  let userPopupState = {
+    userId: null,
+    section: 'details',
+    loading: false,
+    sessions: [],
+    audit: [],
+    accessMode: 'role',
+    accessKeys: [],
+  };
+  let userPopupCloseTimer = null;
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function getUserSearchTerm() {
+    return document.getElementById('user-search')?.value.trim().toLowerCase() || '';
+  }
+
+  function formatDateTime(value) {
+    if (!value) return '-';
+    const text = String(value);
+    return text.length >= 16 ? text.slice(0, 16).replace('T', ' ') : text;
+  }
+
+  function getPopupUser() {
+    return adminUsers.find((u) => String(u.id) === String(userPopupState.userId)) || null;
+  }
+
+  function setUserPopupSection(section) {
+    userPopupState.section = section;
+    renderUserPopup();
+  }
+
+  function openUserPopup(userId) {
+    const user = adminUsers.find((u) => String(u.id) === String(userId)) || null;
+    userPopupState.userId = userId;
+    userPopupState.section = 'details';
+    userPopupState.loading = true;
+    userPopupState.sessions = [];
+    userPopupState.audit = [];
+    userPopupState.accessMode = String(user?.access_mode || 'role').trim().toLowerCase() === 'custom' ? 'custom' : 'role';
+    userPopupState.accessKeys = Array.isArray(user?.access_keys) ? user.access_keys.slice() : [];
+    const modal = document.getElementById('modal-user-detail');
+    if (userPopupCloseTimer) {
+      clearTimeout(userPopupCloseTimer);
+      userPopupCloseTimer = null;
+    }
+    modal.style.display = 'flex';
+    renderUserPopup();
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+    loadUserPopupHistory();
+  }
+
+  function closeUserPopup() {
+    const modal = document.getElementById('modal-user-detail');
+    modal.classList.remove('is-open');
+    if (userPopupCloseTimer) clearTimeout(userPopupCloseTimer);
+    userPopupCloseTimer = setTimeout(() => {
+      modal.style.display = 'none';
+    }, 180);
+  }
+
+  async function loadUserPopupHistory() {
+    const user = getPopupUser();
+    if (!user) return;
+    const token = localStorage.getItem('bt_token');
+    try {
+      const [sessionsRes, auditRes] = await Promise.all([
+        fetch(`/api/users/${encodeURIComponent(user.id)}/sessions`, { headers: { Authorization: 'Bearer ' + token } }),
+        fetch(`/api/users/${encodeURIComponent(user.id)}/audit`, { headers: { Authorization: 'Bearer ' + token } }),
+      ]);
+      const sessionsData = await sessionsRes.json().catch(() => ({}));
+      const auditData = await auditRes.json().catch(() => ({}));
+      userPopupState.sessions = Array.isArray(sessionsData.data) ? sessionsData.data : [];
+      userPopupState.audit = Array.isArray(auditData.data) ? auditData.data : [];
+    } catch (e) {
+      userPopupState.sessions = [];
+      userPopupState.audit = [];
+    } finally {
+      userPopupState.loading = false;
+      renderUserPopup();
+    }
+  }
+
+  const ACCESS_MENU_OPTIONS = [
+    { key: 'user', label: 'User', note: 'User pages and personal tools' },
+    { key: 'it_support', label: 'IT Support', note: 'Helpdesk and IT tools' },
+    { key: 'ai', label: 'AI', note: 'AI tools and settings' },
+    { key: 'knowledge_center', label: 'Knowledge Center', note: 'Knowledge base and search' },
+    { key: 'helpdeck_knowledge', label: 'Helpdeck Knowledge', note: 'Helpdeck knowledge base and ticket knowledge' },
+    { key: 'notifications', label: 'Notifications', note: 'Announcements, LINE, and alerts' },
+    { key: 'admin_console', label: 'Admin Console', note: 'System administration', locked: true },
+  ];
+
+  function renderUserPopup() {
+    const user = getPopupUser();
+    const modal = document.getElementById('modal-user-detail');
+    const content = document.getElementById('user-popup-content');
+    if (!modal || !content || !user) return;
+
+    document.getElementById('user-popup-name').textContent = user.full_name || '-';
+    document.getElementById('user-popup-email').textContent = user.email || '-';
+    document.getElementById('user-popup-tab-details').classList.toggle('active', userPopupState.section === 'details');
+    document.getElementById('user-popup-tab-password').classList.toggle('active', userPopupState.section === 'password');
+    document.getElementById('user-popup-tab-history').classList.toggle('active', userPopupState.section === 'history');
+
+    const roleLabel = { super_admin: '🛡️ Super Admin', admin: '⚙️ Admin', ceo: '👑 CEO', manager: '🧑‍💼 Manager', staff: '👤 Staff' };
+
+    if (userPopupState.section === 'permissions') {
+      const accessMode = userPopupState.accessMode || 'role';
+      const keys = new Set((userPopupState.accessKeys || []).map((k) => String(k || '').trim()).filter(Boolean));
+      const roleDefaults = {
+        ceo: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications', 'admin_console'],
+        admin: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications', 'admin_console'],
+        manager: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications'],
+        staff: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications'],
+        hr: ['user', 'it_support', 'knowledge_center', 'helpdeck_knowledge', 'notifications'],
+        it_support: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications'],
+      };
+      const roleKey = String(user.role || 'staff').trim().toLowerCase();
+      const defaultKeys = roleDefaults[roleKey] || roleDefaults.staff;
+      content.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div>
+            <h3 style="margin:0 0 8px">สิทธิ์การเข้าถึง</h3>
+            <p style="margin:0;color:#667085">กำหนดว่า user คนนี้เข้าถึงเมนูหรือแผนกไหนได้บ้าง</p>
+          </div>
+          <div class="bt-card" style="padding:18px;border:1px solid #e8ecf3;box-shadow:none">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+              ${(Array.isArray(user.tags) ? user.tags : []).map((tag) => `<span class="bt-badge bt-badge-info">${escapeHtml(tag)}</span>`).join('') || '<span class="bt-badge bt-badge-secondary">ไม่มีแท็ก</span>'}
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+              <button type="button" class="bt-btn ${accessMode === 'role' ? 'bt-btn-primary' : 'bt-btn-secondary'}" onclick="setUserAccessMode('role')">ใช้สิทธิ์ตาม Role</button>
+              <button type="button" class="bt-btn ${accessMode === 'custom' ? 'bt-btn-primary' : 'bt-btn-secondary'}" onclick="setUserAccessMode('custom')">กำหนดเอง</button>
+            </div>
+            <div style="margin-bottom:14px;color:#667085;font-size:13px">
+              <strong>Role ปัจจุบัน:</strong> ${escapeHtml(roleLabel[user.role] || user.role || '-')}<br>
+              <strong>สิทธิ์เริ่มต้นของ role นี้:</strong> ${escapeHtml(defaultKeys.join(', '))}
+            </div>
+            ${accessMode === 'custom' ? `
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+                ${ACCESS_MENU_OPTIONS.map((opt) => {
+                  const checked = keys.has(opt.key) || (opt.locked && user.role === 'admin');
+                  const disabled = opt.locked && user.role === 'admin';
+                  return `
+                    <label style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid #e8ecf3;border-radius:12px;background:#fff">
+                      <input type="checkbox" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''} onchange="toggleUserAccessKey('${opt.key}', this.checked)">
+                      <span>
+                        <strong style="display:block">${escapeHtml(opt.label)}</strong>
+                        <span style="color:#667085;font-size:12px">${escapeHtml(opt.note)}</span>
+                      </span>
+                    </label>
+                  `;
+                }).join('')}
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+                <button class="bt-btn bt-btn-primary" type="button" onclick="saveUserAccess()">บันทึกสิทธิ์</button>
+                <button class="bt-btn bt-btn-secondary" type="button" onclick="loadDefaultUserAccess()">ใช้สิทธิ์ตาม role เดิม</button>
+              </div>
+            ` : `
+              <div class="bt-alert bt-alert-info">โหมดนี้จะใช้สิทธิ์ตาม role โดยอัตโนมัติ หากต้องการกำหนดเมนูเองให้สลับไปที่ “กำหนดเอง”</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+                <button class="bt-btn bt-btn-primary" type="button" onclick="saveUserAccess()">บันทึกสิทธิ์ตาม role</button>
+              </div>
+            `}
+            <div id="user-popup-access-result" style="margin-top:14px"></div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    if (userPopupState.section === 'password') {
+      content.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div>
+            <h3 style="margin:0 0 8px">รหัสผ่านสำหรับใช้งานครั้งแรก</h3>
+            <p style="margin:0;color:#667085">ระบบจะสร้างรหัสผ่านชั่วคราวสำหรับอีเมล <strong>${escapeHtml(user.email || '-')}</strong> และบังคับให้เปลี่ยนรหัสผ่านก่อนเข้าใช้งานต่อ</p>
+          </div>
+          <div class="bt-card" style="padding:18px;border:1px solid #e8ecf3;box-shadow:none">
+            <div class="bt-form-group" style="margin-top:0">
+              <label class="bt-label">สร้างรหัสผ่านครั้งแรก</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <input id="user-popup-new-password" type="text" class="bt-input" style="max-width:320px" placeholder="พิมพ์รหัสผ่านชั่วคราว">
+                <button class="bt-btn bt-btn-primary" type="button" onclick="setUserPopupPassword()">สร้างรหัสผ่าน</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+              <button class="bt-btn bt-btn-secondary" type="button" onclick="resetUserPopupPassword()">เจนรหัสใหม่สำหรับครั้งแรก</button>
+              <button class="bt-btn bt-btn-secondary" type="button" onclick="logoutAllUserPopupSessions()">ออกจากระบบทุกเครื่อง</button>
+            </div>
+            <div id="user-popup-password-result" style="margin-top:14px"></div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    if (userPopupState.section === 'history') {
+      const sessionsRows = userPopupState.sessions.length
+        ? userPopupState.sessions.map((s) => `<tr><td>${escapeHtml(s.id || '-')}</td><td>${escapeHtml(formatDateTime(s.created_at))}</td><td>${escapeHtml(formatDateTime(s.expires_at))}</td></tr>`).join('')
+        : '<tr><td colspan="3" style="text-align:center;color:#888">ไม่มี session</td></tr>';
+      const auditRows = userPopupState.audit.length
+        ? userPopupState.audit.map((a) => `<tr><td>${escapeHtml(a.action || '-')}</td><td>${escapeHtml(formatDateTime(a.created_at))}</td><td>${escapeHtml(a.actor_email || '-')}</td></tr>`).join('')
+        : '<tr><td colspan="3" style="text-align:center;color:#888">ไม่มีประวัติ</td></tr>';
+      content.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div>
+            <h3 style="margin:0 0 8px">ประวัติ</h3>
+            <p style="margin:0;color:#667085">ดู session และ audit log ของผู้ใช้นี้</p>
+          </div>
+          <div class="bt-card" style="padding:18px;border:1px solid #e8ecf3;box-shadow:none">
+            <h4 style="margin:0 0 10px">Session ล่าสุด</h4>
+            <table class="bt-table">
+              <thead><tr><th>ID</th><th>Created</th><th>Expires</th></tr></thead>
+              <tbody>${sessionsRows}</tbody>
+            </table>
+          </div>
+          <div class="bt-card" style="padding:18px;border:1px solid #e8ecf3;box-shadow:none">
+            <h4 style="margin:0 0 10px">Audit Log ล่าสุด</h4>
+            <table class="bt-table">
+              <thead><tr><th>Action</th><th>เวลา</th><th>Actor</th></tr></thead>
+              <tbody>${auditRows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const activeBadge = user.is_active ? '<span class="bt-badge bt-badge-success">Active</span>' : '<span class="bt-badge bt-badge-danger">Inactive</span>';
+    content.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div>
+          <h3 style="margin:0 0 8px">รายละเอียดผู้ใช้</h3>
+          <p style="margin:0;color:#667085">ข้อมูลพื้นฐานของผู้ใช้และสิทธิ์ที่ผูกอยู่</p>
+        </div>
+        <div class="bt-card" style="padding:18px;border:1px solid #e8ecf3;box-shadow:none">
+          <div style="display:grid;grid-template-columns:180px 1fr;gap:12px 18px;align-items:start">
+            <div style="color:#667085">ชื่อ</div><div><strong>${escapeHtml(user.full_name || '-')}</strong></div>
+            <div style="color:#667085">Email</div><div>${escapeHtml(user.email || '-')}</div>
+            <div style="color:#667085">Role</div><div>${escapeHtml(roleLabel[user.role] || user.role || '-')}</div>
+            <div style="color:#667085">แผนก</div><div>${escapeHtml(user.department || '-')}</div>
+            <div style="color:#667085">ประเภทผู้ใช้</div><div>${escapeHtml(user.account_type === 'temporary' ? 'ชั่วคราว' : 'ถาวร')}</div>
+            <div style="color:#667085">หมดอายุ</div><div>${escapeHtml(user.user_expires_at ? formatDateTime(user.user_expires_at) : '-')}</div>
+            <div style="color:#667085">สถานะ</div><div>${activeBadge}</div>
+            <div style="color:#667085">ต้องเปลี่ยนรหัส</div><div>${user.must_change_password ? 'ใช่' : 'ไม่ใช่'}</div>
+            <div style="color:#667085">Access mode</div><div>${escapeHtml(user.access_mode || '-')}</div>
+            <div style="color:#667085">Access keys</div><div>${escapeHtml(Array.isArray(user.access_keys) ? user.access_keys.join(', ') : '-')}</div>
+            <div style="color:#667085">Created</div><div>${escapeHtml(formatDateTime(user.created_at))}</div>
+            <div style="color:#667085">Updated</div><div>${escapeHtml(formatDateTime(user.updated_at))}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function resetUserPopupPassword() {
+    const user = getPopupUser();
+    if (!user) return;
+    const token = localStorage.getItem('bt_token');
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(user.id)}/password-reset`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'รีเซ็ตรหัสผ่านไม่สำเร็จ');
+      const result = document.getElementById('user-popup-password-result');
+      if (result) result.innerHTML = `<div class="bt-alert bt-alert-success">รหัสผ่านชั่วคราวสำหรับ <strong>${escapeHtml(user.email || '-')}</strong>: <code>${escapeHtml(data.temp_password || '')}</code><br><small>ผู้ใช้ต้องล็อกอินด้วยรหัสนี้ แล้วระบบจะบังคับไปหน้าเปลี่ยนรหัสผ่านก่อนเข้าใช้งานต่อ</small></div>`;
+      BT.notify('สร้างรหัสผ่านครั้งแรกเรียบร้อย', 'success');
+      await loadUsers();
+    } catch (e) {
+      BT.notify('❌ ' + e.message, 'error');
+    }
+  }
+
+  function setUserAccessMode(mode) {
+    userPopupState.accessMode = String(mode || 'role').trim().toLowerCase() === 'custom' ? 'custom' : 'role';
+    renderUserPopup();
+  }
+
+  function toggleUserAccessKey(key, checked) {
+    const next = new Set(userPopupState.accessKeys || []);
+    const normalized = String(key || '').trim();
+    if (!normalized) return;
+    if (checked) next.add(normalized); else next.delete(normalized);
+    userPopupState.accessKeys = Array.from(next);
+  }
+
+  function loadDefaultUserAccess() {
+    const user = getPopupUser();
+    if (!user) return;
+    const defaults = {
+      ceo: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications', 'admin_console'],
+      admin: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications', 'admin_console'],
+      manager: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications'],
+      staff: ['user', 'it_support', 'ai', 'knowledge_center', 'notifications'],
+      hr: ['user', 'knowledge_center', 'notifications'],
+      it_support: ['user', 'it_support', 'ai', 'knowledge_center', 'helpdeck_knowledge', 'notifications'],
+    };
+    const roleKey = String(user.role || 'staff').trim().toLowerCase();
+    userPopupState.accessMode = 'role';
+    userPopupState.accessKeys = defaults[roleKey] || defaults.staff;
+    renderUserPopup();
+  }
+
+  async function saveUserAccess() {
+    const user = getPopupUser();
+    if (!user) return;
+    const token = localStorage.getItem('bt_token');
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(user.id)}/access`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          access_mode: userPopupState.accessMode,
+          access_keys: userPopupState.accessKeys || [],
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'บันทึกสิทธิ์ไม่สำเร็จ');
+      const result = document.getElementById('user-popup-access-result');
+      if (result) result.innerHTML = `<div class="bt-alert bt-alert-success">บันทึกสิทธิ์เรียบร้อย: <code>${escapeHtml((data.access_keys || []).join(', '))}</code></div>`;
+      BT.notify('บันทึกสิทธิ์เรียบร้อย', 'success');
+      await loadUsers();
+    } catch (e) {
+      BT.notify('❌ ' + e.message, 'error');
+    }
+  }
+
+  async function setUserPopupPassword() {
+    const user = getPopupUser();
+    if (!user) return;
+    const token = localStorage.getItem('bt_token');
+    const input = document.getElementById('user-popup-new-password');
+    const newPassword = input?.value.trim() || '';
+    if (!newPassword || newPassword.length < 6) {
+      BT.notify('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร', 'warning');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(user.id)}/password-set`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({ new_password: newPassword, must_change_password: true }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'บันทึกรหัสผ่านไม่สำเร็จ');
+      const result = document.getElementById('user-popup-password-result');
+      if (result) result.innerHTML = '<div class="bt-alert bt-alert-success">ตั้งรหัสผ่านครั้งแรกเรียบร้อย และตั้งค่าให้ผู้ใช้ต้องเปลี่ยนรหัสผ่านก่อนใช้งานต่อ</div>';
+      BT.notify('บันทึกรหัสผ่านครั้งแรกเรียบร้อย', 'success');
+      await loadUsers();
+    } catch (e) {
+      BT.notify('❌ ' + e.message, 'error');
+    }
+  }
+
+  async function logoutAllUserPopupSessions() {
+    const user = getPopupUser();
+    if (!user) return;
+    const token = localStorage.getItem('bt_token');
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(user.id)}/logout-all`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'ออกจากระบบทุกเครื่องไม่สำเร็จ');
+      BT.notify('ออกจากระบบทุกเครื่องเรียบร้อย', 'success');
+      userPopupState.loading = true;
+      await loadUserPopupHistory();
+    } catch (e) {
+      BT.notify('❌ ' + e.message, 'error');
+    }
+  }
+
+  function renderUsers() {
+    const host = document.getElementById('users-list');
+    const rows = Array.isArray(adminUsers) ? adminUsers : [];
+    const q = getUserSearchTerm();
+    const filtered = q
+      ? rows.filter((r) => {
+          const haystack = [r.full_name, r.name, r.email, r.department, r.role, ...(Array.isArray(r.tags) ? r.tags : [])]
+            .map((v) => String(v ?? '').toLowerCase())
+            .join(' ');
+          return haystack.includes(q);
+        })
+      : rows;
+    const countEl = document.getElementById('users-count');
+    if (countEl) {
+      const activeCount = rows.filter((r) => Number(r.is_active) === 1).length;
+      countEl.textContent = `${filtered.length} รายการที่แสดง / ${rows.length} users ทั้งหมด · Active ${activeCount}`;
+    }
+
+    if (!filtered.length) {
+      host.innerHTML = q
+        ? '<p style="color:#888;text-align:center;padding:40px">ไม่พบผู้ใช้ที่ค้นหา</p>'
+        : '<p style="color:#888;text-align:center;padding:40px">ยังไม่มีผู้ใช้</p>';
+      return;
+    }
+
+    const badge = (v, t, f) => v ? `<span class="bt-badge bt-badge-success">${t}</span>` : `<span class="bt-badge bt-badge-danger">${f}</span>`;
+    const roleLabel = { super_admin: '🛡️ Super Admin', admin: '⚙️ Admin', ceo: '👑 CEO', manager: '🧑‍💼 Manager', staff: '👤 Staff' };
+    const accountBadge = (r) => String(r.account_type || 'permanent') === 'temporary'
+      ? `<span class="bt-badge bt-badge-warning">ชั่วคราว${r.user_expires_at ? ' ถึง ' + escapeHtml(String(r.user_expires_at).slice(0, 10)) : ''}</span>`
+      : '<span class="bt-badge bt-badge-info">ถาวร</span>';
+    const tbody = filtered.map((r, idx) => `<tr onclick="openUserPopup('${String(r.id).replaceAll("'", '&#39;')}')" style="cursor:pointer;animation-delay:${Math.min(idx * 28, 220)}ms">
+      <td><span class="admin-user-name">${escapeHtml(r.full_name || '-')}</span><div class="admin-user-mail">${escapeHtml(r.username || r.email || '-')}</div></td>
+      <td>${escapeHtml(r.email || '-')}</td>
+      <td>${escapeHtml(roleLabel[r.role] || r.role || '-')}</td>
+      <td>${escapeHtml(r.department || '-')}</td>
+      <td>${(Array.isArray(r.tags) && r.tags.length) ? r.tags.slice(0, 3).map((tag) => `<span class="bt-badge bt-badge-info" style="margin-right:4px;margin-bottom:4px">${escapeHtml(tag)}</span>`).join('') : '<span class="bt-badge bt-badge-secondary">-</span>'}</td>
+      <td>${accountBadge(r)}</td>
+      <td>${badge(r.is_active, 'Active', 'Inactive')}</td>
+      <td>${r.must_change_password ? '<span class="bt-badge bt-badge-warning" title="ต้องเปลี่ยนรหัสผ่านในครั้งแรก">⚠️ ต้องเปลี่ยนรหัส</span>' : ''}</td>
+    </tr>`).join('');
+
+    host.innerHTML = `
+      <div class="admin-table-wrap">
+      <table class="bt-table">
+        <thead><tr><th>ชื่อ</th><th>Email</th><th>Role</th><th>แผนก</th><th>แท็ก</th><th>ประเภท</th><th>สถานะ</th><th></th></tr></thead>
+        <tbody>${tbody}</tbody>
+      </table>
+      </div>`;
+  }
+
+  function showAdmTab(id,btn){['users','permissions','ai','api','audit'].forEach(t=>{document.getElementById('adm-'+t).style.display=t===id?'block':'none';});document.querySelectorAll('.bt-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(id==='users')loadUsers();if(id==='audit')loadAudit();}
+    async function loadUsers() {
+      const token = localStorage.getItem('bt_token');
+      try {
+        const res = await fetch('/api/users', { headers: { Authorization: 'Bearer ' + token } });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'โหลดไม่สำเร็จ');
+        adminUsers = data.data || [];
+        renderUsers();
+      } catch (e) {
+        document.getElementById('users-list').innerHTML = `<p style="color:#c00;text-align:center;padding:20px">⚠️ ${e.message}</p>`;
+      }
+    }
+
+    function openAddUser() {
+      ['nu-email','nu-fullname','nu-dept','nu-pass','nu-expires-at'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('nu-role').value = 'staff';
+      setNewUserAccountType('permanent');
+      document.getElementById('nu-result').style.display = 'none';
+      document.getElementById('modal-add-user').style.display = 'flex';
+    }
+    function closeAddUser() { document.getElementById('modal-add-user').style.display = 'none'; }
+
+    function setNewUserAccountType(type) {
+      const normalized = type === 'temporary' ? 'temporary' : 'permanent';
+      document.getElementById('nu-account-type').value = normalized;
+      document.querySelectorAll('input[name="nu-account-choice"]').forEach((input) => {
+        input.checked = input.value === normalized;
+      });
+      document.getElementById('choice-permanent')?.classList.toggle('active', normalized === 'permanent');
+      document.getElementById('choice-temporary')?.classList.toggle('active', normalized === 'temporary');
+      toggleNewUserExpiry();
+    }
+
+    function toggleNewUserExpiry() {
+      const type = document.getElementById('nu-account-type')?.value || 'permanent';
+      const wrap = document.getElementById('nu-expiry-wrap');
+      if (wrap) wrap.style.display = type === 'temporary' ? 'block' : 'none';
+      if (type === 'temporary') {
+        const input = document.getElementById('nu-expires-at');
+        if (input && !input.value) {
+          const d = new Date(Date.now() + 7 * 86400000);
+          input.value = d.toISOString().slice(0, 10);
+        }
+      }
+    }
+
+    function genPass() {
+      const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let p = '';
+      for (let i = 0; i < 8; i++) p += chars[Math.floor(Math.random() * chars.length)];
+      document.getElementById('nu-pass').value = p;
+    }
+
+    async function submitAddUser() {
+      const token = localStorage.getItem('bt_token');
+      const email = document.getElementById('nu-email').value.trim();
+      if (!email) { BT.notify('กรุณากรอก Email', 'warning'); return; }
+      const body = {
+        email,
+        full_name: document.getElementById('nu-fullname').value.trim(),
+        role: document.getElementById('nu-role').value,
+        department: document.getElementById('nu-dept').value.trim(),
+        account_type: document.getElementById('nu-account-type').value,
+        user_expires_at: document.getElementById('nu-expires-at').value || undefined,
+        password: document.getElementById('nu-pass').value.trim() || undefined,
+      };
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'สร้างไม่สำเร็จ');
+        const resultDiv = document.getElementById('nu-result');
+        resultDiv.style.display = 'block';
+        if (data.temp_password) {
+          resultDiv.innerHTML = `<div class="bt-alert bt-alert-success">
+            ✅ สร้างผู้ใช้สำเร็จ!<br>
+            <div class="admin-result-code">
+              <code>${escapeHtml(data.temp_password)}</code>
+              <button type="button" class="bt-btn bt-btn-secondary" onclick="copyGeneratedPassword('${escapeHtml(data.temp_password)}')">Copy</button>
+            </div>
+            <small>ส่งรหัสนี้ให้ ${escapeHtml(email)} ผู้ใช้จะถูกบังคับให้ตั้งรหัสผ่านใหม่หลัง login ครั้งแรก</small><br>
+            <small>ประเภท: ${escapeHtml(data.account_type === 'temporary' ? 'ชั่วคราว' : 'ถาวร')}${data.user_expires_at ? ' | หมดอายุ: ' + escapeHtml(String(data.user_expires_at).slice(0, 10)) : ''}</small>
+          </div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="bt-alert bt-alert-success">✅ สร้างผู้ใช้สำเร็จ!</div>`;
+        }
+        loadUsers();
+        // ไม่ปิด modal ทันที เพื่อให้ copy รหัสผ่านได้
+      } catch (e) {
+        BT.notify('❌ ' + e.message, 'error');
+      }
+    }
+
+    async function copyGeneratedPassword(password) {
+      try {
+        await navigator.clipboard.writeText(password);
+        BT.notify('คัดลอกรหัสผ่านแล้ว', 'success');
+      } catch {
+        BT.notify('คัดลอกไม่ได้ กรุณาเลือกข้อความเอง', 'warning');
+      }
+    }
+    async function checkAI(){if(!BT.hasBackend()){BT.notify('ตั้งค่า Backend ก่อน','warning');return;}try{const r=await BT.call('betime_solution.api.portal.check_ai_config');['openai','stt','doc','search'].forEach(k=>{const el=document.getElementById('ai-'+k);if(el)el.innerHTML=r[k]?'<span class="bt-badge bt-badge-success">✅ ตั้งค่าแล้ว</span>':'<span class="bt-badge bt-badge-danger">❌ ยังไม่ตั้งค่า</span>';});}catch(e){BT.notify(e.message,'error');}}
+    async function loadAudit(){if(!BT.hasBackend()) return;try{const rows=await BT.listDocs('Activity Log',['name','subject','full_name','creation','operation'],{},30);const tbody=rows.map(r=>`<tr><td>${r.full_name||r.name||'-'}</td><td>${r.operation||'-'}</td><td>${r.subject?.slice(0,60)||'-'}</td><td>${r.creation?.slice(0,16)||'-'}</td></tr>`).join('');document.getElementById('audit-list').innerHTML=`<table class="bt-table"><thead><tr><th>ผู้ใช้</th><th>Action</th><th>รายการ</th><th>เวลา</th></tr></thead><tbody>${tbody||'<tr><td colspan=4 style=text-align:center;color:#888>ไม่มีข้อมูล</td></tr>'}</tbody></table>`;}catch(e){}}
+    function saveBackend(){const url=document.getElementById('backend-input').value.trim();if(url){localStorage.setItem('bt_api_base',url);BT.notify('✅ บันทึก Backend URL แล้ว','success');setTimeout(()=>location.reload(),1000);}}
+    document.getElementById('backend-input').value = BT.getApiBaseUrl();
+    const urlTab=new URLSearchParams(window.location.search).get('tab');if(urlTab){const btn=document.getElementById('ab-'+urlTab);if(btn)showAdmTab(urlTab,btn);}
+    document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+</body>
+</html>

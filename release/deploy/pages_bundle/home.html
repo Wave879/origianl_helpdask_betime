@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>หน้าหลัก — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    /* ── Welcome Banner ── */
+    .home-banner {
+      background: linear-gradient(135deg, var(--bt-primary) 0%, #c2410c 60%, var(--bt-secondary) 100%);
+      border-radius: var(--bt-radius);
+      padding: 28px 32px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .home-banner::before {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+    }
+    .home-banner::after {
+      content: '';
+      position: absolute;
+      right: 60px;
+      bottom: -60px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .home-banner-left h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 4px;
+    }
+    .home-banner-left p {
+      margin: 0;
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+    .home-banner-right {
+      text-align: right;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .home-banner-time {
+      font-size: 1.8rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .home-banner-date {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+
+    /* ── Quick Check-in bar ── */
+    .home-checkin-bar {
+      background: #fff;
+      border: 1px solid var(--bt-border);
+      border-radius: var(--bt-radius);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .home-checkin-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      flex: 1;
+      min-width: 200px;
+    }
+    .home-checkin-status .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .badge-success { background: #dcfce7; color: var(--bt-success); }
+    .badge-warning { background: #fef9c3; color: var(--bt-warning); }
+    .badge-danger  { background: #fee2e2; color: var(--bt-danger); }
+    .home-checkin-times {
+      display: flex;
+      gap: 20px;
+      font-size: 0.88rem;
+      color: var(--bt-muted);
+    }
+    .home-checkin-times strong { color: var(--bt-text); }
+    .home-checkin-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── Main grid ── */
+    .home-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      align-items: start;
+    }
+    .home-left { display: flex; flex-direction: column; gap: 20px; }
+    .home-right { display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Quick Actions ── */
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 12px;
+    }
+    .qa-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 8px;
+      border-radius: var(--bt-radius);
+      border: 1px solid var(--bt-border);
+      background: #fff;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--bt-text);
+      transition: all 0.18s;
+      text-align: center;
+    }
+    .qa-item:hover {
+      border-color: var(--bt-primary);
+      box-shadow: 0 4px 14px rgba(234,88,12,0.14);
+      transform: translateY(-2px);
+      color: var(--bt-primary);
+    }
+    .qa-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+    }
+    .qa-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .qa-orange  { background: #fff7ed; color: var(--bt-primary); }
+    .qa-blue    { background: #eff6ff; color: var(--bt-secondary); }
+    .qa-green   { background: #f0fdf4; color: var(--bt-success); }
+    .qa-purple  { background: #f5f3ff; color: #7c3aed; }
+    .qa-yellow  { background: #fefce8; color: #b45309; }
+    .qa-teal    { background: #f0fdfa; color: #0d9488; }
+
+    /* ── KPI row ── */
+    .home-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    /* ── Task list ── */
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--bt-border);
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--bt-border);
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+    }
+    .task-check.done { background: var(--bt-success); border-color: var(--bt-success); color: #fff; }
+    .task-title { flex: 1; font-size: 0.9rem; }
+    .task-title.done { text-decoration: line-through; color: var(--bt-muted); }
+    .task-badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .task-high   { background: #fee2e2; color: var(--bt-danger); }
+    .task-medium { background: #fef9c3; color: #b45309; }
+    .task-low    { background: #f0fdf4; color: var(--bt-success); }
+
+    /* ── Announcement card ── */
+    .annc-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--bt-border);
+    }
+    .annc-item:last-child { border-bottom: none; }
+    .annc-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--bt-primary), #c2410c);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .annc-body { flex: 1; }
+    .annc-author { font-size: 0.82rem; font-weight: 700; }
+    .annc-time { font-size: 0.75rem; color: var(--bt-muted); margin-left: 6px; }
+    .annc-text { font-size: 0.88rem; margin-top: 3px; color: var(--bt-text); line-height: 1.45; }
+    .annc-item {
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    .annc-item + .annc-item { margin-top: 10px; }
+    .annc-item:hover {
+      border-color: #bfdbfe;
+      box-shadow: 0 10px 22px rgba(30, 64, 175, 0.10);
+      transform: translateY(-1px);
+    }
+    .annc-item.pinned {
+      border-color: #fed7aa;
+      background: linear-gradient(180deg, #fff7ed 0%, #fff 100%);
+    }
+    .annc-avatar {
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1e40af, #0f766e);
+    }
+    .annc-body { min-width: 0; }
+    .annc-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .annc-author {
+      color: #475569;
+      font-size: 0.74rem;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .annc-time {
+      flex: 0 0 auto;
+      color: #64748b;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-left: 0;
+      white-space: nowrap;
+    }
+    .annc-title {
+      color: #0f172a;
+      font-size: 0.9rem;
+      font-weight: 900;
+      line-height: 1.35;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .annc-text {
+      color: #475569;
+      font-size: 0.8rem;
+      margin-top: 4px;
+      line-height: 1.45;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .annc-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .annc-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      padding: 2px 7px;
+      font-size: 0.68rem;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .annc-chip.pin {
+      border-color: #fed7aa;
+      background: #fff7ed;
+      color: #c2410c;
+    }
+    .annc-state {
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      color: #64748b;
+      background: #f8fafc;
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+    .annc-state strong {
+      display: block;
+      color: #0f172a;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+    .annc-state a {
+      display: inline-flex;
+      margin-top: 10px;
+      color: #1d4ed8;
+      font-weight: 900;
+      text-decoration: none;
+    }
+    .annc-skeleton {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+    }
+    .annc-skeleton + .annc-skeleton { margin-top: 10px; }
+    .annc-skeleton::before {
+      content: '';
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #e2e8f0;
+      flex: 0 0 auto;
+    }
+    .annc-skeleton-lines {
+      flex: 1;
+      display: grid;
+      gap: 7px;
+      align-content: center;
+    }
+    .annc-skeleton-lines span {
+      height: 9px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #e2e8f0, #f8fafc, #e2e8f0);
+      background-size: 180% 100%;
+      animation: anncShimmer 1.2s ease-in-out infinite;
+    }
+    .annc-skeleton-lines span:nth-child(2) { width: 72%; }
+    .annc-skeleton-lines span:nth-child(3) { width: 48%; }
+    @keyframes anncShimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 180% 50%; }
+    }
+
+    /* ── Calendar widget ── */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+    .cal-header { font-size: 0.72rem; color: var(--bt-muted); padding: 2px 0; font-weight: 600; }
+    .cal-day {
+      padding: 5px 0;
+      font-size: 0.82rem;
+      border-radius: 8px;
+      cursor: default;
+    }
+    .cal-day.today { background: var(--bt-primary); color: #fff; font-weight: 700; }
+    .cal-day.has-event { background: #fff7ed; color: var(--bt-primary); font-weight: 600; }
+    .cal-day.muted { color: #cbd5e1; }
+
+    /* ── Section header inside card ── */
+    .home-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .home-card-header h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .home-card-header a {
+      font-size: 0.8rem;
+      color: var(--bt-primary);
+      text-decoration: none;
+    }
+
+    @media (max-width: 900px) {
+      .home-grid { grid-template-columns: 1fr; }
+      .home-banner { flex-direction: column; align-items: flex-start; }
+      .home-banner-right { text-align: left; }
+    }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+
+    <!-- Welcome Banner -->
+    <div class="home-banner">
+      <div class="home-banner-left">
+        <h1 id="greeting-text">สวัสดี, Loading…</h1>
+        <p id="greeting-role">Betime Solution Enterprise Platform</p>
+      </div>
+      <div class="home-banner-right">
+        <div class="home-banner-time" id="banner-time">--:--</div>
+        <div class="home-banner-date" id="banner-date">-</div>
+      </div>
+    </div>
+
+    <!-- Quick Check-in Bar -->
+    <div class="home-checkin-bar">
+      <div class="home-checkin-status">
+        <span>สถานะวันนี้:</span>
+        <span class="badge" id="cio-badge">...</span>
+      </div>
+      <div class="home-checkin-times">
+        <span>เข้า: <strong id="cio-in">-</strong></span>
+        <span>ออก: <strong id="cio-out">-</strong></span>
+      </div>
+      <div class="home-checkin-actions">
+        <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="quickCheckIn()"><i class="bi bi-box-arrow-in-right"></i> Check in</button>
+        <button class="bt-btn bt-btn-warning bt-btn-sm" onclick="quickCheckOut()"><i class="bi bi-box-arrow-right"></i> Check out</button>
+        <a href="/check-in-out.html" class="bt-btn bt-btn-outline bt-btn-sm"><i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="home-kpi-row" style="margin-bottom:20px">
+      <div class="bt-card">
+        <div class="bt-card-title">งานที่ค้างอยู่</div>
+        <div class="bt-card-value" id="kpi-tasks" style="color:var(--bt-warning)">0</div>
+        <div class="bt-card-sub">Open tasks</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">ประชุมวันนี้</div>
+        <div class="bt-card-value" id="kpi-meetings" style="color:var(--bt-accent)">0</div>
+        <div class="bt-card-sub">Meetings today</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">แจ้งเตือนใหม่</div>
+        <div class="bt-card-value" id="kpi-notifs" style="color:var(--bt-primary)">0</div>
+        <div class="bt-card-sub">Unread notifications</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">OT เดือนนี้</div>
+        <div class="bt-card-value" id="kpi-ot" style="color:var(--bt-success)">0 h</div>
+        <div class="bt-card-sub">Overtime this month</div>
+      </div>
+    </div>
+
+    <!-- Main 2-col grid -->
+    <div class="home-grid">
+
+      <!-- LEFT COLUMN -->
+      <div class="home-left">
+
+        <!-- My Tasks Today -->
+        <div class="bt-card">
+          <div class="home-card-header">
+            <h3><i class="bi bi-list-task" style="color:var(--bt-primary)"></i> งานของฉันวันนี้</h3>
+            <a href="/my-tasks.html">ดูทั้งหมด</a>
+          </div>
+          <div id="task-list"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="home-right">
+
+        <!-- Mini Calendar -->
+        <div class="bt-card">
+          <div class="home-card-header">
+            <h3><i class="bi bi-calendar3" style="color:var(--bt-accent)"></i> <span id="cal-month-label">-</span></h3>
+            <a href="/calendar.html">ปฏิทินเต็ม</a>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+
+        <!-- Announcements -->
+        <div class="bt-card">
+          <div class="home-card-header">
+            <h3><i class="bi bi-megaphone" style="color:var(--bt-primary)"></i> ประกาศล่าสุด</h3>
+            <a href="/company-announcements.html">ดูทั้งหมด</a>
+          </div>
+          <div id="annc-list"></div>
+        </div>
+
+        <!-- Today's Meetings -->
+        <div class="bt-card">
+          <div class="home-card-header">
+            <h3><i class="bi bi-camera-video" style="color:var(--bt-accent)"></i> ประชุมวันนี้</h3>
+            <a href="/calendar.html">ดูปฏิทิน</a>
+          </div>
+          <div id="meeting-list"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('home.html', 'หน้าหลัก');
+
+  /* ── Helpers ── */
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function esc(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+  function authHeaders() {
+    const token = localStorage.getItem('bt_token') || '';
+    return token ? { Authorization: 'Bearer ' + token } : {};
+  }
+
+  function nowTime() {
+    const d = new Date();
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function nowDate() {
+    return new Date().toLocaleDateString('th-TH', { dateStyle: 'full' });
+  }
+
+  function thaiShortDate(d) {
+    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+  }
+
+  /* ── Banner clock ── */
+  function updateClock() {
+    const d = new Date();
+    document.getElementById('banner-time').textContent =
+      `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    document.getElementById('banner-date').textContent = nowDate();
+  }
+
+  /* ── Greeting ── */
+  function setupGreeting() {
+    const userRaw = localStorage.getItem('bt_user') || '{}';
+    let userObj = {};
+    try { userObj = JSON.parse(userRaw); } catch(e) {}
+    const user = userObj.full_name || userObj.email || userRaw || 'ผู้ใช้';
+    const role = userObj.role || localStorage.getItem('bt_role') || '';
+    const h = new Date().getHours();
+    let greet = 'สวัสดี';
+    if (h < 12) greet = 'สวัสดีตอนเช้า';
+    else if (h < 17) greet = 'สวัสดีตอนบ่าย';
+    else greet = 'สวัสดีตอนเย็น';
+    document.getElementById('greeting-text').textContent = `${greet}, ${user}`;
+    const roleLabel = {
+      ceo: 'CEO · บริษัท Betime Solution',
+      admin: 'Admin · ระบบจัดการ',
+      manager: 'Manager · Betime Solution',
+      staff: 'Staff · Betime Solution',
+    };
+    document.getElementById('greeting-role').textContent =
+      roleLabel[role] || 'Betime Solution Enterprise Platform';
+  }
+
+  /* ── Check-in bar ── */
+  const CIO_KEY = 'bt_attendance_today';
+
+  function renderCIOBar() {
+    const state = JSON.parse(localStorage.getItem(CIO_KEY) || '{}');
+    const badge = document.getElementById('cio-badge');
+    document.getElementById('cio-in').textContent  = state.checkIn  || '-';
+    document.getElementById('cio-out').textContent = state.checkOut || '-';
+    if (state.checkOut) {
+      badge.className = 'badge badge-warning';
+      badge.textContent = 'เช็กเอาต์แล้ว';
+    } else if (state.checkIn) {
+      badge.className = 'badge badge-success';
+      badge.innerHTML = '<i class="bi bi-check-circle-fill"></i> เช็กอินแล้ว';
+    } else {
+      badge.className = 'badge badge-danger';
+      badge.innerHTML = '<i class="bi bi-circle"></i> ยังไม่เช็กอิน';
+    }
+  }
+
+  function quickCheckIn() {
+    const state = JSON.parse(localStorage.getItem(CIO_KEY) || '{}');
+    if (!state.checkIn) {
+      state.checkIn = `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}:${pad(new Date().getSeconds())}`;
+      localStorage.setItem(CIO_KEY, JSON.stringify(state));
+      renderCIOBar();
+      BT.notify('เช็กอินเรียบร้อยแล้ว', 'success');
+    } else {
+      BT.notify('เช็กอินแล้ว', 'warning');
+    }
+  }
+
+  function quickCheckOut() {
+    const state = JSON.parse(localStorage.getItem(CIO_KEY) || '{}');
+    if (!state.checkIn) { BT.notify('กรุณาเช็กอินก่อน', 'warning'); return; }
+    if (!state.checkOut) {
+      state.checkOut = `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}:${pad(new Date().getSeconds())}`;
+      localStorage.setItem(CIO_KEY, JSON.stringify(state));
+      renderCIOBar();
+      BT.notify('เช็กเอาต์เรียบร้อยแล้ว', 'success');
+    } else {
+      BT.notify('เช็กเอาต์แล้ว', 'warning');
+    }
+  }
+
+  /* ── Mini Calendar ── */
+  function renderCalendar() {
+    const today = new Date();
+    const year  = today.getFullYear();
+    const month = today.getMonth();
+    const label = today.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+    document.getElementById('cal-month-label').textContent = label;
+
+    const first = new Date(year, month, 1).getDay(); // 0=Sun
+    const days  = new Date(year, month + 1, 0).getDate();
+
+    // Events from localStorage (calendar module uses 'bt_events')
+    const events = JSON.parse(localStorage.getItem('bt_events') || '[]');
+    const eventDays = new Set(
+      events
+        .filter(e => {
+          const d = new Date(e.start || e.date || '');
+          return d.getFullYear() === year && d.getMonth() === month;
+        })
+        .map(e => new Date(e.start || e.date || '').getDate())
+    );
+
+    const headers = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+    let html = headers.map(h => `<div class="cal-header">${h}</div>`).join('');
+
+    // Empty cells before first day
+    for (let i = 0; i < first; i++) {
+      html += `<div class="cal-day muted"></div>`;
+    }
+    for (let d = 1; d <= days; d++) {
+      const isToday  = d === today.getDate();
+      const hasEvent = eventDays.has(d);
+      let cls = 'cal-day';
+      if (isToday)  cls += ' today';
+      else if (hasEvent) cls += ' has-event';
+      html += `<div class="${cls}">${d}</div>`;
+    }
+
+    document.getElementById('cal-grid').innerHTML = html;
+  }
+
+  /* ── Tasks ── */
+  const HOME_TASKS_DATA = [];
+
+  function renderTasks() {
+    const stored = JSON.parse(localStorage.getItem('bt_home_tasks') || 'null') || HOME_TASKS_DATA;
+    const html = stored.slice(0, 5).map(t => `
+      <div class="task-item">
+        <div class="task-check ${t.done ? 'done' : ''}" onclick="toggleTask(${t.id})">
+          ${t.done ? '<i class="bi bi-check"></i>' : ''}
+        </div>
+        <span class="task-title ${t.done ? 'done' : ''}">${t.title}</span>
+        <span class="task-badge task-${t.priority}">${
+          t.priority === 'high' ? 'สำคัญ' : t.priority === 'medium' ? 'ปานกลาง' : 'ทั่วไป'
+        }</span>
+      </div>
+    `).join('');
+    document.getElementById('task-list').innerHTML = html || '<div class="bt-card-sub">ไม่มีงานวันนี้</div>';
+  }
+
+  function toggleTask(id) {
+    const stored = JSON.parse(localStorage.getItem('bt_home_tasks') || 'null') || HOME_TASKS_DATA;
+    const t = stored.find(x => x.id === id);
+    if (t) { t.done = !t.done; localStorage.setItem('bt_home_tasks', JSON.stringify(stored)); renderTasks(); }
+  }
+
+  /* ── Announcements ── */
+  const HOME_ANNC_DATA = [];
+  let homeAnnouncements = [];
+  const homeUser = JSON.parse(localStorage.getItem('bt_user') || '{}');
+  const homeActorId = String(homeUser.email || homeUser.name || homeUser.full_name || 'guest').toLowerCase();
+  const homeAnnouncementReadKey = `bt_company_announcements_read::${homeActorId}`;
+  function getHomeAnnouncementReadIds() {
+    try { return new Set(JSON.parse(localStorage.getItem(homeAnnouncementReadKey) || '[]').map(String)); } catch { return new Set(); }
+  }
+
+  function renderAnnouncements() {
+    const stored = JSON.parse(localStorage.getItem('bt_company_announcements') || 'null');
+    const items  = stored ? stored.slice(0, 3) : HOME_ANNC_DATA;
+    const colorMap = { HR: '#10b981', CEO: '#EA580C', IT: '#3b82f6', Admin: '#7c3aed' };
+
+    const html = items.map(a => {
+      const initials = (a.initials || (a.author || '?').substring(0, 2)).toUpperCase();
+      const color    = colorMap[initials] || colorMap[(a.author||'').split(' ')[0]] || '#EA580C';
+      const text     = a.text || a.content || '';
+      const time     = a.time || a.created_at || '';
+      return `
+        <div class="annc-item">
+          <div class="annc-avatar" style="background:${color}">${initials}</div>
+          <div class="annc-body">
+            <span class="annc-author">${a.author || 'ทีมงาน'}</span>
+            <span class="annc-time">${time}</span>
+            <div class="annc-text">${text.substring(0, 120)}${text.length > 120 ? '…' : ''}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('annc-list').innerHTML = html || '<div class="bt-card-sub">ยังไม่มีประกาศ</div>';
+  }
+
+  /* ── Today's Meetings ── */
+  function normalizeAnnouncement(a = {}) {
+    const author = a.author_name || a.author || a.created_by || 'BETIME Team';
+    const title = a.title || a.text || '-';
+    const content = String(a.content || a.note || '')
+      .split(/\r?\n/)
+      .filter(line => !/^(?:\[ลิงก์แนบ\]|\[รูปภาพแนบ\]|\[LINK\]|\[IMAGE\])\s*/.test(line))
+      .join('\n')
+      .trim();
+    const category = a.category || a.level || 'General';
+    const createdAt = a.created_at || a.time || '';
+    const time = createdAt ? new Date(createdAt).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+    const initials = (a.initials || author).trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'BT';
+    const readIds = getHomeAnnouncementReadIds();
+    return { ...a, author, title, content, category, time, initials, unread: Boolean(a.unread || a.is_pinned) && !readIds.has(String(a.id || '')), is_pinned: Boolean(a.is_pinned) };
+  }
+
+  function cacheAnnouncements(items) {
+    try {
+      localStorage.setItem('bt_company_announcements', JSON.stringify(items.slice(0, 12).map(a => ({
+        id: a.id || '',
+        title: a.title,
+        content: a.content,
+        text: a.content || a.title,
+        author: a.author,
+        initials: a.initials,
+        time: a.time,
+        level: a.is_pinned ? 'warning' : 'info',
+        unread: a.unread,
+      }))));
+    } catch {}
+  }
+
+  function renderAnnouncementsV2(state = 'ready') {
+    const el = document.getElementById('annc-list');
+    if (!el) return;
+    if (state === 'loading') {
+      el.innerHTML = [1, 2, 3].map(() => `
+        <div class="annc-skeleton" aria-hidden="true">
+          <div class="annc-skeleton-lines"><span></span><span></span><span></span></div>
+        </div>
+      `).join('');
+      return;
+    }
+    if (state === 'error') {
+      el.innerHTML = `
+        <div class="annc-state">
+          <strong>โหลดประกาศไม่ได้</strong>
+          ตรวจสอบการเชื่อมต่อหรือสิทธิ์การใช้งาน แล้วลองเปิดหน้าประกาศทั้งหมดอีกครั้ง
+          <a href="/company-announcements.html">ไปหน้าประกาศบริษัท</a>
+        </div>
+      `;
+      return;
+    }
+
+    const items = (homeAnnouncements.length ? homeAnnouncements : HOME_ANNC_DATA.map(normalizeAnnouncement)).slice(0, 3);
+    if (!items.length) {
+      el.innerHTML = `
+        <div class="annc-state">
+          <strong>ยังไม่มีประกาศล่าสุด</strong>
+          เมื่อมีข่าวหรือประกาศใหม่ รายการสำคัญจะแสดงตรงนี้ทันที
+          <a href="/company-announcements.html">ดูหน้าประกาศบริษัท</a>
+        </div>
+      `;
+      return;
+    }
+
+    const colorMap = { HR: '#dc2626', CEO: '#1e40af', IT: '#0f766e', Admin: '#7c3aed', General: '#475569' };
+    el.innerHTML = items.map(a => {
+      const color = colorMap[a.category] || '#1e40af';
+      const text = a.content || '';
+      return `
+        <a class="annc-item ${a.is_pinned ? 'pinned' : ''}" href="/company-announcements.html">
+          <div class="annc-avatar" style="background:${esc(color)}">${esc(a.initials)}</div>
+          <div class="annc-body">
+            <div class="annc-topline">
+              <span class="annc-author">${esc(a.author)}</span>
+              <span class="annc-time">${esc(a.time)}</span>
+            </div>
+            <div class="annc-title">${esc(a.title)}</div>
+            ${text ? `<div class="annc-text">${esc(text)}</div>` : ''}
+            <div class="annc-meta">
+              <span class="annc-chip">${esc(a.category)}</span>
+              ${a.is_pinned ? '<span class="annc-chip pin">ปักหมุด</span>' : ''}
+            </div>
+          </div>
+        </a>
+      `;
+    }).join('');
+  }
+
+  async function loadHomeAnnouncements() {
+    renderAnnouncementsV2('loading');
+    try {
+      const res = await fetch('/api/announcements', { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || 'load failed');
+      homeAnnouncements = Array.isArray(data.data) ? data.data.map(normalizeAnnouncement) : [];
+      cacheAnnouncements(homeAnnouncements);
+      renderAnnouncementsV2();
+    } catch (err) {
+      const stored = JSON.parse(localStorage.getItem('bt_company_announcements') || 'null');
+      homeAnnouncements = Array.isArray(stored) ? stored.map(normalizeAnnouncement) : [];
+      if (homeAnnouncements.length) renderAnnouncementsV2();
+      else renderAnnouncementsV2('error');
+    }
+  }
+
+  const HOME_MEETINGS_DATA = [];
+
+  function renderMeetings() {
+    const events = JSON.parse(localStorage.getItem('bt_events') || '[]');
+    const today  = new Date();
+    const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+    const todayEvents = events.filter(e => (e.start || e.date || '').startsWith(todayStr));
+    const items = todayEvents.length ? todayEvents : HOME_MEETINGS_DATA;
+
+    const html = items.slice(0, 3).map(e => `
+      <div class="task-item" style="align-items:flex-start">
+        <div class="qa-icon qa-blue" style="width:32px;height:32px;font-size:0.95rem;flex-shrink:0;border-radius:8px">
+          <i class="bi bi-camera-video"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:0.88rem;font-weight:600">${e.title}</div>
+          <div style="font-size:0.78rem;color:var(--bt-muted)">${e.time || ''} ${e.room ? '· '+e.room : ''}</div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('meeting-list').innerHTML = html || '<div class="bt-card-sub">ไม่มีประชุมวันนี้</div>';
+  }
+
+  /* ── KPI counts from storage ── */
+  function renderKPIs() {
+    const tasks = JSON.parse(localStorage.getItem('bt_home_tasks') || 'null') || HOME_TASKS_DATA;
+    const open  = tasks.filter(t => !t.done).length;
+    document.getElementById('kpi-tasks').textContent = open;
+  }
+
+  /* ── Init ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    setupGreeting();
+    updateClock();
+    setInterval(updateClock, 1000);
+    renderCIOBar();
+    renderCalendar();
+    renderTasks();
+    loadHomeAnnouncements();
+    renderMeetings();
+    renderKPIs();
+  });
+</script>
+</body>
+</html>

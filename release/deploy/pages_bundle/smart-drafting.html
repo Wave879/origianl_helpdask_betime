@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Drafting — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-pencil-square"></i> Smart Drafting</h2></div>
+    <div class="bt-card">
+      <div class="bt-form-group"><label class="bt-label">ประเภทเอกสาร</label>
+        <select id="doc-type" class="bt-input"><option value="meeting_minutes">รายงานการประชุม</option><option value="project_report">รายงานโครงการ</option><option value="proposal">ใบเสนอราคา</option><option value="memo">บันทึกข้อความ</option><option value="contract_summary">สรุปสัญญา</option></select>
+      </div>
+      <div class="bt-form-group"><label class="bt-label">ข้อมูลป้อนเข้า *</label><textarea id="draft-prompt" class="bt-input" rows="5" placeholder="ป้อนข้อมูลสำหรับ AI เช่น หัวข้อการประชุม ผู้เข้าร่วม ประเด็นสำคัญ..."></textarea></div>
+      <div class="bt-form-group"><label class="bt-label">ข้อมูลอ้างอิงเพิ่มเติม</label><textarea id="draft-context" class="bt-input" rows="3" placeholder="TOR หรือเอกสารที่เกี่ยวข้อง (ถ้ามี)"></textarea></div>
+      <button class="bt-btn bt-btn-primary" id="draft-btn" onclick="generateDraft()">✍️ สร้างเอกสาร</button>
+    </div>
+    <div class="bt-card" id="draft-result-card" style="display:none;margin-top:20px">
+      <div class="bt-section-header"><h2>📄 ร่างเอกสาร</h2><div style="display:flex;gap:8px"><button class="bt-btn bt-btn-success bt-btn-sm" onclick="saveDraftToKB()">💾 KB</button><button class="bt-btn bt-btn-outline bt-btn-sm" onclick="copyDraft()">📋 คัดลอก</button></div></div>
+      <div id="draft-output" style="white-space:pre-wrap;line-height:1.8;font-size:0.9rem;padding:16px;background:#fafafa;border-radius:8px;border:1px solid var(--bt-border)"></div>
+    </div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('smart-drafting.html', 'Document Intelligence');
+      async function generateDraft() {
+      if (!BT.hasBackend()) { BT.notify('ตั้งค่า Backend ก่อน', 'warning'); return; }
+      const btn=document.getElementById('draft-btn'); btn.disabled=true; btn.textContent='⏳ กำลังสร้าง...';
+      try {
+        const r=await BT.call('betime_solution.api.portal.smart_draft',{doc_type:document.getElementById('doc-type').value,prompt:document.getElementById('draft-prompt').value,context:document.getElementById('draft-context').value});
+        document.getElementById('draft-output').textContent=r.content||'';
+        document.getElementById('draft-result-card').style.display='block';
+      } catch(e){ BT.notify('สร้างเอกสารไม่สำเร็จ: '+e.message,'error'); }
+      finally { btn.disabled=false; btn.textContent='✍️ สร้างเอกสาร'; }
+    }
+    function copyDraft(){ navigator.clipboard.writeText(document.getElementById('draft-output').textContent).then(()=>BT.notify('คัดลอกแล้ว','success')); }
+    async function saveDraftToKB(){ if(!BT.hasBackend()) return; const content=document.getElementById('draft-output').textContent; const title=document.getElementById('draft-prompt').value.slice(0,80)+' (Draft)'; try{ await BT.call('betime_solution.api.portal.save_ocr_to_knowledge',{title,content}); BT.notify('✅ บันทึก KB แล้ว','success'); }catch(e){ BT.notify(e.message,'error'); } }
+</script>
+</body>
+</html>

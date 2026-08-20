@@ -1,0 +1,42 @@
+services:
+  betime-postgres:
+    image: postgres:16-alpine
+    container_name: betime-postgres
+    environment:
+      POSTGRES_DB: Betime_DB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5433:5432"
+    volumes:
+      - betime-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Betime_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  betime-pages-local:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: betime-pages-local
+    depends_on:
+      betime-postgres:
+        condition: service_healthy
+    ports:
+      - "8790:8788"
+    environment:
+      PG_URL: postgres://postgres:123456@betime-postgres:5432/Betime_DB
+      DATABASE_URL: postgres://postgres:123456@betime-postgres:5432/Betime_DB
+      AZURE_AI_ENDPOINT: ${AZURE_AI_ENDPOINT:-https://ai-team-model-deploy-pr-resource.cognitiveservices.azure.com/}
+      AZURE_AI_KEY: ${AZURE_AI_KEY:-}
+      AZURE_AI_API_VERSION: ${AZURE_AI_API_VERSION:-2024-12-01-preview}
+      AZURE_AI_MODEL: ${AZURE_AI_MODEL:-gpt-4o}
+      AZURE_AI_DEPLOYMENT: ${AZURE_AI_DEPLOYMENT:-gpt-4o}
+    restart: unless-stopped
+
+volumes:
+  betime-postgres-data:

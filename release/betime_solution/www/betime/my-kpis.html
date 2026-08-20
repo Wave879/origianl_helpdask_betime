@@ -1,0 +1,109 @@
+{% extends "betime_solution/templates/includes/bt_base.html" %}
+{% block bt_content %}
+
+<div class="bt-page-header">
+  <h2>🎯 Personal KPIs — {{ full_name }}</h2>
+</div>
+
+<!-- KPI Cards -->
+<div class="bt-kpi-grid">
+  <div class="bt-card">
+    <div class="bt-card-title">งานรอทำ</div>
+    <div class="bt-card-value">{{ tasks_total }}</div>
+    <div class="bt-card-sub">รายการ</div>
+  </div>
+  <div class="bt-card">
+    <div class="bt-card-title">งานเสร็จแล้ว</div>
+    <div class="bt-card-value" style="color:var(--bt-success)">{{ tasks_done }}</div>
+    <div class="bt-card-sub">ทั้งหมด</div>
+  </div>
+  <div class="bt-card">
+    <div class="bt-card-title">งานเกินกำหนด</div>
+    <div class="bt-card-value" style="color:var(--bt-danger)">{{ tasks_overdue }}</div>
+    <div class="bt-card-sub">รายการ</div>
+  </div>
+  <div class="bt-card">
+    <div class="bt-card-title">OT เดือนนี้</div>
+    <div class="bt-card-value" style="color:var(--bt-warning)">{{ ot_hours }}</div>
+    <div class="bt-card-sub">ชั่วโมง</div>
+  </div>
+</div>
+
+<!-- Trend chart -->
+<div class="bt-card" style="margin-bottom:20px">
+  <div class="bt-section-header"><h2>📊 งานเสร็จ (6 เดือนล่าสุด)</h2></div>
+  <canvas id="trendChart" height="80"></canvas>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <!-- My Tasks -->
+  <div class="bt-card">
+    <div class="bt-section-header">
+      <h2>📋 งานของฉัน</h2>
+      <a href="/betime/my-tasks" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+    </div>
+    {% if my_tasks %}
+    <table class="bt-table">
+      <thead><tr><th>งาน</th><th>Priority</th><th>กำหนด</th></tr></thead>
+      <tbody>
+        {% for t in my_tasks[:10] %}
+        {% set days = frappe.utils.date_diff(t.deadline, frappe.utils.today()) if t.deadline else 999 %}
+        <tr>
+          <td><a href="/app/smart-task/{{ t.name }}">{{ t.task_name }}</a></td>
+          <td><span class="bt-badge bt-badge-{{ 'red' if t.priority == 'Critical' else 'orange' if t.priority == 'High' else 'blue' if t.priority == 'Medium' else 'grey' }}">{{ t.priority }}</span></td>
+          <td style="color: {{ '#C62828' if days < 0 else '#E65100' if days <= 2 else 'inherit' }}">
+            {{ frappe.utils.format_date(t.deadline) if t.deadline else '-' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#888;text-align:center">ไม่มีงานค้างอยู่</p>
+    {% endif %}
+  </div>
+
+  <!-- My Projects -->
+  <div class="bt-card">
+    <div class="bt-section-header">
+      <h2>📁 โครงการที่เกี่ยวข้อง</h2>
+    </div>
+    {% if my_projects %}
+    {% for p in my_projects %}
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;align-items:center">
+        <a href="/app/project-master/{{ p.name }}" style="font-size:0.85rem;font-weight:600">{{ p.project_name }}</a>
+        <span class="bt-badge bt-badge-{{ 'red' if p.risk_level == 'High' else 'orange' if p.risk_level == 'Medium' else 'green' }}">{{ p.risk_level or 'Low' }}</span>
+      </div>
+      <div class="bt-progress">
+        <div class="bt-progress-bar {{ 'success' if p.progress >= 100 else 'warning' if p.progress >= 60 else 'danger' }}"
+             style="width:{{ p.progress or 0 }}%"></div>
+      </div>
+      <small style="color:#888">{{ p.progress | int }}%</small>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color:#888;text-align:center">ไม่มีข้อมูลโครงการ</p>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+const trendData = {{ trend | tojson }};
+new Chart(document.getElementById('trendChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: trendData.map(d => d.month),
+        datasets: [{
+            label: 'งานเสร็จ',
+            data: trendData.map(d => d.count),
+            backgroundColor: 'rgba(21,101,192,0.7)',
+            borderRadius: 6,
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+</script>
+{% endblock %}

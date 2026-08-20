@@ -1,0 +1,201 @@
+{
+ "actions": [],
+ "autoname": "format:BT-IT-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "IT Support",
+ "name": "IT Ticket",
+ "naming_rule": "Expression",
+ "title_field": "subject",
+ "search_fields": "subject,ticket_type,status,raised_by",
+ "is_submittable": 0,
+ "track_changes": 1,
+ "fields": [
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "หัวข้อปัญหา",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "ticket_type",
+   "fieldtype": "Select",
+   "label": "ประเภท Ticket",
+   "options": "Incident\nService Request\nChange Request\nProblem",
+   "default": "Incident",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "สถานะ",
+   "options": "Open\nIn Progress\nPending User\nResolved\nClosed",
+   "default": "Open",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "ความเร่งด่วน",
+   "options": "Low\nMedium\nHigh\nCritical",
+   "default": "Medium",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sec_requester",
+   "fieldtype": "Section Break",
+   "label": "ข้อมูลผู้แจ้ง"
+  },
+  {
+   "fieldname": "raised_by",
+   "fieldtype": "Link",
+   "label": "ผู้แจ้งปัญหา",
+   "options": "User",
+   "default": "__user",
+   "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Data",
+   "label": "แผนก"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "raised_date",
+   "fieldtype": "Datetime",
+   "label": "วันที่แจ้ง",
+   "default": "Now",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sla_policy",
+   "fieldtype": "Link",
+   "label": "SLA Policy",
+   "options": "IT SLA Policy"
+  },
+  {
+   "fieldname": "sec_detail",
+   "fieldtype": "Section Break",
+   "label": "รายละเอียดปัญหา"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "คำอธิบายปัญหา",
+   "reqd": 1
+  },
+  {
+   "fieldname": "affected_asset",
+   "fieldtype": "Link",
+   "label": "ทรัพย์สิน IT ที่เกี่ยวข้อง",
+   "options": "IT Asset"
+  },
+  {
+   "fieldname": "sec_assignment",
+   "fieldtype": "Section Break",
+   "label": "การมอบหมายงาน"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "มอบหมายให้",
+   "options": "User"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "due_datetime",
+   "fieldtype": "Datetime",
+   "label": "กำหนดแก้ไขภายใน",
+   "read_only": 1
+  },
+  {
+   "fieldname": "response_datetime",
+   "fieldtype": "Datetime",
+   "label": "เวลาตอบสนองครั้งแรก",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_resolution",
+   "fieldtype": "Section Break",
+   "label": "การแก้ไข"
+  },
+  {
+   "fieldname": "resolution_note",
+   "fieldtype": "Text Editor",
+   "label": "บันทึกการแก้ไข"
+  },
+  {
+   "fieldname": "resolved_datetime",
+   "fieldtype": "Datetime",
+   "label": "วันที่แก้ไขแล้ว",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "satisfaction_score",
+   "fieldtype": "Rating",
+   "label": "คะแนนความพึงพอใจ"
+  },
+  {
+   "fieldname": "feedback",
+   "fieldtype": "Small Text",
+   "label": "ความคิดเห็นเพิ่มเติม"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "print": 1
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 0, "export": 0, "print": 1
+  }
+ ],
+ "sort_field": "raised_date",
+ "sort_order": "DESC",
+ "links": [],
+ "states": [
+  {"title": "Open", "color": "Red"},
+  {"title": "In Progress", "color": "Orange"},
+  {"title": "Pending User", "color": "Yellow"},
+  {"title": "Resolved", "color": "Blue"},
+  {"title": "Closed", "color": "Green"}
+ ]
+}

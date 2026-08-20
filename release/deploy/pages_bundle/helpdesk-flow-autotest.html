@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helpdesk Flow Autotest</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #1f2937;
+    }
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .hero {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+    .hero p {
+      margin: 0;
+      color: #475569;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+    .panel h2 {
+      margin: 0;
+      padding: 14px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 18px;
+    }
+    pre {
+      margin: 0;
+      padding: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+      line-height: 1.45;
+      max-height: 860px;
+      overflow: auto;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    iframe {
+      width: 100%;
+      height: 980px;
+      border: 0;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Helpdesk Flow Autotest</h1>
+      <p>ยิง flow ของหน้า confirm จริง, ดัก payload, และเก็บ response จาก <code>/api/helpdesk/ticket</code></p>
+      <div class="status" id="statusBox">กำลังเตรียม autotest...</div>
+    </div>
+    <div class="layout">
+      <div class="panel">
+        <h2>ผลลัพธ์</h2>
+        <pre id="resultBox">waiting...</pre>
+      </div>
+      <div class="panel">
+        <h2>Confirm Page</h2>
+        <iframe id="confirmFrame" src="about:blank"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statusBox = document.getElementById('statusBox');
+    const resultBox = document.getElementById('resultBox');
+    const frame = document.getElementById('confirmFrame');
+
+    const qs = new URLSearchParams(location.search);
+    const token = qs.get('token') || '';
+    const role = qs.get('role') || 'admin';
+    const user = (() => {
+      try {
+        return JSON.parse(atob(qs.get('user') || ''));
+      } catch {
+        return {};
+      }
+    })();
+    const row = (() => {
+      try {
+        return JSON.parse(atob(qs.get('row') || ''));
+      } catch {
+        return null;
+      }
+    })();
+
+    function setStatus(text) {
+      statusBox.textContent = text;
+    }
+
+    function writeResult(data) {
+      resultBox.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function waitFor(check, timeoutMs = 30000, stepMs = 250) {
+      const started = Date.now();
+      return new Promise((resolve, reject) => {
+        const timer = setInterval(() => {
+          try {
+            const value = check();
+            if (value) {
+              clearInterval(timer);
+              resolve(value);
+              return;
+            }
+            if (Date.now() - started > timeoutMs) {
+              clearInterval(timer);
+              reject(new Error('Timed out waiting for condition'));
+            }
+          } catch (err) {
+            clearInterval(timer);
+            reject(err);
+          }
+        }, stepMs);
+      });
+    }
+
+    async function run() {
+      if (!token || !user || !user.email || !row || !row.id) {
+        setStatus('ข้อมูล autotest ไม่ครบ');
+        writeResult({ ok: false, error: 'missing token/user/row query params' });
+        return;
+      }
+
+      setStatus('กำลังโหลดหน้า confirm...');
+      frame.src = '/help-desk-v3-confirm.html';
+      await waitFor(() => {
+        try {
+          return frame.contentWindow && frame.contentWindow.location.href.startsWith(location.origin);
+        } catch {
+          return false;
+        }
+      });
+
+      const win = frame.contentWindow;
+      const storageKey = 'bt_helpdesk_v3_tickets::' + String(user.email || '').trim().toLowerCase();
+      win.localStorage.setItem('bt_token', token);
+      win.localStorage.setItem('bt_role', role);
+      win.localStorage.setItem('bt_user', JSON.stringify(user));
+      win.localStorage.setItem(storageKey, JSON.stringify([row]));
+
+      const originalFetch = win.fetch.bind(win);
+      win.__lastApiResponse = null;
+      win.fetch = async (...args) => {
+        const res = await originalFetch(...args);
+        try {
+          const clone = res.clone();
+          if (String(args[0] || '').includes('/api/helpdesk/ticket')) {
+            win.__lastApiResponse = await clone.json();
+          }
+        } catch {}
+        return res;
+      };
+
+      setStatus('กำลังเปิดหน้า confirm พร้อม row ทดสอบ...');
+      win.location.href = '/help-desk-v3-confirm.html?id=' + encodeURIComponent(row.id);
+      await waitFor(() => {
+        try {
+          return typeof win.confirmSend === 'function' && win.row && String(win.row.id) === String(row.id);
+        } catch {
+          return false;
+        }
+      });
+
+      setStatus('กำลังประกอบ payload และส่ง ticket จริง...');
+      const payload = win.buildOdooPayloadFromRow(win.row);
+      await win.confirmSend();
+
+      await waitFor(() => {
+        try {
+          return !!win.__lastApiResponse || /ส่งต่อ|สร้าง Ticket|ส่งข้อมูลไม่สำเร็จ/.test(win.document.body.innerText || '');
+        } catch {
+          return false;
+        }
+      }, 60000, 500);
+
+      const data = {
+        ok: true,
+        payload,
+        apiResponse: win.__lastApiResponse,
+        noteText: win.document.getElementById('confirmNote')?.textContent || '',
+        popupText: win.document.getElementById('sendPopupTicket')?.textContent || '',
+        bodyText: (win.document.body.innerText || '').slice(0, 4000),
+      };
+      writeResult(data);
+      setStatus('autotest เสร็จแล้ว');
+    }
+
+    run().catch((err) => {
+      setStatus('autotest ล้มเหลว');
+      writeResult({ ok: false, error: err.message || String(err) });
+    });
+  </script>
+</body>
+</html>

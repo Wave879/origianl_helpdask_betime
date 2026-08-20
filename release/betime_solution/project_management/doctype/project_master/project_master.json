@@ -1,0 +1,257 @@
+{
+ "actions": [],
+ "autoname": "format:BT-PRJ-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "Project Management",
+ "name": "Project Master",
+ "naming_rule": "Expression",
+ "title_field": "project_name",
+ "search_fields": "project_name,client,status",
+ "track_changes": 1,
+ "track_seen": 1,
+ "fields": [
+  {
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "label": "ชื่อโครงการ (Project Name)",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Data",
+   "label": "ลูกค้า (Client)",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "สถานะ (Status)",
+   "options": "Planning\nActive\nOn Hold\nCompleted\nCancelled",
+   "default": "Planning",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "risk_level",
+   "fieldtype": "Select",
+   "label": "ระดับความเสี่ยง (Risk Level)",
+   "options": "\nLow\nMedium\nHigh\nCritical",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sec_dates",
+   "fieldtype": "Section Break",
+   "label": "วันที่และงบประมาณ"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "วันเริ่มต้น (Start Date)",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "วันสิ้นสุด (End Date)"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "budget",
+   "fieldtype": "Currency",
+   "label": "งบประมาณ (Budget)"
+  },
+  {
+   "fieldname": "budget_used",
+   "fieldtype": "Currency",
+   "label": "งบที่ใช้ไป (Budget Used)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "ความคืบหน้า % (Progress)",
+   "default": "0",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sec_team",
+   "fieldtype": "Section Break",
+   "label": "ทีมงาน"
+  },
+  {
+   "fieldname": "project_manager",
+   "fieldtype": "Link",
+   "label": "ผู้จัดการโครงการ (PM)",
+   "options": "User",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "project_type",
+   "fieldtype": "Select",
+   "label": "ประเภทโครงการ",
+   "options": "\nก่อสร้าง\nที่ปรึกษา\nเทคโนโลยี\nวิจัย\nอื่นๆ"
+  },
+  {
+   "fieldname": "sec_phases",
+   "fieldtype": "Section Break",
+   "label": "เฟส (Phases)"
+  },
+  {
+   "fieldname": "current_phase",
+   "fieldtype": "Select",
+   "label": "เฟสปัจจุบัน",
+   "options": "\nPhase 1\nPhase 2\nPhase 3\nPhase 4\nPhase 5\nPhase 6\nPhase 7\nPhase 8\nPhase 9\nPhase 10",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "phase_notes",
+   "fieldtype": "Small Text",
+   "label": "หมายเหตุเฟส"
+  },
+  {
+   "fieldname": "sec_milestones",
+   "fieldtype": "Section Break",
+   "label": "Milestones"
+  },
+  {
+   "fieldname": "milestone_1",
+   "fieldtype": "Data",
+   "label": "Milestone 1"
+  },
+  {
+   "fieldname": "milestone_1_date",
+   "fieldtype": "Date",
+   "label": "วันที่ M1"
+  },
+  {
+   "fieldname": "col_break_m1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "milestone_1_status",
+   "fieldtype": "Select",
+   "label": "สถานะ M1",
+   "options": "\nPending\nIn Progress\nCompleted\nDelayed"
+  },
+  {
+   "fieldname": "milestone_2",
+   "fieldtype": "Data",
+   "label": "Milestone 2"
+  },
+  {
+   "fieldname": "milestone_2_date",
+   "fieldtype": "Date",
+   "label": "วันที่ M2"
+  },
+  {
+   "fieldname": "col_break_m2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "milestone_2_status",
+   "fieldtype": "Select",
+   "label": "สถานะ M2",
+   "options": "\nPending\nIn Progress\nCompleted\nDelayed"
+  },
+  {
+   "fieldname": "milestone_3",
+   "fieldtype": "Data",
+   "label": "Milestone 3"
+  },
+  {
+   "fieldname": "milestone_3_date",
+   "fieldtype": "Date",
+   "label": "วันที่ M3"
+  },
+  {
+   "fieldname": "col_break_m3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "milestone_3_status",
+   "fieldtype": "Select",
+   "label": "สถานะ M3",
+   "options": "\nPending\nIn Progress\nCompleted\nDelayed"
+  },
+  {
+   "fieldname": "sec_desc",
+   "fieldtype": "Section Break",
+   "label": "รายละเอียด"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "รายละเอียดโครงการ"
+  },
+  {
+   "fieldname": "deliverables",
+   "fieldtype": "Text",
+   "label": "ผลส่งมอบ (Deliverables)"
+  },
+  {
+   "fieldname": "sec_billing",
+   "fieldtype": "Section Break",
+   "label": "การเรียกเก็บเงิน"
+  },
+  {
+   "fieldname": "billing_status",
+   "fieldtype": "Select",
+   "label": "สถานะการเรียกเก็บเงิน",
+   "options": "\nPending\nInvoiced\nPartial\nPaid\nOverdue"
+  },
+  {
+   "fieldname": "next_billing_milestone",
+   "fieldtype": "Data",
+   "label": "Milestone ถัดไปที่ต้องวางบิล"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 0, "export": 0, "share": 0, "print": 1, "email": 0
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "links": [],
+ "states": []
+}

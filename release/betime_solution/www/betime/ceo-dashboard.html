@@ -1,0 +1,262 @@
+{% extends "templates/web.html" %}
+{% block title %}CEO Dashboard — Betime{% endblock %}
+{% block head_include %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block page_content %}
+<div class="betime-portal">
+
+  <nav class="bt-topbar">
+    <a href="/betime" class="bt-logo">🏢 Betime Solution</a>
+    <div class="bt-nav">
+      <a href="/betime">หน้าหลัก</a>
+      <a href="/betime/ceo-dashboard" class="active">CEO Dashboard</a>
+      <span class="bt-user-badge">👤 {{ user_name }}</span>
+    </div>
+  </nav>
+
+  <div class="bt-container" style="padding-top:28px; padding-bottom:40px;">
+
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:1.6rem; font-weight:700; color:var(--bt-primary); margin:0;">
+        📈 CEO Executive Dashboard
+      </h1>
+      <p style="color:var(--bt-muted); margin:4px 0 0;" id="last-updated">กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="bt-kpi-grid" id="kpi-grid">
+      <div class="bt-card" id="kpi-projects">
+        <div class="bt-card-title">โครงการทั้งหมด</div>
+        <div class="bt-card-value" id="v-projects">—</div>
+        <div class="bt-card-sub"><span id="v-active-projects">—</span> Active</div>
+      </div>
+      <div class="bt-card" id="kpi-tasks">
+        <div class="bt-card-title">Tasks เปิดอยู่</div>
+        <div class="bt-card-value" id="v-tasks">—</div>
+        <div class="bt-card-sub"><span id="v-overdue-tasks">—</span> เลยกำหนด</div>
+      </div>
+      <div class="bt-card" id="kpi-invoices">
+        <div class="bt-card-title">Invoice ค้างชำระ</div>
+        <div class="bt-card-value" id="v-invoices">—</div>
+        <div class="bt-card-sub">มูลค่า <span id="v-invoice-amount">—</span> บาท</div>
+      </div>
+      <div class="bt-card" id="kpi-ot">
+        <div class="bt-card-title">OT รออนุมัติ</div>
+        <div class="bt-card-value" id="v-ot">—</div>
+        <div class="bt-card-sub">ชั่วโมงรวม <span id="v-ot-hours">—</span> ชม.</div>
+      </div>
+      <div class="bt-card" id="kpi-moms">
+        <div class="bt-card-title">MOM เดือนนี้</div>
+        <div class="bt-card-value" id="v-moms">—</div>
+        <div class="bt-card-sub"><span id="v-pending-moms">—</span> รอ AI ประมวลผล</div>
+      </div>
+      <div class="bt-card" id="kpi-knowledge">
+        <div class="bt-card-title">Knowledge Base</div>
+        <div class="bt-card-value" id="v-knowledge">—</div>
+        <div class="bt-card-sub">รายการทั้งหมด</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+      <div class="bt-card">
+        <div class="bt-card-title">สถานะโครงการ</div>
+        <canvas id="chart-projects" height="200"></canvas>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">Tasks ตามลำดับความสำคัญ</div>
+        <canvas id="chart-tasks" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Project List -->
+    <div class="bt-section-header">
+      <h2>📋 โครงการ Active</h2>
+      <a href="/app/project-master" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+    </div>
+    <div class="bt-card" style="padding:0; overflow:hidden;">
+      <table class="bt-table" id="project-table">
+        <thead>
+          <tr>
+            <th>โครงการ</th><th>สถานะ</th><th>Phase</th>
+            <th>ความคืบหน้า</th><th>Risk</th><th>Billing</th>
+          </tr>
+        </thead>
+        <tbody id="project-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:24px;">
+            <div class="bt-spinner"></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Overdue Tasks -->
+    <div class="bt-section-header" style="margin-top:28px;">
+      <h2>🔴 Tasks เลยกำหนด</h2>
+      <a href="/app/smart-task?status=Open" class="bt-btn bt-btn-outline bt-btn-sm">ดูทั้งหมด</a>
+    </div>
+    <div class="bt-card" style="padding:0; overflow:hidden;">
+      <table class="bt-table">
+        <thead>
+          <tr><th>Task</th><th>โครงการ</th><th>ผู้รับผิดชอบ</th><th>กำหนดส่ง</th><th>เลยมาแล้ว</th></tr>
+        </thead>
+        <tbody id="overdue-tbody">
+          <tr><td colspan="5" style="text-align:center;padding:24px;"><div class="bt-spinner"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Outstanding Invoices -->
+    <div class="bt-section-header" style="margin-top:28px;">
+      <h2>💳 Invoice ที่ต้องติดตาม</h2>
+    </div>
+    <div class="bt-card" style="padding:0; overflow:hidden;">
+      <table class="bt-table">
+        <thead>
+          <tr><th>Invoice</th><th>โครงการ</th><th>Milestone</th><th>มูลค่า</th><th>ครบกำหนด</th><th>สถานะ</th></tr>
+        </thead>
+        <tbody id="invoice-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:24px;"><div class="bt-spinner"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+const fmt = new Intl.NumberFormat('th-TH');
+
+async function loadDashboard() {
+  try {
+    const data = await BT.call('betime_solution.api.dashboard.get_ceo_summary');
+    renderKPI(data);
+    renderProjectChart(data.project_status_counts);
+    renderTaskChart(data.task_priority_counts);
+    renderProjectTable(data.active_projects);
+    renderOverdueTasks(data.overdue_tasks);
+    renderInvoices(data.outstanding_invoices);
+    document.getElementById('last-updated').textContent =
+      'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
+  } catch(e) {
+    BT.notify('โหลดข้อมูลล้มเหลว: ' + e.message, 'error');
+  }
+}
+
+function renderKPI(d) {
+  document.getElementById('v-projects').textContent = d.total_projects ?? '—';
+  document.getElementById('v-active-projects').textContent = d.active_projects_count ?? 0;
+  document.getElementById('v-tasks').textContent = d.open_tasks ?? '—';
+  document.getElementById('v-overdue-tasks').textContent = d.overdue_tasks_count ?? 0;
+  document.getElementById('v-invoices').textContent = d.pending_invoices ?? '—';
+  document.getElementById('v-invoice-amount').textContent = fmt.format(d.pending_invoice_amount ?? 0);
+  document.getElementById('v-ot').textContent = d.pending_ot ?? '—';
+  document.getElementById('v-ot-hours').textContent = (d.pending_ot_hours ?? 0).toFixed(1);
+  document.getElementById('v-moms').textContent = d.moms_this_month ?? '—';
+  document.getElementById('v-pending-moms').textContent = d.pending_moms ?? 0;
+  document.getElementById('v-knowledge').textContent = d.knowledge_count ?? '—';
+
+  if ((d.overdue_tasks_count ?? 0) > 0)
+    document.getElementById('kpi-tasks').style.borderLeft = '4px solid var(--bt-danger)';
+  if ((d.pending_invoices ?? 0) > 0)
+    document.getElementById('kpi-invoices').style.borderLeft = '4px solid var(--bt-warning)';
+}
+
+function renderProjectChart(counts) {
+  if (!counts) return;
+  new Chart(document.getElementById('chart-projects'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        data: Object.values(counts),
+        backgroundColor: ['#42A5F5','#66BB6A','#FFA726','#EF5350','#78909C'],
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+  });
+}
+
+function renderTaskChart(counts) {
+  if (!counts) return;
+  new Chart(document.getElementById('chart-tasks'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        label: 'จำนวน Tasks',
+        data: Object.values(counts),
+        backgroundColor: ['#42A5F5','#FFA726','#EF5350','#B71C1C'],
+        borderRadius: 6,
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+function renderProjectTable(projects) {
+  const tbody = document.getElementById('project-tbody');
+  if (!projects || !projects.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--bt-muted)">ไม่มีโครงการ Active</td></tr>';
+    return;
+  }
+  const riskColor = { Low:'green', Medium:'orange', High:'red', Critical:'red' };
+  tbody.innerHTML = projects.map(p => `
+    <tr>
+      <td><a href="/app/project-master/${encodeURIComponent(p.name)}" style="font-weight:600;color:var(--bt-primary)">${p.project_name}</a></td>
+      <td>${BT.badge(p.status, BT.statusColor[p.status] || 'grey')}</td>
+      <td><small>${p.current_phase || '-'}</small></td>
+      <td style="min-width:140px;">
+        <div class="bt-progress"><div class="bt-progress-bar ${p.progress>=100?'success':p.progress>=60?'':'warning'}" style="width:${p.progress||0}%"></div></div>
+        <small>${p.progress || 0}%</small>
+      </td>
+      <td>${BT.badge(p.risk_level || '-', riskColor[p.risk_level] || 'grey')}</td>
+      <td>${BT.badge(p.billing_status || '-', BT.statusColor[p.billing_status] || 'grey')}</td>
+    </tr>
+  `).join('');
+}
+
+function renderOverdueTasks(tasks) {
+  const tbody = document.getElementById('overdue-tbody');
+  if (!tasks || !tasks.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--bt-success)">✅ ไม่มี Tasks เลยกำหนด</td></tr>';
+    return;
+  }
+  tbody.innerHTML = tasks.map(t => `
+    <tr>
+      <td><a href="/app/smart-task/${encodeURIComponent(t.name)}" style="color:var(--bt-primary)">${t.task_name}</a></td>
+      <td><small>${t.project || '-'}</small></td>
+      <td><small>${t.assigned_to || '-'}</small></td>
+      <td><span style="color:var(--bt-danger)">${t.deadline || '-'}</span></td>
+      <td>${BT.badge(BT.relDate(t.deadline), 'red')}</td>
+    </tr>
+  `).join('');
+}
+
+function renderInvoices(invoices) {
+  const tbody = document.getElementById('invoice-tbody');
+  if (!invoices || !invoices.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--bt-success)">✅ ไม่มี Invoice ค้างชำระ</td></tr>';
+    return;
+  }
+  tbody.innerHTML = invoices.map(inv => `
+    <tr>
+      <td><a href="/app/invoice-tracking/${encodeURIComponent(inv.name)}" style="color:var(--bt-primary);font-weight:600">${inv.invoice_no}</a></td>
+      <td><small>${inv.project || '-'}</small></td>
+      <td><small>${inv.milestone || '-'}</small></td>
+      <td style="font-weight:700">${fmt.format(inv.total_amount || 0)} ฿</td>
+      <td>${BT.badge(inv.due_date || '-', inv.status==='Overdue'?'red':'orange')}</td>
+      <td>${BT.badge(inv.status, BT.statusColor[inv.status] || 'grey')}</td>
+    </tr>
+  `).join('');
+}
+
+loadDashboard();
+setInterval(loadDashboard, 60000); // Auto-refresh every minute
+</script>
+{% endblock %}

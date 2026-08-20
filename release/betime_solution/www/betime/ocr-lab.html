@@ -1,0 +1,171 @@
+{% extends "templates/web.html" %}
+{% block title %}OCR Lab — Betime{% endblock %}
+{% block head_include %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
+<div class="betime-portal">
+
+  <nav class="bt-topbar">
+    <a href="/betime" class="bt-logo">🏢 Betime Solution</a>
+    <div class="bt-nav">
+      <a href="/betime">หน้าหลัก</a>
+      <a href="/betime/ocr-lab" class="active">📄 OCR Lab</a>
+      <span class="bt-user-badge">👤 {{ user_name }}</span>
+    </div>
+  </nav>
+
+  <div class="bt-container" style="padding-top:28px; padding-bottom:40px;">
+
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:1.6rem; font-weight:700; color:var(--bt-primary); margin:0;">
+        📄 OCR Lab — Document Intelligence
+      </h1>
+      <p style="color:var(--bt-muted); margin:4px 0 0;">
+        อัปโหลด PDF / รูปภาพ → Azure Document Intelligence → ถอดข้อความแบบ Word
+      </p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+      <!-- Upload -->
+      <div>
+        <div class="bt-card">
+          <div class="bt-card-title" style="margin-bottom:16px;">1️⃣ อัปโหลดเอกสาร</div>
+
+          <div class="bt-stt-drop" id="drop-zone">
+            <span class="icon">📄</span>
+            <p style="font-size:1rem; font-weight:600; margin:12px 0 4px;">ลากไฟล์มาวาง หรือคลิกเพื่อเลือก</p>
+            <p style="color:var(--bt-muted); font-size:0.85rem; margin:0;">รองรับ .pdf, .jpg, .jpeg, .png, .tiff (สูงสุด 50MB)</p>
+            <input type="file" id="doc-file" accept=".pdf,.jpg,.jpeg,.png,.tiff" style="display:none;">
+          </div>
+
+          <div id="file-info" style="display:none; margin-top:12px;" class="bt-alert bt-alert-info">
+            <span>📎</span><strong id="file-name"></strong>
+          </div>
+
+          <div class="bt-form-group" style="margin-top:20px;">
+            <label class="bt-label">ประเภทเอกสาร</label>
+            <select class="bt-select" id="sel-doc-type">
+              <option value="prebuilt-layout">General Layout (ทั่วไป)</option>
+              <option value="prebuilt-document">General Document</option>
+              <option value="prebuilt-invoice">Invoice</option>
+              <option value="prebuilt-contract">Contract</option>
+            </select>
+          </div>
+
+          <button class="bt-btn bt-btn-primary" id="btn-ocr" style="width:100%;justify-content:center;" disabled>
+            🔍 เริ่ม OCR ด้วย Azure AI
+          </button>
+
+          <div id="ocr-progress" style="display:none; margin-top:16px;">
+            <div class="bt-progress">
+              <div class="bt-progress-bar" id="ocr-bar" style="width:30%;transition:width 1s;"></div>
+            </div>
+            <small style="color:var(--bt-primary);">Azure Document Intelligence กำลังประมวลผล...</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div>
+        <div class="bt-card" style="height:100%;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div class="bt-card-title">2️⃣ ผลการถอดข้อความ</div>
+            <div style="display:flex; gap:8px;">
+              <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="copyResult()">📋 คัดลอก</button>
+              <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="saveToKB()">💾 บันทึกลง KB</button>
+            </div>
+          </div>
+          <textarea class="bt-textarea" id="ocr-result" style="min-height:400px; font-family:'Sarabun',sans-serif;"
+                    placeholder="ผลการ OCR จะแสดงที่นี่...&#10;สามารถแก้ไขได้โดยตรง"></textarea>
+          <div style="margin-top:8px; font-size:0.82rem; color:var(--bt-muted);" id="page-count"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('doc-file');
+let docFile = null;
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  docFile = file;
+  document.getElementById('file-info').style.display = 'flex';
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('btn-ocr').disabled = false;
+}
+
+document.getElementById('btn-ocr').addEventListener('click', async () => {
+  if (!docFile) return;
+  document.getElementById('ocr-progress').style.display = 'block';
+  document.getElementById('ocr-bar').style.width = '30%';
+
+  const fd = new FormData();
+  fd.append('file', docFile, docFile.name);
+  fd.append('is_private', '1');
+  const csrf = frappe.csrf_token || '';
+  const uploadRes = await fetch('/api/method/upload_file', {
+    method: 'POST', headers: {'X-Frappe-CSRF-Token': csrf}, body: fd
+  });
+  const uploadData = await uploadRes.json();
+  const fileUrl = uploadData.message?.file_url;
+  if (!fileUrl) { BT.notify('อัปโหลดล้มเหลว', 'error'); return; }
+
+  document.getElementById('ocr-bar').style.width = '60%';
+  const docType = document.getElementById('sel-doc-type').value;
+
+  try {
+    const result = await BT.call('betime_solution.api.portal.run_ocr', {
+      file_url: fileUrl, model_type: docType
+    });
+    document.getElementById('ocr-bar').style.width = '100%';
+    document.getElementById('ocr-result').value = result.content || '';
+    document.getElementById('page-count').textContent =
+      `📄 ${result.page_count || 1} หน้า | 📊 ${result.tables || 0} ตาราง`;
+    setTimeout(() => document.getElementById('ocr-progress').style.display = 'none', 1000);
+    BT.notify('✅ OCR เสร็จสิ้น', 'info');
+  } catch(e) {
+    BT.notify('OCR ล้มเหลว: ' + e.message, 'error');
+    document.getElementById('ocr-progress').style.display = 'none';
+  }
+});
+
+function copyResult() {
+  const text = document.getElementById('ocr-result').value;
+  navigator.clipboard.writeText(text).then(() => BT.notify('📋 คัดลอกแล้ว', 'info'));
+}
+
+async function saveToKB() {
+  const content = document.getElementById('ocr-result').value.trim();
+  if (!content) { BT.notify('ไม่มีข้อความให้บันทึก', 'error'); return; }
+  const title = docFile ? docFile.name.replace(/\.[^.]+$/, '') : 'OCR Document';
+  try {
+    const result = await BT.call('betime_solution.api.portal.save_ocr_to_knowledge', {
+      title, content, source: docFile?.name || ''
+    });
+    BT.notify('✅ บันทึกลง Knowledge Base แล้ว: ' + result.name, 'info');
+    setTimeout(() => window.open('/app/ai-knowledge-base/' + result.name), 500);
+  } catch(e) {
+    BT.notify('บันทึกล้มเหลว: ' + e.message, 'error');
+  }
+}
+</script>
+{% endblock %}

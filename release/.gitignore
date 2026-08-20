@@ -1,0 +1,27 @@
+node_modules/
+.tmp/
+.wrangler/
+.xdg/
+.xdg-config/
+.env
+.env.*
+**/.next/
+__pycache__/
+.pytest_cache/
+test-results/
+temp-stt-test/
+
+# Logs and runtime outputs
+*.log
+*.out.log
+*.err.log
+
+# Local test and generated data
+bt-helpdesk_*/
+_backups/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

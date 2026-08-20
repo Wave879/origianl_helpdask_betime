@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invoice Tracking — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-receipt"></i> Invoice Tracking</h2></div>
+    <div class="bt-card">
+      <div class="bt-section-header"><h2>รายการ Invoice</h2><button class="bt-btn bt-btn-outline bt-btn-sm" onclick="loadInvoices()"><i class="bi bi-arrow-clockwise"></i> โหลด</button></div>
+      <div id="inv-table"><p style="color:#888;text-align:center;padding:40px">ตั้งค่า Backend URL เพื่อโหลดข้อมูล</p></div>
+    </div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('invoices.html', 'Finance');
+      async function loadInvoices() {
+      if (!BT.hasBackend()) return;
+      try {
+        const rows = await BT.listDocs('Invoice Tracking', ['name','invoice_number','client','total_amount','due_date','status'], {}, 50);
+        const sC={Paid:'success',Overdue:'danger',Pending:'warning',Draft:'grey'};
+        const tbody = rows.map(r=>`<tr><td>${r.invoice_number||r.name}</td><td>${r.client||'-'}</td><td style="text-align:right">${(r.total_amount||0).toLocaleString()}</td><td>${r.due_date||'-'}</td><td><span class="bt-badge bt-badge-${sC[r.status]||'grey'}">${r.status}</span></td></tr>`).join('');
+        document.getElementById('inv-table').innerHTML = `<table class="bt-table"><thead><tr><th>เลขที่</th><th>ลูกค้า</th><th>จำนวน (฿)</th><th>ครบกำหนด</th><th>สถานะ</th></tr></thead><tbody>${tbody||'<tr><td colspan=5 style=text-align:center;color:#888>ไม่มีข้อมูล</td></tr>'}</tbody></table>`;
+      } catch(e) { BT.notify('โหลด Invoice ไม่สำเร็จ', 'error'); }
+    }
+    document.addEventListener('DOMContentLoaded', loadInvoices);
+</script>
+</body>
+</html>

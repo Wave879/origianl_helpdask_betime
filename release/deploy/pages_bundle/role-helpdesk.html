@@ -1,0 +1,4316 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helpdeck Role Management - Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    :root {
+      --role-bg: #f4f7fb;
+      --role-card: #ffffff;
+      --role-line: #dbe4ef;
+      --role-line-strong: #c7d2e5;
+      --role-text: #0f172a;
+      --role-muted: #64748b;
+      --role-primary: #2563eb;
+      --role-primary-soft: rgba(37, 99, 235, .08);
+      --role-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+    }
+    body {
+      background:
+        radial-gradient(circle at top right, rgba(37, 99, 235, .06), transparent 32%),
+        radial-gradient(circle at bottom left, rgba(249, 115, 22, .05), transparent 28%),
+        var(--role-bg);
+      color: var(--role-text);
+    }
+    .role-page-title {
+      margin-bottom: 14px;
+    }
+    .role-page-title h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--role-text);
+    }
+    .role-page-title p {
+      margin: 6px 0 0;
+      color: var(--role-muted);
+      line-height: 1.6;
+    }
+    .role-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+    .hero-copy,
+    .hero-stats {
+      border: 1px solid var(--role-line);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: var(--role-shadow);
+    }
+    .hero-copy {
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-copy::after {
+      content: '';
+      position: absolute;
+      inset: auto -36px -54px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, .09), transparent 68%);
+      pointer-events: none;
+    }
+    .page-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--role-primary-soft);
+      color: var(--role-primary);
+      font-size: .75rem;
+      font-weight: 900;
+      letter-spacing: .02em;
+      margin-bottom: 10px;
+    }
+    .hero-copy h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.2;
+      font-weight: 900;
+    }
+    .hero-copy p {
+      margin: 10px 0 0;
+      color: var(--role-muted);
+      line-height: 1.65;
+      max-width: 68ch;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      padding: 14px;
+      gap: 10px;
+    }
+    .hero-stat {
+      border: 1px solid var(--role-line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 112px;
+    }
+    .hero-stat .label {
+      color: var(--role-muted);
+      font-size: .76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .hero-stat .value {
+      margin-top: 10px;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--role-text);
+      line-height: 1;
+    }
+    .hero-stat .hint {
+      margin-top: 8px;
+      color: var(--role-muted);
+      font-size: .8rem;
+      line-height: 1.4;
+    }
+    .role-shell {
+      border: 1px solid rgba(219, 228, 239, .9);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--role-shadow);
+      background: rgba(255, 255, 255, .78);
+      backdrop-filter: blur(10px);
+    }
+    .file-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 14px 14px 10px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(247,250,252,.98));
+      border-bottom: 1px solid var(--role-line);
+    }
+    .file-tab {
+      appearance: none;
+      border: 1px solid var(--role-line);
+      background: #edf2f7;
+      color: #334155;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-family: inherit;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .18s ease;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,.7);
+    }
+    .file-tab:hover { transform: translateY(-1px); }
+    .file-tab.active {
+      background: var(--role-primary);
+      color: #fff;
+      border-color: var(--role-primary);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, .18);
+    }
+    .file-tab.active .tab-count {
+      background: rgba(255,255,255,.18);
+      color: #fff;
+    }
+    .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      padding: 0 8px;
+      height: 22px;
+      border-radius: 999px;
+      margin-left: 6px;
+      background: var(--role-primary-soft);
+      color: var(--role-primary);
+      font-size: .78rem;
+      font-weight: 800;
+    }
+    .tab-panel {
+      display: none;
+      background: #fff;
+      padding: 18px;
+    }
+    .tab-panel.active { display: block; }
+    .panel-head {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .panel-head h3 {
+      margin: 0;
+      font-size: 1.06rem;
+      font-weight: 800;
+      color: var(--role-text);
+    }
+    .panel-head p {
+      margin: 5px 0 0;
+      color: var(--role-muted);
+      line-height: 1.55;
+      max-width: 980px;
+    }
+    .panel-toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      width: min(520px, 100%);
+      min-height: 42px;
+      border: 1px solid var(--role-line-strong);
+      border-radius: 12px;
+      background: #fff;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: .92rem;
+      color: var(--role-text);
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--role-primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+    }
+    .project-combobox { position: relative; }
+    .project-combobox-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--role-line-strong);
+      border-radius: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 1050;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    .project-combobox-dropdown.open { display: block; }
+    .project-combobox-option {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: .92rem;
+      color: var(--role-text);
+      transition: background .12s;
+    }
+    .project-combobox-option:hover,
+    .project-combobox-option.selected { background: #eff6ff; color: var(--role-primary); }
+    .project-combobox-empty { padding: 10px 14px; color: var(--role-muted); font-size: .88rem; }
+    .panel-count {
+      color: var(--role-muted);
+      font-size: .88rem;
+      font-weight: 700;
+      background: #f8fafc;
+      border: 1px solid var(--role-line);
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
+    .section-block {
+      border: 1px solid var(--role-line);
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff, #fbfdff);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .04);
+    }
+    .section-block + .section-block {
+      margin-top: 14px;
+    }
+    .table-wrap {
+      border: 1px solid var(--role-line);
+      border-radius: 18px;
+      overflow: auto;
+      background: #fff;
+    }
+    .ownership-card {
+      margin-bottom: 16px;
+      border: 1px solid var(--role-line);
+      border-radius: 22px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: 0 16px 34px rgba(15, 23, 42, .06);
+    }
+    .ownership-head {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--role-line);
+      background: linear-gradient(180deg, rgba(248,250,252,.96), rgba(255,255,255,.96));
+      flex-wrap: wrap;
+    }
+    .ownership-head h3 {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 900;
+      color: var(--role-text);
+    }
+    .ownership-head p {
+      margin: 5px 0 0;
+      color: var(--role-muted);
+      line-height: 1.55;
+      max-width: 980px;
+    }
+    .ownership-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .ownership-search {
+      width: min(440px, 100%);
+      min-width: 280px;
+    }
+    .ownership-wrap {
+      overflow: auto;
+    }
+    .ownership-table {
+      min-width: 980px;
+    }
+    .ownership-table th,
+    .ownership-table td {
+      vertical-align: top;
+    }
+    .ownership-row {
+      cursor: pointer;
+    }
+    .ownership-project-title {
+      font-weight: 900;
+      color: var(--role-text);
+      margin-bottom: 4px;
+    }
+    .ownership-project-sub {
+      color: var(--role-muted);
+      font-size: .82rem;
+      line-height: 1.45;
+    }
+    .ownership-list {
+      color: var(--role-text);
+      line-height: 1.55;
+      font-weight: 700;
+      word-break: break-word;
+      white-space: normal;
+    }
+    .ownership-empty {
+      padding: 22px 14px;
+      text-align: center;
+      color: var(--role-muted);
+      font-weight: 700;
+    }
+    .role-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 920px;
+    }
+    .role-table th,
+    .role-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+      text-align: left;
+      font-size: .88rem;
+    }
+    .role-table th {
+      background: linear-gradient(180deg, #f8fbff, #f3f8ff);
+      color: #1e3a8a;
+      font-size: .76rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .035em;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .role-table tr:last-child td { border-bottom: none; }
+    .role-table tbody tr:hover { background: #f8fbff; }
+    .relation-table-wrap {
+      border: 1px solid var(--role-line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .relation-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .84rem;
+    }
+    .relation-table th,
+    .relation-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--role-line);
+      text-align: left;
+      vertical-align: top;
+    }
+    .relation-table th {
+      background: #f8fbff;
+      color: #163b7a;
+      font-size: .74rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .relation-table tr:last-child td { border-bottom: none; }
+    .relation-table .project-code {
+      color: var(--role-muted);
+      font-size: .75rem;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .relation-table .status-active {
+      color: #15803d;
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+    .relation-table .status-muted {
+      color: #64748b;
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .section-title-row h4 { margin: 0; }
+    .round-add-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid #1d4ed8;
+      border-radius: 999px;
+      background: #1d4ed8;
+      color: #fff;
+      font-size: 1.25rem;
+      line-height: 1;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(29, 78, 216, .16);
+    }
+    .role-row {
+      cursor: pointer;
+    }
+    .entity-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .entity-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #60a5fa);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .78rem;
+      font-weight: 800;
+      flex: 0 0 auto;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, .18);
+    }
+    .entity-badge.project {
+      background: linear-gradient(135deg, #f97316, #fbbf24);
+      box-shadow: 0 10px 22px rgba(249, 115, 22, .16);
+    }
+    .entity-main {
+      min-width: 0;
+    }
+    .entity-title {
+      font-weight: 800;
+      color: var(--role-text);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .entity-sub {
+      color: var(--role-muted);
+      font-size: .82rem;
+      line-height: 1.45;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: .76rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .pill.blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .pill.green { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .pill.orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .pill.slate { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+    .pill.red { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .summary-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .summary-card {
+      border: 1px solid var(--role-line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+    }
+    .summary-card .label {
+      color: var(--role-muted);
+      font-size: .74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .summary-card .value {
+      margin-top: 8px;
+      font-size: .98rem;
+      font-weight: 800;
+      color: var(--role-text);
+      line-height: 1.45;
+    }
+    .muted {
+      color: var(--role-muted);
+    }
+    .table-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bt-btn {
+      border-radius: 12px;
+      font-weight: 800;
+    }
+    .bt-btn.bt-btn-sm {
+      padding: 7px 12px;
+      min-height: 34px;
+      font-size: .85rem;
+    }
+    .bt-btn.bt-btn-soft {
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid #dbe4ef;
+    }
+    .bt-btn.bt-btn-soft:hover {
+      background: #eef4ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+    .bt-btn.bt-btn-danger {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    .bt-btn.bt-btn-danger:hover {
+      background: #fee2e2;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      z-index: 9999;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      width: min(1140px, 100%);
+      max-height: calc(100vh - 44px);
+      overflow: auto;
+      background: #fff;
+      border-radius: 22px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 26px 72px rgba(15, 23, 42, .24);
+    }
+    .modal-card.large { width: min(1280px, 100%); }
+    .modal-card.narrow { width: min(650px, 100%); }
+    .modal-card.medium { width: min(920px, 100%); }
+    .modal-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(90deg, rgba(37, 99, 235, .06), rgba(249, 115, 22, .05));
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .modal-head h3 {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 900;
+      color: var(--role-text);
+    }
+    .modal-head p {
+      margin: 5px 0 0;
+      color: var(--role-muted);
+      line-height: 1.5;
+    }
+    .modal-body {
+      padding: 18px 20px 20px;
+    }
+    .modal-footer {
+      padding: 16px 20px 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: #fbfdff;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 960px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      .role-hero { grid-template-columns: 1fr; }
+      .hero-stats { grid-template-columns: 1fr; }
+    }
+    .detail-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+    .detail-card h4 {
+      margin: 0 0 12px;
+      font-size: .95rem;
+      font-weight: 900;
+      color: var(--role-text);
+    }
+    .kv-list {
+      display: grid;
+      gap: 10px;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+    @media (max-width: 640px) {
+      .kv { grid-template-columns: 1fr; }
+    }
+    .kv dt {
+      font-size: .78rem;
+      font-weight: 900;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .kv dd {
+      margin: 0;
+      color: var(--role-text);
+      line-height: 1.55;
+      font-size: .9rem;
+      word-break: break-word;
+    }
+    .section-block {
+      border: 1px solid var(--role-line);
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff, #fbfdff);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .04);
+    }
+    .section-block + .section-block { margin-top: 14px; }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .section-head h4 {
+      margin: 0;
+      font-size: .95rem;
+      font-weight: 900;
+      color: var(--role-text);
+    }
+    .section-head p {
+      margin: 4px 0 0;
+      color: var(--role-muted);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+    .picker-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .picker-grid.employee-project-picker {
+      grid-template-columns: minmax(180px, 1fr) minmax(260px, 1.35fr) minmax(120px, .55fr) minmax(150px, auto);
+    }
+    .picker-grid.employee-project-picker .bt-btn {
+      min-height: 42px;
+      white-space: nowrap;
+      align-self: end;
+    }
+    @media (max-width: 900px) {
+      .picker-grid { grid-template-columns: 1fr; }
+      .picker-grid.employee-project-picker { grid-template-columns: 1fr; }
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: .8rem;
+      font-weight: 800;
+      color: #334155;
+    }
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 42px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: .92rem;
+      color: var(--role-text);
+      background: #fff;
+      outline: none;
+    }
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--role-primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+    }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      min-height: 34px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: .8rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .chip.blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .chip.green { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .chip.orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .chip.slate { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+    .chip.red { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .chip button {
+      border: none;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+    }
+    .empty-row {
+      text-align: center;
+      color: #64748b;
+      padding: 18px 12px;
+      font-size: .92rem;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 720px) {
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+    .summary-card {
+      border: 1px solid #dbe4ef;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      padding: 14px;
+    }
+    .summary-card .label {
+      font-size: .78rem;
+      font-weight: 900;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      margin-bottom: 8px;
+    }
+    .summary-card .value {
+      font-size: .9rem;
+      color: var(--role-text);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body class="betime-portal">
+  <div id="bt-appbar-holder"></div>
+  <div class="bt-layout" id="bt-layout-holder">
+    <main class="bt-main-content">
+            <section class="role-hero">
+        <div class="hero-copy">
+          <div class="page-badge">Helpdesk / User Project Access</div>
+          <h2>Helpdeck Role Management</h2>
+          <p>หน้าจัดการสิทธิสำหรับ user, project และ team ใน helpdesk เราจัดมุมมองให้สแกนง่าย แก้ความสัมพันธ์ได้เร็ว และเห็นสถานะสำคัญในหน้าเดียว</p>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="label">Users</div>
+            <div class="value" id="heroPeopleCount">0</div>
+            <div class="hint">รายชื่อพนักงานและ user ที่มองเห็นได้</div>
+          </div>
+          <div class="hero-stat">
+            <div class="label">Projects</div>
+            <div class="value" id="heroProjectCount">0</div>
+            <div class="hint">โครงการทั้งหมดที่ตั้งสิทธิไว้</div>
+          </div>
+          <div class="hero-stat">
+            <div class="label">Teams</div>
+            <div class="value" id="heroTeamCount">0</div>
+            <div class="hint">ทีมและความเกี่ยวข้องที่ผูกกับงาน</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="role-shell">
+        <div class="file-tabs">
+          <button class="file-tab active" type="button" data-tab="people">
+            รายชื่อพนักงาน <span class="tab-count" id="peopleTabCount">0</span>
+          </button>
+          <button class="file-tab" type="button" data-tab="projects">
+            User Project Access <span class="tab-count" id="teamTabCount">0</span>
+          </button>
+        </div>
+
+        <section class="tab-panel active" id="peoplePanel">
+          <div class="panel-head">
+            <div>
+              <h3>จัดการสิทธิผู้ใช้และโปรเจกต์ใน Helpdesk</h3>
+              <p>แสดงข้อมูลจาก <strong>hd_users</strong> เพื่อให้ค้นหา แก้ไข และตรวจสอบความสัมพันธ์ของพนักงานกับโปรเจกต์ได้เร็วขึ้น</p>
+            </div>
+            <button class="bt-btn bt-btn-primary" type="button" id="addPersonBtn">+ เพิ่มพนักงาน</button>
+          </div>
+
+          <div class="panel-toolbar">
+            <input class="search-input" id="peopleSearch" placeholder="ค้นหาพนักงาน / code / email / ตำแหน่ง / แผนก">
+            <div class="panel-count" id="peopleCount">0 รายการ</div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="role-table">
+              <thead>
+                <tr>
+                  <th style="width:28%">พนักงาน</th>
+                  <th style="width:20%">Code / Email</th>
+                  <th style="width:11%">ตำแหน่ง</th>
+                  <th style="width:24%">Project Access</th>
+                  <th style="width:14%">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody id="peopleTbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="projectsPanel">
+          <div class="panel-head">
+            <div>
+              <h3>User Project Access</h3>
+              <p>แสดงความเกี่ยวข้องของทีมใน <strong>hd_teams</strong> และสิทธิของแต่ละโปรเจกต์ เพื่อให้เห็นภาพรวมของ PM, IT Support และ Dev ได้ในที่เดียว</p>
+            </div>
+          </div>
+
+          <div class="ownership-card">
+            <div class="ownership-head">
+              <div>
+                <h3>Team List</h3>
+                <p>Team Code, Team Name TH, Team Name EN, PM และสถานะ</p>
+              </div>
+              <div class="ownership-tools">
+                <input class="search-input ownership-search" id="teamSearch" placeholder="ค้นหา team / owner / member">
+                <div class="panel-count" id="teamCount">0 รายการ</div>
+              </div>
+            </div>
+            <div class="ownership-wrap">
+              <table class="role-table ownership-table" aria-label="Team Management">
+                <thead>
+                  <tr>
+                    <th style="width:18%">Team Code</th>
+                    <th>Team Name TH</th>
+                    <th style="width:20%">Team Name EN</th>
+                    <th style="width:18%">PM</th>
+                    <th style="width:10%">Active</th>
+                  </tr>
+                </thead>
+                <tbody id="teamsTbody">
+                  <tr><td class="ownership-empty" colspan="5">ยังไม่มีข้อมูลทีมที่เชื่อมโยงไว้</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="employeeModal" aria-hidden="true">
+    <div class="modal-card medium">
+      <div class="modal-head">
+        <div>
+          <h3 id="employeeModalTitle">เพิ่มพนักงาน</h3>
+          <p id="employeeModalSub"></p>
+        </div>
+        <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-close-modal="employeeModal">ปิด</button>
+      </div>
+      <div class="modal-body" id="employeeModalBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="employeeProjectRoleModal" aria-hidden="true">
+    <div class="modal-card narrow">
+      <div class="modal-head">
+        <div>
+          <h3>ผูกคนกับโปรเจกต์</h3>
+          <p>เลือกโปรเจกต์และ role ที่เกี่ยวข้องของพนักงานคนนี้</p>
+        </div>
+        <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-close-modal="employeeProjectRoleModal">ปิด</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-card">
+          <div class="kv-list">
+            <div class="kv">
+              <dt>โปรเจกต์</dt>
+              <dd>
+                <div class="project-combobox">
+                  <input class="search-input" id="employeeProjectRoleSearch" placeholder="ค้นหาโปรเจกต์ / code" autocomplete="off">
+                  <input type="hidden" id="employeeProjectRoleProjectSelect">
+                  <div class="project-combobox-dropdown" id="employeeProjectRoleDropdown"></div>
+                </div>
+              </dd>
+            </div>
+            <div class="kv">
+              <dt>Role ที่ต้องการผูก</dt>
+              <dd>
+                <select class="search-input" id="employeeProjectRoleRoleSelect">
+                  <option value="pm">PM</option>
+                  <option value="support">IT Support</option>
+                  <option value="dev">Dev</option>
+                </select>
+              </dd>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="bt-btn bt-btn-soft" type="button" data-close-modal="employeeProjectRoleModal">ยกเลิก</button>
+        <button class="bt-btn bt-btn-primary" type="button" id="employeeProjectRoleSaveBtn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="projectModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 id="projectModalTitle">แก้ไขสิทธิในโปรเจกต์</h3>
+          <p id="projectModalSub"></p>
+        </div>
+        <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-close-modal="projectModal">ปิด</button>
+      </div>
+      <div class="modal-body" id="projectModalBody"></div>
+      <div class="modal-footer">
+        <button class="bt-btn bt-btn-soft" type="button" id="resetProjectConfigBtn">ล้างค่าการผูกสิทธิ</button>
+        <button class="bt-btn bt-btn-soft" type="button" data-close-modal="projectModal">ยกเลิก</button>
+        <button class="bt-btn bt-btn-primary" type="button" id="saveProjectConfigBtn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="teamModal" aria-hidden="true">
+    <div class="modal-card large">
+      <div class="modal-head">
+        <div>
+            <h3 id="teamModalTitle">จัดการทีม</h3>
+          <p id="teamModalSub"></p>
+        </div>
+        <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-close-modal="teamModal">ปิด</button>
+      </div>
+      <div class="modal-body" id="teamModalBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="personModal" aria-hidden="true">
+    <div class="modal-card narrow">
+      <div class="modal-head">
+        <div>
+          <h3>เพิ่มพนักงาน</h3>
+          <p>เพิ่มพนักงานหรือ user ใหม่ในระบบ และกำหนดข้อมูลพื้นฐานสำหรับผูกกับโปรเจกต์ได้ทันที</p>
+        </div>
+        <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-close-modal="personModal">ปิด</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-card">
+          <div class="kv-list">
+            <div class="kv">
+              <dt>ชื่อพนักงาน</dt>
+              <dd><input class="search-input" id="newPersonName" placeholder="ชื่อพนักงาน - ชื่อที่ใช้แสดง"></dd>
+            </div>
+            <div class="kv">
+              <dt>Code / Email</dt>
+              <dd><input class="search-input" id="newPersonCode" placeholder="เช่น EMP001 หรือ user@company.com"></dd>
+            </div>
+            <div class="kv">
+              <dt>ตำแหน่ง</dt>
+              <dd><input class="search-input" id="newPersonPosition" list="positionOptions" placeholder="เช่น Helpdesk Lead, Support, Developer"></dd>
+            </div>
+            <div class="kv">
+              <dt>Job title / role</dt>
+              <dd><input class="search-input" id="newPersonJob" placeholder="เช่น Helpdesk, Support, Developer"></dd>
+            </div>
+            <div class="kv">
+              <dt>แผนก</dt>
+              <dd><input class="search-input" id="newPersonDept" placeholder="เช่น IT Support, Operation"></dd>
+            </div>
+          </div>
+        </div>
+      </div>
+      <datalist id="positionOptions"></datalist>
+      <div class="modal-footer">
+        <button class="bt-btn bt-btn-soft" type="button" data-close-modal="personModal">ยกเลิก</button>
+        <button class="bt-btn bt-btn-primary" type="button" id="savePersonBtn">บันทึกข้อมูลผู้ใช้ใหม่</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="projectAddModal" aria-hidden="true">
+    <div class="modal-card narrow">
+      <div class="modal-head">
+        <div>
+          <h3>เพิ่มโปรเจกต์ใหม่</h3>
+          <p>เพิ่มโปรเจกต์ใหม่เพื่อผูก PM / IT Support / Dev ให้ครบตามโครงสร้างงาน</p>
+        </div>
+        <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-close-modal="projectAddModal">ปิด</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-card">
+          <div class="kv-list">
+            <div class="kv">
+              <dt>Code</dt>
+              <dd><input class="search-input" id="newProjectCode" placeholder="รหัสโปรเจกต์"></dd>
+            </div>
+            <div class="kv">
+              <dt>ชื่อโปรเจกต์</dt>
+              <dd><input class="search-input" id="newProjectName" placeholder="ชื่อโปรเจกต์"></dd>
+            </div>
+            <div class="kv">
+              <dt>PM ที่รับผิดชอบ</dt>
+              <dd><input class="search-input" id="newProjectPm" placeholder="ชื่อพนักงาน / code / email ของ PM"></dd>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="bt-btn bt-btn-soft" type="button" data-close-modal="projectAddModal">ปิด</button>
+        <button class="bt-btn bt-btn-primary" type="button" id="saveProjectBtn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/shared.js"></script>
+  <script src="/assets/betime_solution/js/betime.js"></script>
+  <script>
+    if (window.BT && typeof BT.initApp === 'function') {
+      BT.initApp('role-helpdesk.html', 'IT Support');
+    }
+
+    const state = {
+      people: [],
+      systemUsers: [],
+      positions: [],
+      projects: [],
+      teams: [],
+      projectDevs: [],
+      projectMemberRoles: [],
+      mainTeamProjects: [],
+      activeTab: 'people',
+      peopleSearch: '',
+      projectSearch: '',
+      teamSearch: '',
+      ownershipSearch: '',
+      currentEmployeeId: '',
+      currentProjectId: '',
+      currentProjectDraft: null,
+      projectConfigCache: new Map(),
+      projectRoleSnapshotCache: new Map(),
+      employeeLinkCache: new Map(),
+      employeeMainTeamLinkCache: new Map(),
+      currentEmployeeProjectRoleEmpId: '',
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function cleanText(value) {
+      const raw = value == null ? '' : String(value);
+      const repaired = typeof repairMojibake === 'function' ? repairMojibake(raw) : raw;
+      const normalized = String(repaired).replace(/\s+/g, ' ').trim();
+      return /^(?:\?+)(?:\s+\?+)*$/u.test(normalized) ? '' : normalized;
+    }
+
+    function normalizeKey(value) {
+      return cleanText(value).toLowerCase();
+    }
+
+    function repairMojibake(value) {
+      const input = String(value ?? '');
+      if (!input) return input;
+      const cp1252 = {
+        0x20AC: 0x80, 0x201A: 0x82, 0x0192: 0x83, 0x201E: 0x84,
+        0x2026: 0x85, 0x2020: 0x86, 0x2021: 0x87, 0x02C6: 0x88,
+        0x2030: 0x89, 0x0160: 0x8A, 0x2039: 0x8B, 0x0152: 0x8C,
+        0x017D: 0x8E, 0x2018: 0x91, 0x2019: 0x92, 0x201C: 0x93,
+        0x201D: 0x94, 0x2022: 0x95, 0x2013: 0x96, 0x2014: 0x97,
+        0x02DC: 0x98, 0x2122: 0x99, 0x0161: 0x9A, 0x203A: 0x9B,
+        0x0153: 0x9C, 0x017E: 0x9E, 0x0178: 0x9F,
+      };
+
+      const hasTrigger = (text) => /[\u0080-\u009F\u00C2\u00E0\u20AC\uFFFD]/u.test(text)
+        || text.includes('\u0E40\u0E19\u20AC')
+        || (text.match(/\u0E40\u0E18/g) || []).length > 1;
+
+      const badness = (text) => (
+        ((text.match(/\u0E40\u0E18/g) || []).length * 8)
+        + ((text.match(/\u0E40\u0E19\u20AC/g) || []).length * 12)
+        + ((text.match(/\u00E0[\u00B8\u00B9]/g) || []).length * 8)
+        + ((text.match(/\u00C2/g) || []).length * 6)
+        + ((text.match(/\uFFFD/g) || []).length * 12)
+        + ((text.match(/[\u0080-\u009F]/g) || []).length * 7)
+        + ((text.match(/\u20AC/g) || []).length * 10)
+      );
+
+      const toByte = (ch) => {
+        const code = ch.codePointAt(0);
+        if (code <= 0x7F) return code;
+        if (cp1252[code] !== undefined) return cp1252[code];
+        if (code >= 0x80 && code <= 0xFF) return code;
+        if (code >= 0x0E01 && code <= 0x0E5B) return code - 0x0D60;
+        return null;
+      };
+
+      const fixOnce = (text) => {
+        const bytes = [];
+        for (const ch of text) {
+          const byte = toByte(ch);
+          if (byte === null) return null;
+          bytes.push(byte);
+        }
+        try {
+          return new TextDecoder('utf-8').decode(Uint8Array.from(bytes));
+        } catch {
+          return null;
+        }
+      };
+
+      if (!hasTrigger(input)) return input;
+      let current = input;
+      for (let i = 0; i < 8; i += 1) {
+        const next = fixOnce(current);
+        if (!next || badness(next) >= badness(current)) break;
+        current = next;
+      }
+      return current;
+    }
+
+    function normalizeThaiDom(root = document.body) {
+      if (!root) return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      for (const node of textNodes) {
+        const next = repairMojibake(node.nodeValue || '');
+        if (next && next !== node.nodeValue) node.nodeValue = next;
+      }
+
+      root.querySelectorAll('[placeholder], [title], [aria-label], [alt]').forEach((el) => {
+        ['placeholder', 'title', 'aria-label', 'alt'].forEach((attr) => {
+          const current = el.getAttribute(attr);
+          if (!current) return;
+          const next = repairMojibake(current);
+          if (next && next !== current) el.setAttribute(attr, next);
+        });
+      });
+    }
+
+    let thaiDomObserver = null;
+    function startThaiDomObserver() {
+      if (thaiDomObserver || typeof MutationObserver === 'undefined' || !document.body) return;
+      thaiDomObserver = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes || []) {
+            if (!node) continue;
+            if (node.nodeType === Node.TEXT_NODE) {
+              const next = repairMojibake(node.nodeValue || '');
+              if (next && next !== node.nodeValue) node.nodeValue = next;
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+              normalizeThaiDom(node);
+            }
+          }
+        }
+      });
+      thaiDomObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    function authHeadersSafe() {
+      const token = localStorage.getItem('bt_token') || '';
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers.Authorization = 'Bearer ' + token;
+      }
+      return headers;
+    }
+
+    function apiPath(path) {
+      const cleaned = String(path || '').startsWith('/') ? String(path || '') : `/${path || ''}`;
+      if (cleaned.startsWith('/web/')) return cleaned;
+      const inWebApp = window.location.pathname === '/web' || window.location.pathname.startsWith('/web/');
+      return `${inWebApp ? '/web' : ''}${cleaned}`;
+    }
+
+    function showNotice(message, kind = 'success') {
+      const noticeMessage = repairMojibake(message);
+      if (window.BT && typeof BT.notify === 'function') {
+        BT.notify(noticeMessage, kind);
+        return;
+      }
+      console.warn(`[${kind}] ${noticeMessage}`);
+      const hostId = 'bt-notice-host';
+      let host = document.getElementById(hostId);
+      if (!host) {
+        host = document.createElement('div');
+        host.id = hostId;
+        host.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:99999;display:flex;flex-direction:column;gap:8px;max-width:min(92vw,380px);pointer-events:none;';
+        document.body.appendChild(host);
+      }
+      const note = document.createElement('div');
+      const bg = kind === 'danger' ? '#fee2e2' : kind === 'warning' ? '#fef3c7' : kind === 'success' ? '#dcfce7' : '#e0f2fe';
+      const fg = kind === 'danger' ? '#991b1b' : kind === 'warning' ? '#92400e' : kind === 'success' ? '#166534' : '#075985';
+      note.style.cssText = `pointer-events:auto;border:1px solid rgba(15,23,42,.12);border-radius:14px;padding:10px 12px;background:${bg};color:${fg};box-shadow:0 12px 28px rgba(15,23,42,.12);font-size:.92rem;line-height:1.45;`;
+      note.textContent = noticeMessage;
+      host.appendChild(note);
+      setTimeout(() => note.remove(), 3800);
+    }
+
+    function uid(prefix) {
+      return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    }
+
+    function parseExtra(raw) {
+      if (!raw) return {};
+      if (typeof raw === 'object') return raw;
+      if (typeof raw !== 'string') return {};
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        return {};
+      }
+    }
+
+    function splitPeopleList(value) {
+      if (!value) return [];
+      if (Array.isArray(value)) return value.map(cleanText).filter(Boolean);
+      if (typeof value === 'string') {
+        const trimmed = cleanText(value);
+        if (!trimmed) return [];
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) return parsed.map(cleanText).filter(Boolean);
+        } catch (err) {}
+        return trimmed.split(/[,;\n|]+/).map(cleanText).filter(Boolean);
+      }
+      return [cleanText(value)].filter(Boolean);
+    }
+
+    function uniq(list) {
+      return [...new Set((list || []).map((item) => cleanText(item)).filter(Boolean))];
+    }
+
+    function normalizeEmployeeRecord(row, kind = 'system') {
+      const extra = parseExtra(row.extra);
+      const email = cleanText(row.email || extra.email || extra.work_email || extra.contact_email || '');
+      const code = cleanText(row.code || row.employee_code || row.emp_code || row.id_code || row.username || '');
+      const name = cleanText(row.name || row.full_name || row.display_name || extra.full_name || extra.name || '');
+      const positionName = cleanText(
+        row.position ||
+        row.position_name ||
+        row.positionName ||
+        extra.position ||
+        extra.position_name ||
+        extra.positionName ||
+        extra.job_title ||
+        row.jobTitle ||
+        row.job_title ||
+        extra.job_position ||
+        ''
+      );
+      const jobTitle = cleanText(row.jobTitle || row.job_title || extra.job_title || extra.job_position || '');
+      const department = cleanText(row.department || row.department_name || extra.department_name || extra.department || '');
+      const location = cleanText(row.location || extra.work_location || extra.location || '');
+      const isManual = String(extra.source || row.kind || kind).toLowerCase() === 'manual';
+      return {
+        id: cleanText(row.id || uid('person')),
+        code,
+        name,
+        email,
+        positionName,
+        jobTitle,
+        department,
+        location,
+        active: row.active !== false,
+        kind: isManual ? 'manual' : (row.kind || kind || 'system'),
+        extra,
+      };
+    }
+
+    function normalizeSystemUserRecord(row) {
+      const accessKeys = Array.isArray(row.access_keys) ? row.access_keys.map(cleanText).filter(Boolean) : [];
+      const accountType = cleanText(row.account_type || 'permanent') || 'permanent';
+      const role = cleanText(row.role || '');
+      const username = cleanText(row.username || '');
+      const email = cleanText(row.email || '');
+      const fullName = cleanText(row.full_name || row.name || row.display_name || '');
+      const department = cleanText(row.department || '');
+      const isActive = row.is_active !== false && row.is_active !== 0 && String(row.is_active) !== '0';
+      return {
+        id: cleanText(row.id || username || email || uid('user')),
+        code: username || email || cleanText(row.id || ''),
+        name: fullName || username || email,
+        email,
+        positionName: role,
+        jobTitle: role,
+        department,
+        location: '',
+        active: isActive,
+        kind: 'system-user',
+        extra: {
+          source: 'users',
+          user_id: cleanText(row.id || ''),
+          username,
+          role,
+          account_type: accountType,
+          must_change_password: row.must_change_password ? 'yes' : 'no',
+          user_expires_at: cleanText(row.user_expires_at || ''),
+          access_keys: accessKeys,
+        },
+      };
+    }
+
+    function normalizeProjectRecord(row, kind = 'system') {
+      const extra = parseExtra(row.extra);
+      const isManual = String(extra.source || row.kind || kind).toLowerCase() === 'manual';
+      return {
+        id: cleanText(row.id || uid('project')),
+        code: cleanText(row.code || row.project_code || extra.project_code || ''),
+        name: cleanText(row.name || row.project_name || extra.project_name || ''),
+        pmName: cleanText(row.pmName || row.pm_name || extra.project_pm || extra.pm_name || ''),
+        description: cleanText(row.description || row.project_description || extra.project_description || ''),
+        active: row.active !== false,
+        kind: isManual ? 'manual' : (row.kind || kind || 'system'),
+        extra,
+      };
+    }
+
+    function normalizePositionRecord(row, kind = 'system') {
+      const extra = parseExtra(row.extra);
+      const isManual = String(extra.source || row.kind || kind).toLowerCase() === 'manual';
+      return {
+        id: cleanText(row.id || uid('position')),
+        code: cleanText(row.code || row.position_code || extra.position_code || ''),
+        name: cleanText(row.name || row.position_name || extra.position_name || extra.name || ''),
+        description: cleanText(row.description || extra.description || ''),
+        active: row.active !== false,
+        kind: isManual ? 'manual' : (row.kind || kind || 'system'),
+        extra,
+      };
+    }
+
+    function normalizeTeamRecord(row) {
+      const extra = parseExtra(row.extra);
+      return {
+        id: cleanText(row.id || uid('team')),
+        code: cleanText(row.code || row.team_code || extra.team_code || ''),
+        name: cleanText(row.name || row.team_name || extra.team_name_en || extra.team_name || ''),
+        teamNameTh: cleanText(extra.team_name_th || row.team_name_th || row.team_name || ''),
+        teamNameEn: cleanText(extra.team_name_en || row.team_name_en || row.name || ''),
+        displayName: cleanText(extra.team_helpdesk_display_name || row.name || row.code || ''),
+        ownerName: cleanText(extra.owner_name || row.owner_name || ''),
+        ownerId: cleanText(extra.owner_id || row.owner_id || ''),
+        remark: cleanText(extra.remark || row.remark || ''),
+        memberCount: Number(extra.member_count || row.member_count || 0) || 0,
+        projectCode: cleanText(extra.project_code || extra.parent_project || ''),
+        projectName: cleanText(extra.project_name || ''),
+        memberNames: splitPeopleList(extra.team_member_names || extra.member_names || extra.member_name || extra.members || ''),
+        memberIds: splitPeopleList(extra.team_member_ids || extra.member_ids || ''),
+        memberEmails: splitPeopleList(extra.team_member_emails || extra.member_emails || ''),
+        active: row.active !== false,
+        extra,
+      };
+    }
+
+    function isPlaceholderTeam(team) {
+      if (!team) return false;
+      const code = normalizeKey(team.code || '');
+      const name = normalizeKey(team.name || team.displayName || team.teamNameTh || team.teamNameEn || '');
+      const codeLooksPlaceholder = /^row[_\s-]?\d+$/i.test(cleanText(team.code || ''));
+      const nameLooksPlaceholder = /^row[_\s-]?\d+$/i.test(cleanText(team.name || team.displayName || team.teamNameTh || team.teamNameEn || ''));
+      const onlyPlaceholderNames = !cleanText(team.teamNameTh || '') && !cleanText(team.teamNameEn || '') && !cleanText(team.displayName || '');
+      return (codeLooksPlaceholder || nameLooksPlaceholder || code === name) && onlyPlaceholderNames;
+    }
+
+    function normalizeProjectDevRecord(row) {
+      const extra = parseExtra(row.extra);
+      return {
+        id: cleanText(row.id || uid('devrel')),
+        code: cleanText(row.code || row.employee_code || extra.employee_code || ''),
+        name: cleanText(row.name || row.employee_name || extra.employee_name || ''),
+        employeeId: cleanText(extra.employee_id || row.employee_id || row.user_id || ''),
+        employeeName: cleanText(extra.employee_name || row.employee_name || row.name || ''),
+        employeeEmail: cleanText(extra.employee_email || row.employee_email || ''),
+        projectRef: cleanText(extra.parent_project || extra.parent_project_ref || extra.project_code || extra.project_id || row.project_code || row.project_id || ''),
+        extra,
+      };
+    }
+
+    function normalizeProjectMemberRoleRecord(row) {
+      const extra = parseExtra(row.extra);
+      return {
+        id: cleanText(row.id || uid('projrole')),
+        code: cleanText(row.code || extra.code || ''),
+        name: cleanText(row.name || extra.name || ''),
+        projectId: cleanText(extra.project_id || row.project_id || row.projectId || ''),
+        projectCode: cleanText(extra.project_code || row.project_code || ''),
+        projectName: cleanText(extra.project_name || row.project_name || row.project || ''),
+        personId: cleanText(extra.person_id || row.person_id || row.employee_id || row.user_id || ''),
+        personCode: cleanText(extra.person_code || row.person_code || row.employee_code || ''),
+        personName: cleanText(extra.person_name || row.person_name || row.employee_name || row.name || ''),
+        roleType: cleanText(extra.role_type || row.role_type || row.role || ''),
+        positionName: cleanText(extra.position_name || row.position_name || row.position || extra.role_name || ''),
+        sourceTable: cleanText(extra.source_table || row.source_table || ''),
+        sourceRowId: cleanText(extra.source_row_id || row.source_row_id || ''),
+        active: row.active !== false,
+        sortOrder: Number(row.sort_order || extra.sort_order || 0) || 0,
+        extra,
+      };
+    }
+
+    function normalizeMainTeamProjectRole(value) {
+      const token = normalizeKey(value);
+      if (!token) return '';
+      if (['pm', 'p m', 'project manager', 'project head', 'head', 'manager'].some((item) => token === normalizeKey(item) || token.includes(normalizeKey(item)))) {
+        return 'pm';
+      }
+      if (['support', 'it support', 'helpdesk', 'help desk', 'service desk', 'supporter'].some((item) => token === normalizeKey(item) || token.includes(normalizeKey(item)))) {
+        return 'support';
+      }
+      if (['dev', 'developer', 'development', 'engineering'].some((item) => token === normalizeKey(item) || token.includes(normalizeKey(item)))) {
+        return 'dev';
+      }
+      return '';
+    }
+
+    function normalizeMainTeamProjectRecord(row, kind = 'system') {
+      const extra = parseExtra(row.extra);
+      const source = cleanText(extra.source || row.source || kind || 'system');
+      const projectServiceId = cleanText(
+        extra.project_service_id ||
+        extra.project_id ||
+        extra.project_ref ||
+        row.project_service_id ||
+        row.project_id ||
+        row.project_ref ||
+        ''
+      );
+      const projectServiceName = cleanText(
+        extra.project_service_name ||
+        extra.project_name ||
+        extra.project ||
+        row.code ||
+        row.project_name ||
+        row.project_service_name ||
+        ''
+      );
+      const userId = cleanText(extra.user_id || extra.person_id || row.user_id || row.person_id || '');
+      const personName = cleanText(extra.person_name || row.name || row.person_name || row.user_name || '');
+      const roleType = normalizeMainTeamProjectRole(extra.role_type || extra.role || row.role_type || row.role || '');
+      const positionName = cleanText(extra.position_name || row.position_name || row.position || '');
+      const departmentName = cleanText(extra.department_name || row.department_name || row.department || '');
+      const isManual = String(source).toLowerCase() === 'manual';
+      return {
+        id: cleanText(row.id || uid('mainteam')),
+        code: cleanText(row.code || projectServiceName || projectServiceId || ''),
+        name: cleanText(row.name || personName || projectServiceName || ''),
+        projectServiceId,
+        projectServiceName,
+        userId,
+        personName,
+        roleType,
+        positionName,
+        departmentName,
+        sortOrder: Number(row.sort_order ?? extra.sort_order ?? 0) || 0,
+        source,
+        active: row.active !== false,
+        kind: isManual ? 'manual' : (row.kind || kind || 'system'),
+        extra,
+      };
+    }
+
+    function mergeById(base, extra) {
+      const map = new Map();
+      (base || []).forEach((item) => {
+        map.set(String(item.id), item);
+      });
+      (extra || []).forEach((item) => {
+        map.set(String(item.id), item);
+      });
+      return [...map.values()];
+    }
+
+    function sortPeople(list) {
+      return [...list].sort((a, b) => {
+        const activeDiff = Number(b.active !== false) - Number(a.active !== false);
+        if (activeDiff) return activeDiff;
+        return displayEmployeeName(a).localeCompare(displayEmployeeName(b), 'th');
+      });
+    }
+
+    function personIdentityKeys(person) {
+      return uniq([
+        person.id,
+        person.email,
+        person.code,
+        person.name,
+        person.extra?.user_id,
+        person.extra?.username,
+        person.extra?.employee_id,
+        person.extra?.employee_code,
+      ]).map(normalizeKey).filter(Boolean);
+    }
+
+    function mergePersonRecord(primary, secondary) {
+      if (!secondary) return primary;
+      return {
+        ...primary,
+        code: primary.code || secondary.code,
+        name: primary.name || secondary.name,
+        email: primary.email || secondary.email,
+        positionName: secondary.positionName || primary.positionName,
+        jobTitle: secondary.jobTitle || primary.jobTitle,
+        department: secondary.department || primary.department,
+        location: secondary.location || primary.location,
+        active: primary.active !== false && secondary.active !== false,
+        extra: {
+          ...(secondary.extra || {}),
+          ...(primary.extra || {}),
+          linked_helpdesk_id: secondary.kind !== 'system-user' ? secondary.id : primary.extra?.linked_helpdesk_id,
+        },
+      };
+    }
+
+    function mergePeopleSources(systemPeople = [], helpdeskPeople = [], fallbackPeople = []) {
+      const map = new Map();
+      const alias = new Map();
+
+      const put = (person, preferExisting = true) => {
+        const keys = personIdentityKeys(person);
+        const existingKey = keys.find((key) => alias.has(key));
+        if (!existingKey) {
+          const key = keys[0] || normalizeKey(person.id || uid('person'));
+          map.set(key, person);
+          keys.forEach((item) => alias.set(item, key));
+          return;
+        }
+
+        const mapKey = alias.get(existingKey);
+        const existing = map.get(mapKey);
+        const merged = preferExisting ? mergePersonRecord(existing, person) : mergePersonRecord(person, existing);
+        map.set(mapKey, merged);
+        personIdentityKeys(merged).forEach((item) => alias.set(item, mapKey));
+      };
+
+      systemPeople.forEach((person) => put(person, true));
+      helpdeskPeople.forEach((person) => put(person, true));
+      if (!map.size) fallbackPeople.forEach((person) => put(person, true));
+      return sortPeople([...map.values()]);
+    }
+
+    function sortProjects(list) {
+      return [...list].sort((a, b) => {
+        const activeDiff = Number(b.active !== false) - Number(a.active !== false);
+        if (activeDiff) return activeDiff;
+        return displayProjectName(a).localeCompare(displayProjectName(b), 'th');
+      });
+    }
+
+    function buildFallbackPeopleRecords(projects, teams, devRows, mainTeamRows) {
+      const map = new Map();
+
+      const add = (entry) => {
+        const key = normalizeKey(entry.key || entry.id || entry.email || entry.name || '');
+        if (!key) return;
+        const normalized = {
+          id: cleanText(entry.id || entry.key || uid('person')),
+          code: cleanText(entry.code || entry.email || entry.id || entry.key || ''),
+          name: cleanText(entry.name || entry.code || entry.email || entry.id || ''),
+          email: cleanText(entry.email || ''),
+          positionName: cleanText(entry.positionName || ''),
+          jobTitle: cleanText(entry.jobTitle || entry.positionName || ''),
+          department: cleanText(entry.department || ''),
+          location: cleanText(entry.location || ''),
+          active: true,
+          kind: 'derived',
+          extra: {
+            source: 'derived',
+            fallback: true,
+            roles: uniq(entry.roles || []),
+            related_projects: uniq(entry.relatedProjects || []),
+            related_teams: uniq(entry.relatedTeams || []),
+          },
+        };
+
+        const existing = map.get(key);
+        if (!existing) {
+          map.set(key, normalized);
+          return;
+        }
+
+        existing.code = existing.code || normalized.code;
+        existing.name = existing.name || normalized.name;
+        existing.email = existing.email || normalized.email;
+        existing.positionName = existing.positionName || normalized.positionName;
+        existing.jobTitle = existing.jobTitle || normalized.jobTitle;
+        existing.department = existing.department || normalized.department;
+        existing.location = existing.location || normalized.location;
+        existing.extra.roles = uniq([...(existing.extra.roles || []), ...(normalized.extra.roles || [])]);
+        existing.extra.related_projects = uniq([...(existing.extra.related_projects || []), ...(normalized.extra.related_projects || [])]);
+        existing.extra.related_teams = uniq([...(existing.extra.related_teams || []), ...(normalized.extra.related_teams || [])]);
+      };
+
+      (projects || []).forEach((project) => {
+        const projectName = displayProjectName(project);
+        const pmName = cleanText(project.pmName || project.extra?.project_pm || '');
+        if (pmName) {
+          add({
+            key: `pm:${normalizeKey(pmName)}`,
+            id: `pm:${normalizeKey(pmName)}`,
+            code: pmName,
+            name: pmName,
+            positionName: 'PM',
+            jobTitle: 'PM',
+            department: projectName,
+            roles: ['pm'],
+            relatedProjects: [projectName],
+          });
+        }
+      });
+
+      (teams || []).forEach((team) => {
+        const teamName = cleanText(team.displayName || team.name || team.code || '');
+        const ownerName = cleanText(team.ownerName || '');
+        if (ownerName) {
+          add({
+            key: `team-owner:${normalizeKey(ownerName)}`,
+            id: `team-owner:${normalizeKey(ownerName)}`,
+            code: ownerName,
+            name: ownerName,
+            positionName: 'IT Support',
+            jobTitle: 'IT Support',
+            department: teamName,
+            roles: ['support'],
+            relatedTeams: [teamName],
+          });
+        }
+        (team.memberNames || []).forEach((memberName) => {
+          const text = cleanText(memberName);
+          if (!text) return;
+          add({
+            key: `team-member:${normalizeKey(text)}`,
+            id: `team-member:${normalizeKey(text)}`,
+            code: text,
+            name: text,
+            positionName: 'IT Support',
+            jobTitle: 'IT Support',
+            department: teamName,
+            roles: ['support'],
+            relatedTeams: [teamName],
+          });
+        });
+      });
+
+      (devRows || []).forEach((row) => {
+        const employeeName = cleanText(row.employeeName || row.name || '');
+        if (!employeeName) return;
+        add({
+          key: `dev:${normalizeKey(row.employeeId || employeeName)}`,
+          id: `dev:${normalizeKey(row.employeeId || employeeName)}`,
+          code: cleanText(row.employeeId || row.code || employeeName),
+          name: employeeName,
+          positionName: 'Dev',
+          jobTitle: 'Dev',
+          department: cleanText(row.projectRef || ''),
+          roles: ['dev'],
+          relatedProjects: [cleanText(row.projectRef || '')],
+        });
+      });
+
+      (mainTeamRows || []).forEach((row) => {
+        const personName = cleanText(row.personName || '');
+        if (!personName) return;
+        add({
+          key: `main:${normalizeKey(row.userId || personName)}`,
+          id: `main:${normalizeKey(row.userId || personName)}`,
+          code: cleanText(row.userId || personName),
+          name: personName,
+          positionName: cleanText(row.positionName || row.roleType || ''),
+          jobTitle: cleanText(row.roleType || row.positionName || ''),
+          department: cleanText(row.departmentName || row.projectServiceName || ''),
+          roles: [cleanText(row.roleType || '')].filter(Boolean),
+          relatedProjects: [cleanText(row.projectServiceName || '')].filter(Boolean),
+        });
+      });
+
+      return [...map.values()];
+    }
+
+    async function loadTable(table) {
+      const res = await fetch(apiPath(`/api/hd-master?table=${encodeURIComponent(table)}`), { headers: authHeadersSafe() });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || `โหลดข้อมูล ${table} ไม่สำเร็จ`);
+      return Array.isArray(data.data) ? data.data : [];
+    }
+
+    async function loadSystemUsers() {
+      const res = await fetch(apiPath('/api/users'), { headers: authHeadersSafe() });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'โหลดข้อมูล users ไม่สำเร็จ');
+      return Array.isArray(data.data) ? data.data : [];
+    }
+    async function getHelpdeskMasterContext() {
+      if (window.BT && typeof BT.loadHdContext === 'function') {
+        try {
+          return await BT.loadHdContext({ scope: 'admin' });
+        } catch (error) {
+          console.warn('Failed to load master context', error);
+        }
+      }
+      return window.BT && BT.masterContext ? BT.masterContext : null;
+    }
+
+    async function createHdRow(table, body) {
+      const res = await fetch(apiPath(`/api/hd-master?table=${encodeURIComponent(table)}`), {
+        method: 'POST',
+        headers: authHeadersSafe(),
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+      return data;
+    }
+
+    async function updateHdRow(id, body) {
+      const res = await fetch(apiPath(`/api/hd-master/${encodeURIComponent(id)}`), {
+        method: 'PUT',
+        headers: authHeadersSafe(),
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+      return data;
+    }
+
+    async function deleteHdRow(id) {
+      const res = await fetch(apiPath(`/api/hd-master/${encodeURIComponent(id)}`), {
+        method: 'DELETE',
+        headers: authHeadersSafe(),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'ลบไม่สำเร็จ');
+      return data;
+    }
+
+    async function reloadProjectMemberRoles() {
+      const context = await getHelpdeskMasterContext();
+      const rows = Array.isArray(context?.project_member_roles) ? context.project_member_roles : await loadTable('hd_project_member_roles');
+      state.projectMemberRoles = rows.map(normalizeProjectMemberRoleRecord);
+      state.employeeLinkCache.clear();
+    }
+    async function reloadProjects() {
+      const context = await getHelpdeskMasterContext();
+      const rows = Array.isArray(context?.projects) ? context.projects : await loadTable('hd_projects');
+      state.projects = sortProjects(rows.map((row) => normalizeProjectRecord(row, 'system')));
+      state.employeeLinkCache.clear();
+    }
+    async function reloadPeople() {
+      const context = await getHelpdeskMasterContext();
+      if (context) {
+        const helpdeskRows = Array.isArray(context.users) ? context.users : Array.isArray(context.tables?.hd_users) ? context.tables.hd_users : [];
+        const systemRows = Array.isArray(context.system_users) ? context.system_users : [];
+        const helpdeskPeople = helpdeskRows.map((row) => normalizeEmployeeRecord(row, 'system'));
+        const systemPeople = systemRows.map(normalizeSystemUserRecord);
+        state.systemUsers = systemRows;
+        state.people = mergePeopleSources(systemPeople, helpdeskPeople);
+        state.employeeLinkCache.clear();
+        return;
+      }
+
+      const [helpdeskRaw, usersRaw] = await Promise.allSettled([
+        loadTable('hd_users'),
+        loadSystemUsers(),
+      ]);
+      const readSettled = (result, fallback = []) => (result.status === 'fulfilled' ? result.value : fallback);
+      const helpdeskPeople = readSettled(helpdeskRaw).map((row) => normalizeEmployeeRecord(row, 'system'));
+      const systemRows = readSettled(usersRaw);
+      const systemPeople = systemRows.map(normalizeSystemUserRecord);
+      state.systemUsers = systemRows;
+      state.people = mergePeopleSources(systemPeople, helpdeskPeople);
+      state.employeeLinkCache.clear();
+      if (helpdeskRaw.status === 'rejected' || usersRaw.status === 'rejected') {
+        const failed = [];
+        if (helpdeskRaw.status === 'rejected') failed.push(`hd_users: ${helpdeskRaw.reason?.message || 'error'}`);
+        if (usersRaw.status === 'rejected') failed.push(`users: ${usersRaw.reason?.message || 'error'}`);
+        showNotice(`โหลดรายชื่อบางแหล่งไม่ครบ: ${failed.join(' | ')}`, 'warning');
+      }
+    }
+    async function loadAllData() {
+      const context = await getHelpdeskMasterContext();
+      if (context) {
+        const tables = context.tables || {};
+        const apiPeopleRaw = (Array.isArray(context.users) ? context.users : tables.hd_users || []).map((row) => normalizeEmployeeRecord(row, 'system'));
+        const systemUserRows = Array.isArray(context.system_users) ? context.system_users : [];
+        const apiSystemPeople = systemUserRows.map(normalizeSystemUserRecord);
+        const apiPositions = (Array.isArray(context.positions) ? context.positions : tables.hd_positions || []).map((row) => normalizePositionRecord(row, 'system'));
+        const apiProjects = (Array.isArray(context.projects) ? context.projects : tables.hd_projects || []).map((row) => normalizeProjectRecord(row, 'system'));
+        const apiTeams = (Array.isArray(context.teams) ? context.teams : tables.hd_teams || []).map(normalizeTeamRecord).filter((team) => !isPlaceholderTeam(team));
+        const apiDevRows = (Array.isArray(context.project_devs) ? context.project_devs : tables.hd_projects_dev || []).map(normalizeProjectDevRecord);
+        const apiProjectMemberRoles = (Array.isArray(context.project_member_roles) ? context.project_member_roles : tables.hd_project_member_roles || []).map(normalizeProjectMemberRoleRecord);
+        const apiMainTeamRows = (Array.isArray(context.main_team_project) ? context.main_team_project : tables.hd_main_team_project || []).map((row) => normalizeMainTeamProjectRecord(row, 'system'));
+        const fallbackPeople = apiSystemPeople.length || apiPeopleRaw.length ? [] : buildFallbackPeopleRecords(apiProjects, apiTeams, apiDevRows, apiMainTeamRows);
+        const peopleSource = mergePeopleSources(apiSystemPeople, apiPeopleRaw, fallbackPeople);
+
+        state.people = sortPeople(peopleSource);
+        state.systemUsers = systemUserRows;
+        state.positions = sortProjects(apiPositions);
+        state.projects = sortProjects(apiProjects);
+        state.teams = apiTeams;
+        state.projectDevs = apiDevRows;
+        state.projectMemberRoles = apiProjectMemberRoles;
+        state.mainTeamProjects = sortMainTeamProjects(apiMainTeamRows);
+        state.projectConfigCache = new Map();
+        state.projectRoleSnapshotCache = new Map();
+        state.employeeLinkCache = new Map();
+        state.employeeMainTeamLinkCache = new Map();
+
+        state.projects.forEach((project) => {
+          const cfg = getProjectConfig(project);
+          state.projectConfigCache.set(String(project.id), cfg);
+        });
+
+        renderPositionOptions();
+        renderAll();
+        return;
+      }
+
+      const [peopleRaw, usersRaw, positionsRaw, projectsRaw, teamsRaw, devRaw, memberRoleRaw, mainTeamRaw] = await Promise.allSettled([
+        loadTable('hd_users'),
+        loadSystemUsers(),
+        loadTable('hd_positions'),
+        loadTable('hd_projects'),
+        loadTable('hd_teams'),
+        loadTable('hd_projects_dev'),
+        loadTable('hd_project_member_roles'),
+        loadTable('hd_main_team_project'),
+      ]);
+
+      const readSettled = (result, fallback = []) => (result.status === 'fulfilled' ? result.value : fallback);
+      const failedTables = [];
+      [['hd_users', peopleRaw], ['users', usersRaw], ['hd_positions', positionsRaw], ['hd_projects', projectsRaw], ['hd_teams', teamsRaw], ['hd_projects_dev', devRaw], ['hd_project_member_roles', memberRoleRaw], ['hd_main_team_project', mainTeamRaw]]
+        .forEach(([table, result]) => {
+          if (result.status === 'rejected') failedTables.push(`${table}: ${result.reason?.message || result.reason || 'error'}`);
+        });
+
+      const apiPeopleRaw = readSettled(peopleRaw).map((row) => normalizeEmployeeRecord(row, 'system'));
+      const systemUserRows = readSettled(usersRaw);
+      const apiSystemPeople = systemUserRows.map(normalizeSystemUserRecord);
+      const apiPositions = readSettled(positionsRaw).map((row) => normalizePositionRecord(row, 'system'));
+      const apiProjects = readSettled(projectsRaw).map((row) => normalizeProjectRecord(row, 'system'));
+      const apiTeams = readSettled(teamsRaw).map(normalizeTeamRecord).filter((team) => !isPlaceholderTeam(team));
+      const apiDevRows = readSettled(devRaw).map(normalizeProjectDevRecord);
+      const apiProjectMemberRoles = readSettled(memberRoleRaw).map(normalizeProjectMemberRoleRecord);
+      const apiMainTeamRows = readSettled(mainTeamRaw).map((row) => normalizeMainTeamProjectRecord(row, 'system'));
+      const fallbackPeople = apiSystemPeople.length || apiPeopleRaw.length ? [] : buildFallbackPeopleRecords(apiProjects, apiTeams, apiDevRows, apiMainTeamRows);
+      const peopleSource = mergePeopleSources(apiSystemPeople, apiPeopleRaw, fallbackPeople);
+
+      state.people = sortPeople(peopleSource);
+      state.systemUsers = systemUserRows;
+      state.positions = sortProjects(apiPositions);
+      state.projects = sortProjects(apiProjects);
+      state.teams = apiTeams;
+      state.projectDevs = apiDevRows;
+      state.projectMemberRoles = apiProjectMemberRoles;
+      state.mainTeamProjects = sortMainTeamProjects(apiMainTeamRows);
+      state.projectConfigCache = new Map();
+      state.projectRoleSnapshotCache = new Map();
+      state.employeeLinkCache = new Map();
+      state.employeeMainTeamLinkCache = new Map();
+
+      state.projects.forEach((project) => {
+        const cfg = getProjectConfig(project);
+        state.projectConfigCache.set(String(project.id), cfg);
+      });
+
+      if (failedTables.length) {
+        showNotice(`โหลดข้อมูลบางตารางไม่ครบ: ${failedTables.join(' | ')}`, 'warning');
+      }
+
+      renderPositionOptions();
+      renderAll();
+    }
+    function displayEmployeeName(emp) {
+      if (!emp) return '-';
+      return cleanText(emp.name || emp.code || emp.email || `#${emp.id}`) || '-';
+    }
+
+    function displayEmployeeLabel(emp) {
+      if (!emp) return '-';
+      const parts = [displayEmployeeName(emp)];
+      if (emp.code && emp.code !== displayEmployeeName(emp)) parts.push(emp.code);
+      if (emp.email) parts.push(emp.email);
+      return parts.filter(Boolean).join(' ? ');
+    }
+
+    function displayEmployeeCode(emp) {
+      if (!emp) return '-';
+      return cleanText(emp.code || emp.email || `#${emp.id}`) || '-';
+    }
+
+    function employeeSourceLabel(emp) {
+      if (!emp) return 'Unknown';
+      if (emp.kind === 'system-user') {
+        const accountType = cleanText(emp.extra?.account_type || '');
+        return accountType === 'temporary' ? 'User account - Temporary' : 'User account';
+      }
+      if (emp.kind === 'manual') return 'Manual';
+      if (emp.kind === 'derived') return 'Derived';
+      return 'Helpdesk master';
+    }
+
+    function employeeSourceTone(emp) {
+      if (!emp) return 'slate';
+      if (emp.kind === 'system-user') return 'blue';
+      if (emp.kind === 'manual') return 'orange';
+      if (emp.kind === 'derived') return 'slate';
+      return 'green';
+    }
+
+    function displayProjectName(project) {
+      if (!project) return '-';
+      return cleanText(project.name || project.code || `#${project.id}`) || '-';
+    }
+
+    function displayProjectLabel(project) {
+      if (!project) return '-';
+      const parts = [displayProjectName(project)];
+      if (project.code && project.code !== displayProjectName(project)) parts.push(project.code);
+      return parts.filter(Boolean).join(' ? ');
+    }
+
+    function displayEmployeeAvatar(emp) {
+      const base = (displayEmployeeName(emp) || displayEmployeeCode(emp) || '?').replace(/[^A-Za-z0-9ก-๙]/g, '');
+      if (!base) return '?';
+      return base.slice(0, 2).toUpperCase();
+    }
+
+    function displayProjectAvatar(project) {
+      const base = (displayProjectName(project) || project.code || '?').replace(/[^A-Za-z0-9ก-๙]/g, '');
+      if (!base) return '?';
+      return base.slice(0, 2).toUpperCase();
+    }
+
+    function employeeTokens(emp) {
+      return uniq([
+        emp.id,
+        emp.code,
+        emp.name,
+        emp.email,
+        emp.positionName,
+        emp.jobTitle,
+        emp.department,
+        emp.location,
+        emp.extra?.employee_id,
+        emp.extra?.employee_code,
+        emp.extra?.user_id,
+        emp.extra?.login,
+        emp.extra?.username,
+        emp.extra?.role,
+        emp.extra?.account_type,
+        emp.extra?.owner_name,
+      ]);
+    }
+
+    function projectTokens(project) {
+      return uniq([
+        project.id,
+        project.code,
+        project.name,
+        project.pmName,
+        project.description,
+        project.extra?.project_code,
+        project.extra?.project_name,
+        project.extra?.project_pm,
+      ]);
+    }
+
+    function findEmployeeByValue(value) {
+      const token = normalizeKey(value);
+      if (!token) return null;
+      const exact = state.people.find((emp) => employeeTokens(emp).some((part) => {
+        const partToken = normalizeKey(part);
+        return partToken && partToken === token;
+      }));
+      if (exact) return exact;
+      const partial = state.people.find((emp) => employeeTokens(emp).some((part) => {
+        const partToken = normalizeKey(part);
+        return partToken && (partToken.includes(token) || token.includes(partToken));
+      }));
+      return partial || null;
+    }
+
+    function findProjectByValue(value) {
+      const token = normalizeKey(value);
+      if (!token) return null;
+      const exact = state.projects.find((project) => projectTokens(project).some((part) => {
+        const partToken = normalizeKey(part);
+        return partToken && partToken === token;
+      }));
+      if (exact) return exact;
+      const partial = state.projects.find((project) => projectTokens(project).some((part) => {
+        const partToken = normalizeKey(part);
+        return partToken && (partToken.includes(token) || token.includes(partToken));
+      }));
+      return partial || null;
+    }
+
+    function matchesProjectText(project, text) {
+      const target = normalizeKey(text);
+      if (!target) return false;
+      return projectTokens(project).some((part) => {
+        const token = normalizeKey(part);
+        return token && (token.includes(target) || target.includes(token));
+      });
+    }
+
+    function matchesEmployeeSearch(emp, text) {
+      const target = normalizeKey(text);
+      if (!target) return true;
+      return [
+        emp.name,
+        emp.code,
+        emp.email,
+        emp.positionName,
+        emp.jobTitle,
+        emp.department,
+        emp.location,
+        emp.id,
+      ].some((item) => normalizeKey(item).includes(target));
+    }
+
+    function matchesProjectSearch(project, text) {
+      const target = normalizeKey(text);
+      if (!target) return true;
+      return projectTokens(project).some((item) => normalizeKey(item).includes(target));
+    }
+
+    function matchesTeamSearch(team, text) {
+      const target = normalizeKey(text);
+      if (!target) return true;
+      return [
+        team.code,
+        team.name,
+        team.teamNameTh,
+        team.teamNameEn,
+        team.displayName,
+        team.ownerName,
+        team.remark,
+        team.projectCode,
+        team.projectName,
+        ...(team.memberNames || []),
+        ...(team.memberIds || []),
+      ].some((item) => normalizeKey(item).includes(target));
+    }
+
+    function setTab(tab) {
+      state.activeTab = tab;
+      document.querySelectorAll('.file-tab').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      const peoplePanel = document.getElementById('peoplePanel');
+      const projectsPanel = document.getElementById('projectsPanel');
+      if (peoplePanel) peoplePanel.classList.toggle('active', tab === 'people');
+      if (projectsPanel) projectsPanel.classList.toggle('active', tab === 'projects');
+    }
+
+    function chipHtml(text, tone = 'slate', removable = false, attrs = '') {
+      const removeBtn = removable ? `<button type="button" ${attrs}>ลบ</button>` : '';
+      return `<span class="chip ${tone}">${escapeHtml(text)}${removeBtn}</span>`;
+    }
+
+    function renderListPreview(ids, limit = 2, tone = 'blue') {
+      const resolved = uniq(ids.map((id) => displayEmployeeName(findEmployeeByValue(id))).filter(Boolean));
+      if (!resolved.length) return '<span class="muted">-</span>';
+      const visible = resolved.slice(0, limit);
+      const hidden = resolved.length - visible.length;
+      return [
+        ...visible.map((name) => `<span class="pill ${tone}">${escapeHtml(name)}</span>`),
+        hidden > 0 ? `<span class="pill slate">+${hidden}</span>` : '',
+      ].filter(Boolean).join(' ');
+    }
+
+    function renderProjectPreview(ids, limit = 2) {
+      const resolved = uniq(ids.map((id) => displayProjectName(findProjectByValue(id))).filter(Boolean));
+      if (!resolved.length) return '<span class="muted">-</span>';
+      const visible = resolved.slice(0, limit);
+      const hidden = resolved.length - visible.length;
+      return [
+        ...visible.map((name) => `<span class="pill orange">${escapeHtml(name)}</span>`),
+        hidden > 0 ? `<span class="pill slate">+${hidden}</span>` : '',
+      ].filter(Boolean).join(' ');
+    }
+
+    function getRoleLabel(role) {
+      if (role === 'pm') return 'PM';
+      if (role === 'support') return 'IT Support';
+      if (role === 'dev') return 'Dev';
+      return cleanText(role || '-');
+    }
+
+    function roleRowMatchesProject(row, project) {
+      if (!row || !project) return false;
+      const rowProject = cleanText(row.projectId || row.projectCode || row.projectName || row.code || row.name);
+      if (!rowProject) return false;
+      const rowToken = normalizeKey(rowProject);
+      if (!rowToken) return false;
+      return projectTokens(project).some((part) => {
+        const token = normalizeKey(part);
+        return token && (token.includes(rowToken) || rowToken.includes(token));
+      });
+    }
+
+    function roleRowMatchesEmployee(row, emp) {
+      if (!row || !emp) return false;
+      const resolved = findEmployeeByValue(row.personId || row.personCode || row.personName || row.name || row.code);
+      return !!resolved && String(resolved.id) === String(emp.id);
+    }
+
+    function getProjectMemberRoleSnapshot(project) {
+      const result = { pm: [], support: [], dev: [] };
+      if (!project) return result;
+      const seen = new Set();
+      state.projectMemberRoles.forEach((row) => {
+        if (!row || row.active === false) return;
+        if (!roleRowMatchesProject(row, project)) return;
+        const role = normalizeMainTeamProjectRole(row.roleType || row.positionName || row.name || row.code || '');
+        if (!role) return;
+        const emp = findEmployeeByValue(row.personId || row.personCode || row.personName || row.name || row.code);
+        if (!emp) return;
+        const key = `${role}|${emp.id}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        result[role].push(emp);
+      });
+
+      Object.keys(result).forEach((role) => {
+        result[role] = result[role].sort((a, b) => cleanText(displayEmployeeName(a)).localeCompare(cleanText(displayEmployeeName(b)), 'th'));
+      });
+      return result;
+    }
+
+    function getEmployeeProjectRoleSnapshot(empId) {
+      const result = { pm: [], support: [], dev: [] };
+      const emp = findEmployeeByValue(empId);
+      if (!emp) return result;
+      const seen = new Set();
+      state.projectMemberRoles.forEach((row) => {
+        if (!row || row.active === false) return;
+        if (!roleRowMatchesEmployee(row, emp)) return;
+        const role = normalizeMainTeamProjectRole(row.roleType || row.positionName || row.name || row.code || '');
+        if (!role) return;
+        const project = findProjectByValue(row.projectId || row.projectCode || row.projectName || row.code || row.name);
+        const projectId = cleanText(project?.id || row.projectId || row.projectCode || row.projectName || row.code || row.name);
+        const projectName = cleanText(project?.name || row.projectName || row.projectCode || row.code || row.name || '-');
+        const projectCode = cleanText(project?.code || row.projectCode || '');
+        const key = `${role}|${projectId}`;
+        if (!projectId || seen.has(key)) return;
+        seen.add(key);
+        result[role].push({
+          rowId: cleanText(row.id || ''),
+          projectId,
+          projectName,
+          projectCode,
+          role,
+        });
+      });
+
+      Object.keys(result).forEach((role) => {
+        result[role] = result[role].sort((a, b) => cleanText(a.projectName).localeCompare(cleanText(b.projectName), 'th'));
+      });
+      return result;
+    }
+
+    function projectConfigFromMemberRoles(project) {
+      const snapshot = getProjectMemberRoleSnapshot(project);
+      const hasRows = snapshot.pm.length || snapshot.support.length || snapshot.dev.length;
+      if (!hasRows) return null;
+      return normalizeProjectConfig({
+        pmId: snapshot.pm.length ? String(snapshot.pm[0].id) : '',
+        supportIds: snapshot.support.map((emp) => String(emp.id)),
+        devIds: snapshot.dev.map((emp) => String(emp.id)),
+      });
+    }
+
+    function renderProjectSummaryNames(config, project = null) {
+      const roleSnapshot = project ? getProjectMemberRoleSnapshot(project) : { pm: [], support: [], dev: [] };
+      const pm = roleSnapshot.pm.length ? roleSnapshot.pm[0] : (config.pmId ? findEmployeeByValue(config.pmId) : null);
+      const support = roleSnapshot.support.length
+        ? roleSnapshot.support
+        : (config.supportIds || []).map((id) => findEmployeeByValue(id)).filter(Boolean);
+      const projectDevs = roleSnapshot.dev.length
+        ? roleSnapshot.dev
+        : (config.devIds || []).map((id) => findEmployeeByValue(id)).filter(Boolean);
+      return {
+        pmName: pm ? displayEmployeeName(pm) : '-',
+        supportNames: support.map(displayEmployeeName),
+        devIds: projectDevs.map((emp) => String(emp.id)),
+        devNames: projectDevs.map(displayEmployeeName),
+      };
+    }
+
+    function teamMatchesProject(team, project) {
+      if (!team || !project) return false;
+      const haystack = uniq([
+        team.code,
+        team.name,
+        team.displayName,
+        team.projectCode,
+        team.projectName,
+        team.ownerName,
+      ]).join(' | ');
+      const projectParts = projectTokens(project);
+      return projectParts.some((part) => {
+        const token = normalizeKey(part);
+        return token && normalizeKey(haystack).includes(token);
+      });
+    }
+
+    function devRowMatchesProject(row, project) {
+      if (!row || !project) return false;
+      const haystack = uniq([
+        row.projectRef,
+        row.code,
+        row.name,
+        row.employeeId,
+        row.employeeName,
+        row.employeeEmail,
+      ]).join(' | ');
+      const projectParts = projectTokens(project);
+      return projectParts.some((part) => {
+        const token = normalizeKey(part);
+        return token && normalizeKey(haystack).includes(token);
+      });
+    }
+
+    function getProjectDevEmployees(project) {
+      if (!project) return [];
+      const matches = [];
+      const seen = new Set();
+      state.projectDevs.forEach((row) => {
+        if (!devRowMatchesProject(row, project)) return;
+        const emp = findEmployeeByValue(row.employeeId)
+          || findEmployeeByValue(row.employeeName)
+          || findEmployeeByValue(row.employeeEmail)
+          || findEmployeeByValue(row.code);
+        if (!emp || seen.has(String(emp.id))) return;
+        seen.add(String(emp.id));
+        matches.push(emp);
+      });
+      return matches;
+    }
+
+    function addEmployeeId(list, emp) {
+      if (emp && emp.id) list.push(String(emp.id));
+    }
+
+    function hasExplicitProjectConfig(extra) {
+      const configKeys = ['project_pm', 'pm_id', 'project_support_ids', 'support_ids', 'it_support_ids', 'project_dev_ids', 'dev_ids', 'dev_user_ids'];
+      return configKeys.some((key) => Object.prototype.hasOwnProperty.call(extra || {}, key));
+    }
+
+    function readProjectConfigFromExtra(project) {
+      const extra = parseExtra(project?.extra);
+      if (!hasExplicitProjectConfig(extra)) return null;
+      return normalizeProjectConfig({
+        pmId: extra.project_pm || extra.pm_id || '',
+        supportIds: splitPeopleList(extra.project_support_ids || extra.support_ids || extra.it_support_ids || ''),
+        devIds: splitPeopleList(extra.project_dev_ids || extra.dev_ids || extra.dev_user_ids || ''),
+      });
+    }
+
+    function deriveProjectConfig(project) {
+      const roleConfig = projectConfigFromMemberRoles(project);
+      if (roleConfig) {
+        return roleConfig;
+      }
+
+      const saved = readProjectConfigFromExtra(project);
+      if (saved) {
+        return saved;
+      }
+
+      const pm = project.pmName ? findEmployeeByValue(project.pmName) : null;
+      const supportIds = [];
+      const devIds = [];
+
+      state.teams.forEach((team) => {
+        if (!teamMatchesProject(team, project)) return;
+        addEmployeeId(supportIds, findEmployeeByValue(team.ownerId));
+        addEmployeeId(supportIds, findEmployeeByValue(team.ownerName));
+        (team.memberIds || []).forEach((value) => addEmployeeId(supportIds, findEmployeeByValue(value)));
+        (team.memberNames || []).forEach((value) => addEmployeeId(supportIds, findEmployeeByValue(value)));
+      });
+
+      state.projectDevs.forEach((row) => {
+        if (!devRowMatchesProject(row, project)) return;
+        addEmployeeId(devIds, findEmployeeByValue(row.employeeId));
+        addEmployeeId(devIds, findEmployeeByValue(row.employeeName));
+        addEmployeeId(devIds, findEmployeeByValue(row.employeeEmail));
+        addEmployeeId(devIds, findEmployeeByValue(row.code));
+      });
+
+      return {
+        pmId: pm ? String(pm.id) : '',
+        supportIds: uniq(supportIds),
+        devIds: uniq(devIds),
+      };
+    }
+
+    function normalizeProjectConfig(config) {
+      if (!config || typeof config !== 'object') {
+        return { pmId: '', supportIds: [], devIds: [] };
+      }
+      return {
+        pmId: cleanText(config.pmId || ''),
+        supportIds: uniq(config.supportIds || []),
+        devIds: uniq(config.devIds || []),
+      };
+    }
+
+    function getProjectConfig(project) {
+      if (!project) return { pmId: '', supportIds: [], devIds: [] };
+      const cached = state.projectConfigCache.get(String(project.id));
+      if (cached) return cached;
+      const cfg = deriveProjectConfig(project);
+      state.projectConfigCache.set(String(project.id), cfg);
+      return cfg;
+    }
+
+    function buildEmployeeProjectLinks(empId) {
+      const result = { pm: [], support: [], dev: [] };
+      const snapshot = getEmployeeProjectRoleSnapshot(empId);
+      Object.keys(result).forEach((role) => {
+        result[role] = snapshot[role]
+          .map((item) => ({
+            id: item.projectId,
+            name: item.projectName,
+            code: item.projectCode,
+            sortOrder: 0,
+          }))
+          .filter((item) => cleanText(item.id || item.name || item.code));
+      });
+
+      const hasAnyRoleRows = Object.values(result).some((items) => items.length);
+      if (!hasAnyRoleRows) {
+        state.projects.forEach((project) => {
+          const cfg = getProjectConfig(project);
+          if (String(cfg.pmId) === String(empId)) result.pm.push(project);
+          if ((cfg.supportIds || []).some((id) => String(id) === String(empId))) result.support.push(project);
+          if ((cfg.devIds || []).some((id) => String(id) === String(empId))) result.dev.push(project);
+        });
+      }
+      return result;
+    }
+
+    function buildProjectMemberRoleBody(project, emp, role) {
+      const roleLabel = getRoleLabel(role);
+      const projectName = displayProjectName(project);
+      const personName = displayEmployeeName(emp);
+      return {
+        code: cleanText(`${project?.code || project?.id || ''}|${emp?.id || ''}|${roleLabel}`),
+        name: cleanText(`${projectName} ? ${personName}`),
+        extra: JSON.stringify({
+          source: 'ui-role-editor',
+          project_id: cleanText(project?.id || ''),
+          project_code: cleanText(project?.code || ''),
+          project_name: projectName,
+          person_id: cleanText(emp?.id || ''),
+          person_code: cleanText(emp?.code || ''),
+          person_name: personName,
+          role_type: roleLabel,
+          position_name: roleLabel,
+          source_table: 'ui',
+          source_row_id: '',
+        }),
+        active: true,
+        sort_order: 0,
+      };
+    }
+
+    async function syncProjectMemberRolesForProject(project, draftConfig = null) {
+      const targetProject = typeof project === 'object'
+        ? project
+        : state.projects.find((item) => String(item.id) === String(project));
+      if (!targetProject) return;
+
+      const cfg = normalizeProjectConfig(draftConfig || getProjectConfig(targetProject));
+      const existingRows = state.projectMemberRoles.filter((row) => roleRowMatchesProject(row, targetProject));
+      await Promise.all(existingRows.map((row) => deleteHdRow(row.id)));
+
+      const ops = [];
+      if (cfg.pmId) {
+        const pm = findEmployeeByValue(cfg.pmId);
+        if (pm) ops.push(createHdRow('hd_project_member_roles', buildProjectMemberRoleBody(targetProject, pm, 'pm')));
+      }
+
+      uniq(cfg.supportIds || []).forEach((empId) => {
+        const emp = findEmployeeByValue(empId);
+        if (emp) ops.push(createHdRow('hd_project_member_roles', buildProjectMemberRoleBody(targetProject, emp, 'support')));
+      });
+
+      uniq(cfg.devIds || []).forEach((empId) => {
+        const emp = findEmployeeByValue(empId);
+        if (emp) ops.push(createHdRow('hd_project_member_roles', buildProjectMemberRoleBody(targetProject, emp, 'dev')));
+      });
+
+      await Promise.all(ops);
+    }
+
+    async function syncProjectExtraFromProjectMemberRoles(project) {
+      const targetProject = typeof project === 'object'
+        ? project
+        : state.projects.find((item) => String(item.id) === String(project));
+      if (!targetProject) return;
+
+      const snapshot = getProjectMemberRoleSnapshot(targetProject);
+      const extra = parseExtra(targetProject.extra);
+      extra.project_pm = snapshot.pm.length ? String(snapshot.pm[0].id) : '';
+      extra.project_support_ids = snapshot.support.map((emp) => String(emp.id));
+      extra.project_dev_ids = snapshot.dev.map((emp) => String(emp.id));
+      extra.source = extra.source || 'role-sync';
+
+      await updateHdRow(targetProject.id, {
+        code: targetProject.code || '',
+        name: targetProject.name || '',
+        extra: JSON.stringify(extra),
+        active: targetProject.active !== false,
+        sort_order: Number(targetProject.sortOrder || 0),
+      });
+    }
+
+    function getEmployeeProjectLinks(empId) {
+      const cached = state.employeeLinkCache.get(String(empId));
+      if (cached) return cached;
+      const result = buildEmployeeProjectLinks(empId);
+      state.employeeLinkCache.set(String(empId), result);
+      return result;
+    }
+
+    function buildEmployeeMainTeamLinks(empId) {
+      const result = { pm: [], support: [], dev: [] };
+      const seen = new Set();
+
+      state.mainTeamProjects.forEach((row) => {
+        if (!row || row.active === false) return;
+
+        const role = normalizeMainTeamProjectRole(row.roleType || row.role || row.extra?.role_type || row.extra?.role || '');
+        if (!role) return;
+
+        const resolvedEmployee =
+          findEmployeeByValue(row.userId) ||
+          findEmployeeByValue(row.personName) ||
+          findEmployeeByValue(row.name) ||
+          findEmployeeByValue(row.extra?.matched_value) ||
+          findEmployeeByValue(row.extra?.person_name) ||
+          null;
+
+        if (!resolvedEmployee || String(resolvedEmployee.id) !== String(empId)) return;
+
+        const project = row.projectServiceId
+          ? findProjectByValue(row.projectServiceId)
+          : findProjectByValue(row.projectServiceName || row.projectName || row.code || row.name);
+
+        const projectId = cleanText(row.projectServiceId || project?.id || row.code || row.name || row.id);
+        const projectName = cleanText(row.projectServiceName || row.projectName || project?.name || project?.code || row.code || row.name || '-');
+        const projectCode = cleanText(row.projectCode || project?.code || row.projectServiceId || '');
+        const key = `${role}|${projectId || projectName}`;
+        if (!projectName || seen.has(key)) return;
+        seen.add(key);
+        result[role].push({
+          id: projectId || projectName,
+          name: projectName,
+          code: projectCode,
+          sortOrder: Number(row.sortOrder || 0) || 0,
+        });
+      });
+
+      Object.keys(result).forEach((role) => {
+        result[role] = result[role].sort((a, b) => {
+          const orderDiff = Number(a.sortOrder || 0) - Number(b.sortOrder || 0);
+          if (orderDiff) return orderDiff;
+          return cleanText(a.name).localeCompare(cleanText(b.name), 'th');
+        });
+      });
+
+      return result;
+    }
+
+    function getEmployeeMainTeamLinks(empId) {
+      const cached = state.employeeMainTeamLinkCache.get(String(empId));
+      if (cached) return cached;
+      const result = buildEmployeeMainTeamLinks(empId);
+      state.employeeMainTeamLinkCache.set(String(empId), result);
+      return result;
+    }
+
+    function countProjectPeople(config) {
+      return uniq([
+        config.pmId,
+        ...(config.supportIds || []),
+        ...(config.devIds || []),
+      ]).filter(Boolean).length;
+    }
+
+    function renderEmployeeMainTeamPreview(links) {
+      const groups = [
+        ['pm', 'PM', 'green'],
+        ['support', 'IT', 'blue'],
+        ['dev', 'Dev', 'orange'],
+      ];
+      const blocks = groups.map(([key, label, tone]) => {
+        const items = links?.[key] || [];
+        if (!items.length) return '';
+        return `
+          <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;">
+            <span class="pill ${tone}">${label} ${items.length}</span>
+            <div class="pill-row" style="gap:6px;">
+              ${renderProjectPreview(items.map((item) => item.id), 2)}
+            </div>
+          </div>
+        `;
+      }).filter(Boolean);
+      return blocks.length ? blocks.join('') : '<span class="muted">-</span>';
+    }
+
+    function addUniqueValue(list, value) {
+      const text = cleanText(value);
+      if (!text) return;
+      if (!list.includes(text)) list.push(text);
+    }
+
+    function sortMainTeamProjects(list) {
+      return [...list].sort((a, b) => {
+        const activeDiff = Number(b.active !== false) - Number(a.active !== false);
+        if (activeDiff) return activeDiff;
+        const projectDiff = cleanText(a.projectName || a.projectServiceName || a.code).localeCompare(cleanText(b.projectName || b.projectServiceName || b.code), 'th');
+        if (projectDiff) return projectDiff;
+        const orderDiff = Number(a.sortOrder || 0) - Number(b.sortOrder || 0);
+        if (orderDiff) return orderDiff;
+        return cleanText(a.personName || a.name).localeCompare(cleanText(b.personName || b.name), 'th');
+      });
+    }
+
+    function getTeamProjectCandidates(team) {
+      return uniq([
+        team?.projectCode,
+        team?.projectName,
+        team?.code,
+        team?.teamNameTh,
+        team?.teamNameEn,
+        team?.displayName,
+        team?.name,
+      ]);
+    }
+
+    function getProjectMemberRoleEntries(emp, projectCandidates = []) {
+      if (!emp) return [];
+      const needles = uniq([emp.id, emp.code, emp.name, emp.email]);
+      const matched = state.projectMemberRoles.filter((row) => {
+        const haystack = uniq([
+          row.personId,
+          row.personCode,
+          row.personName,
+          row.projectId,
+          row.projectCode,
+          row.projectName,
+          row.roleType,
+          row.positionName,
+          row.sourceTable,
+        ]).join(' | ');
+        const personMatch = needles.some((needle) => {
+          const token = normalizeKey(needle);
+          return token && normalizeKey(haystack).includes(token);
+        });
+        if (!personMatch) return false;
+        if (!projectCandidates.length) return true;
+        const projectHaystack = uniq([row.projectId, row.projectCode, row.projectName]).join(' | ');
+        return projectCandidates.some((candidate) => {
+          const token = normalizeKey(candidate);
+          return token && normalizeKey(projectHaystack).includes(token);
+        });
+      });
+
+      const groups = new Map();
+      matched.forEach((row) => {
+        const projectKey = cleanText(row.projectId || row.projectCode || row.projectName || row.name || row.code);
+        if (!projectKey) return;
+        const projectName = cleanText(row.projectName || row.projectCode || row.name || row.code || '-');
+        const roleText = cleanText(row.positionName || row.roleType || '-');
+        const entry = groups.get(projectKey) || { projectName, roles: [] };
+        if (roleText && !entry.roles.includes(roleText)) entry.roles.push(roleText);
+        groups.set(projectKey, entry);
+      });
+
+      return [...groups.values()].sort((a, b) => cleanText(a.projectName).localeCompare(cleanText(b.projectName), 'th'));
+    }
+
+    function buildMainTeamProjectSummaries() {
+      const rows = state.mainTeamProjects.filter((row) => row && row.active !== false);
+      if (!rows.length) return [];
+
+      const map = new Map();
+      rows.forEach((row) => {
+        const projectKey = normalizeKey(row.projectServiceId || row.projectServiceName || row.code || row.name || row.id);
+        if (!projectKey) return;
+        const role = normalizeMainTeamProjectRole(row.roleType);
+        if (!role) return;
+
+        const projectEntry = row.projectServiceId ? findProjectByValue(row.projectServiceId) : null;
+        const projectName = cleanText(
+          row.projectServiceName ||
+          row.projectName ||
+          projectEntry?.name ||
+          projectEntry?.code ||
+          row.code ||
+          '-'
+        ) || '-';
+        const projectId = cleanText(row.projectServiceId || projectEntry?.id || '');
+        const projectCode = cleanText(projectEntry?.code || row.code || row.projectServiceId || '');
+
+        if (!map.has(projectKey)) {
+          map.set(projectKey, {
+            projectKey,
+            projectId,
+            projectCode,
+            projectName,
+            pmRefs: [],
+            supportRefs: [],
+            devRefs: [],
+            pmNames: [],
+            supportNames: [],
+            devNames: [],
+            sortOrder: Number(row.sortOrder || 0) || 0,
+          });
+        }
+
+        const summary = map.get(projectKey);
+        summary.projectId = summary.projectId || projectId;
+        summary.projectCode = summary.projectCode || projectCode;
+        summary.projectName = summary.projectName || projectName;
+        summary.sortOrder = Math.min(summary.sortOrder || 0, Number(row.sortOrder || 0) || 0);
+
+        const personRef = cleanText(row.userId || row.personName || row.name || row.id);
+        const personName = cleanText(row.personName || row.name || row.userId || row.id);
+        const refs = role === 'pm' ? summary.pmRefs : (role === 'support' ? summary.supportRefs : summary.devRefs);
+        const names = role === 'pm' ? summary.pmNames : (role === 'support' ? summary.supportNames : summary.devNames);
+        addUniqueValue(refs, personRef || personName);
+        addUniqueValue(names, personName || personRef);
+      });
+
+      return sortMainTeamProjects([...map.values()]);
+    }
+
+    function buildFallbackProjectSummaries() {
+      return sortMainTeamProjects(state.projects.filter((project) => project && project.active !== false).map((project) => {
+        const cfg = getProjectConfig(project);
+        const summary = renderProjectSummaryNames(cfg);
+        return {
+          projectKey: String(project.id),
+          projectId: String(project.id),
+          projectCode: cleanText(project.code || ''),
+          projectName: displayProjectName(project),
+          pmRefs: cfg.pmId ? [cfg.pmId] : [],
+          supportRefs: uniq(cfg.supportIds || []),
+          devRefs: uniq(cfg.devIds || []),
+          pmNames: summary.pmName && summary.pmName !== '-' ? [summary.pmName] : [],
+          supportNames: summary.supportNames || [],
+          devNames: summary.devNames || [],
+          sortOrder: Number(project.sortOrder || 0) || 0,
+        };
+      }));
+    }
+
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function closeAllModals() {
+      ['employeeModal', 'employeeProjectRoleModal', 'projectModal', 'teamModal', 'personModal', 'projectAddModal'].forEach(closeModal);
+    }
+
+    function renderPeopleTable() {
+      const tbody = document.getElementById('peopleTbody');
+      const filtered = state.people.filter((emp) => matchesEmployeeSearch(emp, state.peopleSearch));
+      document.getElementById('peopleCount').textContent = `${filtered.length} รายการ`;
+      document.getElementById('peopleTabCount').textContent = String(state.people.length);
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td class="empty-row" colspan="5">ยังไม่พบพนักงานที่ตรงกับคำค้น</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((emp) => {
+        const links = getEmployeeProjectLinks(emp.id);
+        const accessPreview = [
+          ...(links.pm || []).map((project) => ({ project, tone: 'blue', label: 'PM' })),
+          ...(links.support || []).map((project) => ({ project, tone: 'green', label: 'IT' })),
+          ...(links.dev || []).map((project) => ({ project, tone: 'orange', label: 'Dev' })),
+        ].slice(0, 3);
+        const accessSummary = accessPreview.length
+          ? accessPreview.map(({ project, tone, label }) => `<span class="pill ${tone}">${escapeHtml(displayProjectName(project))} ? ${escapeHtml(label)}</span>`).join(' ')
+          : '<span class="muted">ยังไม่ผูกโปรเจกต์</span>';
+        return `
+          <tr class="role-row" data-employee-id="${escapeHtml(emp.id)}">
+            <td>
+              <div class="entity-cell">
+                <div class="entity-badge">${escapeHtml(displayEmployeeAvatar(emp))}</div>
+                <div class="entity-main">
+                  <div class="entity-title">${escapeHtml(displayEmployeeName(emp))}</div>
+                  <div class="entity-sub">${escapeHtml(employeeSourceLabel(emp))}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="entity-sub">${escapeHtml(displayEmployeeCode(emp))}${emp.email ? ` ? ${escapeHtml(emp.email)}` : ''}</div>
+              ${emp.extra?.role ? `<div class="entity-sub">${escapeHtml(emp.extra.role)}${emp.department ? ` ? ${escapeHtml(emp.department)}` : ''}</div>` : ''}
+            </td>
+            <td>
+              <span class="pill ${emp.active ? 'green' : 'red'}">${emp.active ? 'Active' : 'Inactive'}</span>
+              <span class="pill ${employeeSourceTone(emp)}">${escapeHtml(employeeSourceLabel(emp))}</span>
+            </td>
+            <td>
+              <div class="pill-row">
+                ${accessSummary}
+              </div>
+            </td>
+            <td>
+              <div class="table-actions">
+                <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-action="open-person">ดู</button>
+                ${emp.kind === 'manual' ? '<button class="bt-btn bt-btn-danger bt-btn-sm" type="button" data-action="delete-person">ลบ</button>' : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderProjectsTable() {
+      const tbody = document.getElementById('projectsTbody');
+      const filtered = state.projects.filter((project) => matchesProjectSearch(project, state.projectSearch));
+      document.getElementById('projectCount').textContent = `${filtered.length} รายการ`;
+      document.getElementById('projectTabCount').textContent = String(state.projects.length);
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td class="empty-row" colspan="6">ยังไม่พบโครงการที่ตรงกับคำค้น</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((project) => {
+        const config = getProjectConfig(project);
+        const summary = renderProjectSummaryNames(config, project);
+        const totalPeople = countProjectPeople(config);
+        return `
+          <tr class="role-row" data-project-id="${escapeHtml(project.id)}">
+            <td>
+              <div class="entity-cell">
+                <div class="entity-badge project">${escapeHtml(displayProjectAvatar(project))}</div>
+                <div class="entity-main">
+                  <div class="entity-title">${escapeHtml(displayProjectName(project))}</div>
+                  <div class="entity-sub">${escapeHtml(project.code || '-')} ${project.description ? `? ${escapeHtml(project.description)}` : ''}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="pill-row">
+                ${summary.pmName !== '-' ? `<span class="pill green">${escapeHtml(summary.pmName)}</span>` : '<span class="muted">-</span>'}
+              </div>
+            </td>
+            <td>
+              <div class="pill-row">
+                ${summary.supportNames.length ? renderListPreview(config.supportIds || [], 2) : '<span class="muted">-</span>'}
+              </div>
+            </td>
+            <td>
+              <div class="pill-row">
+                ${summary.devIds.length ? renderListPreview(summary.devIds, 2, 'orange') : '<span class="muted">-</span>'}
+              </div>
+            </td>
+            <td>
+              <span class="pill slate">${totalPeople} คน</span>
+            </td>
+            <td>
+              <div class="pill-row">
+                ${accessSummary}
+              </div>
+            </td>
+            <td>
+              <div class="table-actions">
+                <button class="bt-btn bt-btn-soft bt-btn-sm" type="button" data-action="open-project">ดู / ตั้งค่า</button>
+                ${project.kind === 'manual' ? '<button class="bt-btn bt-btn-danger bt-btn-sm" type="button" data-action="delete-project">ลบ</button>' : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderTeamsTable() {
+      const tbody = document.getElementById('teamsTbody');
+      const filtered = state.teams.filter((team) => matchesTeamSearch(team, state.teamSearch));
+      document.getElementById('teamCount').textContent = `${filtered.length} รายการ`;
+      document.getElementById('teamTabCount').textContent = String(state.teams.length);
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td class="empty-row" colspan="5">ยังไม่พบทีมที่ตรงกับคำค้น</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((team) => {
+        const teamNameTh = cleanText(team.teamNameTh || team.displayName || team.name || '-');
+        const teamNameEn = cleanText(team.teamNameEn || team.name || team.displayName || '-');
+        const badgeSource = cleanText(team.code || teamNameEn || '?').replace(/\s+/g, '');
+        const badge = (badgeSource.slice(0, 2).toUpperCase() || '?');
+        return `
+          <tr class="role-row" data-team-id="${escapeHtml(team.id)}">
+            <td>
+              <div class="entity-cell">
+                <div class="entity-badge project">${escapeHtml(badge)}</div>
+                <div class="entity-main">
+                  <div class="entity-title">${escapeHtml(team.code || '-')}</div>
+                  <div class="entity-sub">${escapeHtml(team.memberCount ? `${team.memberCount} members` : '-')}</div>
+                </div>
+              </div>
+            </td>
+            <td><div class="entity-sub">${escapeHtml(teamNameTh)}</div></td>
+            <td><div class="entity-sub">${escapeHtml(teamNameEn)}</div></td>
+            <td><div class="entity-sub">${escapeHtml(team.ownerName || '-')}</div></td>
+            <td><span class="pill ${team.active === false ? 'red' : 'green'}">${team.active === false ? 'Inactive' : 'Active'}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderTeamMemberRows(team) {
+      const ids = team.memberIds || [];
+      const names = team.memberNames || [];
+      const emails = team.memberEmails || [];
+      const projectCandidates = getTeamProjectCandidates(team);
+      const size = Math.max(ids.length, names.length, emails.length);
+      const rows = [];
+      for (let index = 0; index < size; index += 1) {
+        const rawValue = ids[index] || names[index] || emails[index] || '';
+        const emp = findEmployeeByValue(rawValue) || findEmployeeByValue(names[index]) || findEmployeeByValue(ids[index]);
+        const displayName = emp ? displayEmployeeName(emp) : cleanText(names[index] || rawValue || '-');
+        const workPhone = cleanText(
+          emp?.extra?.phone ||
+          emp?.extra?.mobile ||
+          emp?.extra?.work_phone ||
+          emp?.extra?.work_mobile ||
+          emp?.extra?.contact_phone ||
+          ''
+        );
+        const workEmail = cleanText(emp?.email || emails[index] || '-');
+        const department = cleanText(emp?.department || '-');
+        const roleGroups = emp ? getProjectMemberRoleEntries(emp, projectCandidates) : [];
+        const links = emp ? getEmployeeMainTeamLinks(emp.id) : { pm: [], support: [], dev: [] };
+        const isOwner = cleanText(displayName) === cleanText(team.ownerName || '');
+        const inferredPosition = isOwner
+          ? 'PM'
+          : (links.dev.length && !links.pm.length && !links.support.length ? 'Dev' : 'IT Support');
+        const position = cleanText(emp?.positionName || emp?.jobTitle || inferredPosition);
+        const projectRoleHtml = roleGroups.length
+          ? roleGroups.map((group) => {
+              const roleText = group.roles.length ? group.roles.join(' / ') : '-';
+              return `<span class="pill ${roleText === 'PM' ? 'blue' : roleText === 'Dev' ? 'orange' : 'green'}">${escapeHtml(roleText)}</span>`;
+            }).join(' ')
+          : `<span class="muted">-</span>`;
+        const manager = cleanText(team.ownerName || '-');
+        rows.push(`
+          <tr>
+            <td>${escapeHtml(displayName)}</td>
+            <td>${projectRoleHtml}</td>
+            <td>${escapeHtml(workEmail || '-')}</td>
+            <td>${escapeHtml(workPhone || '-')}</td>
+            <td>${escapeHtml(department || '-')}</td>
+            <td>${escapeHtml(manager || '-')}</td>
+          </tr>
+        `);
+      }
+      return rows.length
+        ? rows.join('')
+        : '<tr><td class="empty-row" colspan="6">ไม่มีสมาชิกในทีมนี้</td></tr>';
+    }
+
+    function openTeamModal(teamId) {
+      const team = state.teams.find((item) => String(item.id) === String(teamId));
+      if (!team) return;
+      document.getElementById('teamModalTitle').textContent = `Team Management: ${team.code || team.displayName || '-'}`;
+      document.getElementById('teamModalSub').textContent = `${team.teamNameTh || team.displayName || team.name || '-'}${team.teamNameEn ? ` / ${team.teamNameEn}` : ''}`;
+
+      const remark = cleanText(team.remark || '-');
+      const owner = cleanText(team.ownerName || '-');
+      const memberCount = Number(team.memberCount || (team.memberNames || []).length || 0) || 0;
+      document.getElementById('teamModalBody').innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-card">
+            <h4>ข้อมูลทีม</h4>
+            <dl class="kv-list">
+              <div class="kv"><dt>รหัสทีม</dt><dd>${escapeHtml(team.code || '-')}</dd></div>
+              <div class="kv"><dt>ชื่อทีมภาษาไทย</dt><dd>${escapeHtml(team.teamNameTh || team.displayName || team.name || '-')}</dd></div>
+              <div class="kv"><dt>PM</dt><dd>${escapeHtml(owner)}</dd></div>
+              <div class="kv"><dt>ชื่อทีมภาษาอังกษา</dt><dd>${escapeHtml(team.teamNameEn || team.name || '-')}</dd></div>
+              <div class="kv"><dt>สถานะ</dt><dd><span class="pill ${team.active === false ? 'red' : 'green'}">${team.active === false ? 'Inactive' : 'Active'}</span></dd></div>
+              <div class="kv"><dt>หมายเหตุ</dt><dd>${escapeHtml(remark || '-')}</dd></div>
+            </dl>
+          </div>
+          <div class="detail-card">
+            <h4>สรุปสมาชิก</h4>
+            <div class="summary-grid" style="grid-template-columns:1fr">
+              <div class="summary-card">
+                <div class="label">จำนวนสมาชิก</div>
+                <div class="value">${memberCount}</div>
+              </div>
+              <div class="summary-card">
+                <div class="label">PM</div>
+                <div class="value">${escapeHtml(owner || '-')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block" style="margin-top:14px">
+          <div class="section-head">
+            <div>
+              <h4>สมาชิกในทีม</h4>
+              <p>รายชื่อผู้ใช้งานที่ผูกกับทีมนี้</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="role-table">
+              <thead>
+                <tr>
+                  <th>ชื่อผู้ใช้</th>
+                  <th>บทบาทในโปรเจกต์</th>
+                  <th>อีเมล</th>
+                  <th>เบอร์โท</th>
+                  <th>แผนก</th>
+                  <th>หัวหน้าทีม</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${renderTeamMemberRows(team)}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      openModal('teamModal');
+    }
+
+    function renderProjectOwnershipTable() {
+      const tbody = document.getElementById('ownershipTbody');
+      const target = normalizeKey(state.ownershipSearch);
+      const sourceSummaries = state.mainTeamProjects.length ? buildMainTeamProjectSummaries() : buildFallbackProjectSummaries();
+      const filtered = sourceSummaries.filter((summary) => {
+        if (!target) return true;
+        const haystack = uniq([
+          summary.projectId,
+          summary.projectCode,
+          summary.projectName,
+          ...(summary.pmNames || []),
+          ...(summary.supportNames || []),
+          ...(summary.devNames || []),
+        ]).join(' | ');
+        return normalizeKey(haystack).includes(target);
+      });
+
+      document.getElementById('ownershipCount').textContent = `${filtered.length} รายการ`;
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td class="ownership-empty" colspan="4">ไม่พบโปรเจกต์ที่ตรงกับคำค้น</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((summary) => {
+        const resolvedProject = summary.projectId ? findProjectByValue(summary.projectId) : findProjectByValue(summary.projectCode || summary.projectName);
+        const openProjectId = resolvedProject ? resolvedProject.id : summary.projectId || '';
+        const projectName = cleanText(summary.projectName || resolvedProject?.name || resolvedProject?.code || '-');
+        const projectCode = cleanText(summary.projectCode || resolvedProject?.code || '-');
+        return `
+          <tr class="ownership-row role-row" data-project-id="${escapeHtml(openProjectId)}">
+            <td>
+              <div class="ownership-project-title">${escapeHtml(projectName)}</div>
+              <div class="ownership-project-sub">${escapeHtml(projectCode || '-')}</div>
+            </td>
+            <td>
+              <div class="ownership-list">
+                ${summary.pmRefs && summary.pmRefs.length ? renderListPreview(summary.pmRefs, 4) : '<span class="muted">-</span>'}
+              </div>
+            </td>
+            <td>
+              <div class="ownership-list">
+                ${summary.supportRefs && summary.supportRefs.length ? renderListPreview(summary.supportRefs, 4) : '<span class="muted">-</span>'}
+              </div>
+            </td>
+            <td>
+              <div class="ownership-list">
+                ${summary.devRefs && summary.devRefs.length ? renderListPreview(summary.devRefs, 4) : '<span class="muted">-</span>'}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      safeRenderAll();
+    }
+
+    function updateHeroStats() {
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = String(value ?? 0);
+      };
+      set('heroPeopleCount', state.people.length);
+      set('heroProjectCount', state.projects.length);
+      set('heroTeamCount', state.teams.length);
+    }
+
+    function safeRenderAll() {
+      try {
+        renderPeopleTable();
+        renderTeamsTable();
+        updateHeroStats();
+        normalizeThaiDom(document.body);
+      } catch (err) {
+        console.error('renderAll failed', err);
+      }
+    }
+
+    function renderPositionOptions() {
+      const datalist = document.getElementById('positionOptions');
+      if (!datalist) return;
+      const source = state.positions.length
+        ? state.positions
+        : uniq(state.people.map((emp) => emp.positionName || emp.jobTitle || emp.department || '')).map((name) => ({ name }));
+      datalist.innerHTML = uniq(source.map((item) => cleanText(item.name || item.code || item.positionName || item.jobTitle || '')))
+        .filter(Boolean)
+        .map((name) => `<option value="${escapeHtml(name)}"></option>`)
+        .join('');
+    }
+
+    function renderPositionSelectOptions(selectedValue = '') {
+      const selected = cleanText(selectedValue);
+      const source = state.positions.length
+        ? state.positions.filter((position) => position.active !== false)
+        : uniq(state.people.map((emp) => emp.positionName || emp.jobTitle || emp.department || '')).map((name) => ({ name }));
+      const options = uniq(source.map((item) => cleanText(item.name || item.code || item.positionName || item.jobTitle || ''))).filter(Boolean);
+      if (selected && !options.some((item) => normalizeKey(item) === normalizeKey(selected))) {
+        options.unshift(selected);
+      }
+      return [
+        '<option value="">- เลือกตำแหน่ง -</option>',
+        ...options.map((name) => `<option value="${escapeHtml(name)}"${normalizeKey(name) === normalizeKey(selected) ? ' selected' : ''}>${escapeHtml(name)}</option>`),
+      ].join('');
+    }
+
+    function employeeProjectGroups(emp) {
+      const links = getEmployeeMainTeamLinks(emp.id);
+      const rows = [];
+      [
+        ['pm', 'PM', 'blue'],
+        ['support', 'IT Support', 'green'],
+        ['dev', 'Dev', 'orange'],
+      ].forEach(([role, label, tone]) => {
+        (links[role] || []).forEach((project) => {
+          rows.push({
+            label,
+            tone,
+            projectId: cleanText(project.id || ''),
+            projectName: cleanText(project.name || project.code || '-'),
+            projectCode: cleanText(project.code || project.id || ''),
+            sortOrder: Number(project.sortOrder || 0) || 0,
+          });
+        });
+      });
+      rows.sort((a, b) => {
+        const orderDiff = Number(a.sortOrder || 0) - Number(b.sortOrder || 0);
+        if (orderDiff) return orderDiff;
+        return cleanText(a.projectName).localeCompare(cleanText(b.projectName), 'th') || cleanText(a.label).localeCompare(cleanText(b.label), 'th');
+      });
+      if (!rows.length) {
+        return '<span class="muted">ยังไม่มีความเกี่ยวข้องจาก hd_main_team_project</span>';
+      }
+      return `
+        <div class="relation-table-wrap">
+          <table class="relation-table">
+            <thead>
+              <tr>
+                <th>โครงการ</th>
+                <th>ตำแหน่งของคนนี้</th>
+                <th>แหล่งข้อมูล</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((item) => `
+                <tr>
+                  <td>
+                    <div>${escapeHtml(item.projectName || '-')}</div>
+                    <div class="project-code">${escapeHtml(item.projectCode || item.projectId || '-')}</div>
+                  </td>
+                  <td><span class="pill ${escapeHtml(item.tone)}">${escapeHtml(item.label)}</span></td>
+                  <td><span class="muted">hd_main_team_project</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      return `
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="label">PM</div>
+            <div class="value">${links.pm.length ? renderProjectPreview(links.pm.map((project) => project.id), 2) : '<span class="muted">ยังไม่มีโครงการที่เป็น PM</span>'}</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">IT Support</div>
+            <div class="value">${links.support.length ? renderProjectPreview(links.support.map((project) => project.id), 2) : '<span class="muted">ยังไม่มีโครงการที่อยู่ใน IT Support</span>'}</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Dev</div>
+            <div class="value">${links.dev.length ? renderProjectPreview(links.dev.map((project) => project.id), 2) : '<span class="muted">ยังไม่มีโครงการที่อยู่ใน Dev</span>'}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEmployeeProjectRoleSummaryCard(emp) {
+      const snapshot = getEmployeeProjectRoleSnapshot(emp.id);
+      const groups = [
+        ['pm', 'PM', 'blue'],
+        ['support', 'IT Support', 'green'],
+        ['dev', 'Dev', 'orange'],
+      ];
+      const rows = groups.flatMap(([role, label, tone]) => {
+        const items = snapshot[role] || [];
+        return items.map((item) => ({
+          role,
+          label,
+          tone,
+          rowId: item.rowId || '',
+          projectId: item.projectId || '',
+          projectName: item.projectName || item.projectCode || '-',
+          projectCode: item.projectCode || item.projectId || '',
+        }));
+      }).sort((a, b) => cleanText(a.projectName).localeCompare(cleanText(b.projectName), 'th') || cleanText(a.label).localeCompare(cleanText(b.label), 'th'));
+      const tableBody = rows.length
+        ? rows.map((item) => `
+          <tr>
+            <td>
+              <div>${escapeHtml(item.projectName || '-')}</div>
+              <div class="project-code">${escapeHtml(item.projectCode || item.projectId || '-')}</div>
+            </td>
+            <td><span class="pill ${escapeHtml(item.tone)}">${escapeHtml(item.label)}</span></td>
+            <td>
+              <span class="pill status-active">Active</span>
+              <button type="button" class="bt-btn bt-btn-soft bt-btn-sm" style="margin-left:8px" data-remove-project-role="1" data-role="${escapeHtml(item.role)}" data-row-id="${escapeHtml(item.rowId)}" data-project-id="${escapeHtml(item.projectId)}">ลบ</button>
+            </td>
+          </tr>
+        `).join('')
+        : '<tr><td colspan="3"><span class="muted">ยังไม่มีโครงการที่ผูกไว้ใน hd_project_member_roles</span></td></tr>';
+      return `
+        <div class="detail-card">
+          <div class="section-title-row">
+            <h4>โครงการที่ผูกไว้</h4>
+            <button class="round-add-btn" type="button" data-open-employee-project-role="1" title="เพิ่มโครงการ / ตำแหน่ง">+</button>
+          </div>
+          <div class="relation-table-wrap">
+            <table class="relation-table">
+              <thead>
+                <tr>
+                  <th>โครงการ</th>
+                  <th>ตำแหน่ง</th>
+                  <th>สถานะ</th>
+                </tr>
+              </thead>
+              <tbody>${tableBody}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      const cards = groups.map(([role, label]) => {
+        const items = snapshot[role] || [];
+        return `
+          <div class="summary-card">
+            <div class="label">${escapeHtml(label)}</div>
+            <div class="value">${items.length ? renderProjectPreview(items.map((item) => item.projectId), 2) : '<span class="muted">ยังไม่มีโครงการในกลุ่มนี้</span>'}</div>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="detail-card">
+          <h4>โครงการที่ถืออยู่จาก hd_project_member_roles</h4>
+          <div class="summary-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+            ${cards}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEmployeeEditableSection(emp) {
+      const positionValue = cleanText(emp.positionName || emp.jobTitle || '');
+      return `
+        <div class="section-block">
+          <div class="section-head">
+            <div>
+              <h4>แก้ไขข้อมูล user</h4>
+              <p>แสดงสมาชิกจาก <code>hd_users</code> เพื่อช่วยเช็คและแก้ไขการผูกสิทธิใน helpdesk role ได้รวดเร็วขึ้น</p>
+            </div>
+          </div>
+          <div class="picker-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));align-items:end">
+            <div class="field">
+               <label for="employeeEditName">ชื่อผู้ใช้</label>
+               <input id="employeeEditName" class="search-input" value="${escapeHtml(displayEmployeeName(emp))}" placeholder="ชื่อ-นามสกุล - ชื่อที่ใช้แสดง">
+            </div>
+            <div class="field">
+               <label for="employeeEditCode">Code</label>
+               <input id="employeeEditCode" class="search-input" value="${escapeHtml(emp.code || '')}" placeholder="รหัสพนักงาน หรือ EMP001">
+            </div>
+            <div class="field">
+              <label for="employeeEditEmail">Email</label>
+              <input id="employeeEditEmail" class="search-input" value="${escapeHtml(emp.email || '')}" placeholder="user@company.com">
+            </div>
+            <div class="field">
+              <label for="employeeEditPosition">ตำแหน่ง</label>
+              <select id="employeeEditPosition" class="search-input">
+                ${renderPositionSelectOptions(positionValue)}
+              </select>
+            </div>
+            <div class="field">
+              <label for="employeeEditJobTitle">Job title / บทบาท</label>
+              <input id="employeeEditJobTitle" class="search-input" value="${escapeHtml(emp.jobTitle || '')}" placeholder="เช่น Helpdesk, Support, Developer">
+            </div>
+            <div class="field">
+              <label for="employeeEditDepartment">แผนก</label>
+              <input id="employeeEditDepartment" class="search-input" value="${escapeHtml(emp.department || '')}" placeholder="เช่น IT Support, Operation">
+            </div>
+            <div class="field">
+              <label for="employeeEditLocation">พื้นที่ / สถานที่</label>
+              <input id="employeeEditLocation" class="search-input" value="${escapeHtml(emp.location || '')}" placeholder="เช่น สำนักงาน กกพ.">
+            </div>
+            <div class="field">
+              <label style="display:flex;align-items:center;gap:10px;margin:0">
+                <input id="employeeEditActive" type="checkbox"${emp.active !== false ? ' checked' : ''} style="width:18px;height:18px">
+                <span>Active</span>
+              </label>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px">
+            <button class="bt-btn bt-btn-primary" type="button" id="saveEmployeeBtn">บันทึกข้อมูลผู้ใช้</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEmployeeProjectRoleSelectOptions(term, selectedId) {
+      const select = document.getElementById('employeeProjectSelect');
+      if (!select) return;
+      const filtered = state.projects.filter((project) => project.active !== false && matchesProjectSearch(project, term));
+      const selected = selectedId ? state.projects.find((project) => String(project.id) === String(selectedId)) : null;
+      if (selected && !filtered.some((project) => String(project.id) === String(selected.id))) {
+        filtered.unshift(selected);
+      }
+      select.innerHTML = [
+        `<option value="">${filtered.length ? 'เลือกโครงการ' : 'ไม่พบโครงการ'}</option>`,
+        ...filtered.map((project) => `<option value="${escapeHtml(project.id)}"${String(project.id) === String(selectedId) ? ' selected' : ''}>${escapeHtml(displayProjectLabel(project))}</option>`),
+      ].join('');
+    }
+
+    function renderEmployeeProjectRolePopupOptions(term = '', selectedId = '', show = true) {
+      const dropdown = document.getElementById('employeeProjectRoleDropdown');
+      if (!dropdown) return;
+      const filtered = state.projects.filter((project) => project.active !== false && matchesProjectSearch(project, term));
+      if (!filtered.length) {
+        dropdown.innerHTML = `<div class="project-combobox-empty">ไม่พบโครงการ</div>`;
+      } else {
+        dropdown.innerHTML = filtered.map((project) =>
+          `<div class="project-combobox-option${String(project.id) === String(selectedId) ? ' selected' : ''}" data-id="${escapeHtml(String(project.id))}" data-label="${escapeHtml(displayProjectLabel(project))}">${escapeHtml(displayProjectLabel(project))}</div>`
+        ).join('');
+      }
+      if (show) dropdown.classList.add('open');
+      dropdown.querySelectorAll('.project-combobox-option').forEach((opt) => {
+        opt.addEventListener('click', () => {
+          const hidden = document.getElementById('employeeProjectRoleProjectSelect');
+          const searchEl = document.getElementById('employeeProjectRoleSearch');
+          if (hidden) hidden.value = opt.dataset.id;
+          if (searchEl) searchEl.value = opt.dataset.label;
+          dropdown.classList.remove('open');
+        });
+      });
+    }
+
+    function openEmployeeProjectRoleModal(empId) {
+      const emp = state.people.find((item) => String(item.id) === String(empId));
+      if (!emp) return;
+      state.currentEmployeeProjectRoleEmpId = String(emp.id);
+      const sub = document.getElementById('employeeProjectRoleModalSub');
+      if (sub) sub.textContent = `เลือกโครงการและตำแหน่งของ ${displayEmployeeName(emp)}`;
+      const search = document.getElementById('employeeProjectRoleSearch');
+      const projectHidden = document.getElementById('employeeProjectRoleProjectSelect');
+      const dropdown = document.getElementById('employeeProjectRoleDropdown');
+      const roleSelect = document.getElementById('employeeProjectRoleRoleSelect');
+      if (search) search.value = '';
+      if (projectHidden) projectHidden.value = '';
+      if (dropdown) { dropdown.innerHTML = ''; dropdown.classList.remove('open'); }
+      if (roleSelect) roleSelect.value = 'pm';
+      openModal('employeeProjectRoleModal');
+    }
+
+    function renderEmployeeProjectRoleChips(emp) {
+      const snapshot = getEmployeeProjectRoleSnapshot(emp.id);
+      const groups = [
+        ['pm', 'PM', 'blue'],
+        ['support', 'IT Support', 'green'],
+        ['dev', 'Dev', 'orange'],
+      ];
+      const chips = groups.flatMap(([role, label, tone]) => {
+        const items = snapshot[role] || [];
+        return items.map((item) => {
+          const chipText = `${item.projectName || item.projectCode || '-'} / ${label}`;
+          return `<span class="chip ${tone}">${escapeHtml(chipText)}<button type="button" data-remove-project-role="1" data-role="${escapeHtml(role)}" data-row-id="${escapeHtml(item.rowId || '')}" data-project-id="${escapeHtml(item.projectId)}">ลบ</button></span>`;
+        });
+      });
+      return chips.length ? chips.join(' ') : '<span class="muted">ยังไม่พบรายการที่ผูกไว้</span>';
+    }
+
+    function renderEmployeeProjectManagementSection(emp) {
+      return `
+        <div class="section-block" style="margin-top:14px">
+          <div class="section-head">
+            <div>
+              <h4>สิทธิผู้ใช้ในโปรเจกต์</h4>
+              <p>เลือกพนักงานจากข้อมูลในระบบเพื่อผูก PM, IT Support และ Dev ให้กับโครงการนี้</p>
+            </div>
+          </div>
+          ${renderEmployeeProjectRoleSummaryCard(emp)}
+          <div class="picker-grid employee-project-picker">
+            <div class="field">
+               <label for="employeeProjectSearch">ค้นหาโปรเจกต์</label>
+               <input id="employeeProjectSearch" class="search-input" placeholder="ค้นหาโปรเจกต์ / code">
+            </div>
+            <div class="field">
+               <label for="employeeProjectSelect">เลือกโปรเจกต์</label>
+              <select id="employeeProjectSelect"></select>
+            </div>
+            <div class="field">
+               <label for="employeeProjectRoleSelect">เลือก role</label>
+              <select id="employeeProjectRoleSelect">
+                <option value="pm">PM</option>
+                <option value="support">IT Support</option>
+                <option value="dev">Dev</option>
+              </select>
+            </div>
+            <button class="bt-btn bt-btn-primary" type="button" id="employeeProjectAddBtn">ผูกสิทธิ</button>
+          </div>
+          <div class="chip-row" id="employeeProjectChipRow" style="display:none">
+            ${renderEmployeeProjectRoleChips(emp)}
+          </div>
+        </div>
+      `;
+    }
+
+    async function saveEmployeeProjectMembership(emp, project, role, removeRowId = '') {
+      if (!emp || !project) return;
+      const roleType = normalizeMainTeamProjectRole(role);
+      if (!roleType) return;
+
+      const empId = String(emp.id);
+      const projectRows = state.projectMemberRoles.filter((row) => row.active !== false && roleRowMatchesProject(row, project));
+      const sameRoleRows = projectRows.filter((row) => normalizeMainTeamProjectRole(row.roleType || row.positionName || row.name || row.code || '') === roleType);
+      const matchingEmployeeRows = sameRoleRows.filter((row) => roleRowMatchesEmployee(row, emp));
+
+      if (removeRowId) {
+        const rowsToDelete = state.projectMemberRoles.filter((row) => String(row.id) === String(removeRowId));
+        await Promise.all(rowsToDelete.map((row) => deleteHdRow(row.id)));
+      } else if (roleType === 'pm') {
+        const rowsToDelete = sameRoleRows.filter((row) => String(findEmployeeByValue(row.personId || row.personCode || row.personName || row.name || row.code)?.id || '') !== empId);
+        await Promise.all(rowsToDelete.map((row) => deleteHdRow(row.id)));
+        if (!matchingEmployeeRows.length) {
+          await createHdRow('hd_project_member_roles', buildProjectMemberRoleBody(project, emp, 'pm'));
+        }
+      } else {
+        if (matchingEmployeeRows.length) return;
+        await createHdRow('hd_project_member_roles', buildProjectMemberRoleBody(project, emp, roleType));
+      }
+
+      await reloadProjectMemberRoles();
+      await syncProjectExtraFromProjectMemberRoles(project);
+      await reloadProjects();
+    }
+
+    async function saveEmployeeProfile() {
+      const emp = state.people.find((item) => String(item.id) === String(state.currentEmployeeId));
+      if (!emp) return;
+
+      const name = cleanText(document.getElementById('employeeEditName')?.value || '');
+      const code = cleanText(document.getElementById('employeeEditCode')?.value || '');
+      const email = cleanText(document.getElementById('employeeEditEmail')?.value || '');
+      const positionName = cleanText(document.getElementById('employeeEditPosition')?.value || '');
+      const jobTitle = cleanText(document.getElementById('employeeEditJobTitle')?.value || '');
+      const department = cleanText(document.getElementById('employeeEditDepartment')?.value || '');
+      const location = cleanText(document.getElementById('employeeEditLocation')?.value || '');
+      const active = Boolean(document.getElementById('employeeEditActive')?.checked);
+
+      if (!name) {
+        showNotice('กรุณาระบุชื่อ user', 'warning');
+        return;
+      }
+
+      const currentExtra = parseExtra(emp.extra);
+      const nextExtra = {
+        ...currentExtra,
+        source: currentExtra.source || 'manual',
+        email,
+        position: positionName,
+        position_name: positionName,
+        job_title: jobTitle,
+        department_name: department,
+        work_location: location,
+        role: positionName || jobTitle || currentExtra.role || '',
+      };
+      if (emp.kind === 'system-user') {
+        nextExtra.linked_system_user_id = String(emp.id);
+      }
+
+      const targetId = cleanText(emp.extra?.linked_helpdesk_id || (emp.kind === 'manual' ? emp.id : ''));
+      const payload = {
+        code,
+        name,
+        extra: JSON.stringify(nextExtra),
+        active,
+        sort_order: 0,
+      };
+
+      try {
+        if (targetId) {
+          await updateHdRow(targetId, payload);
+        } else {
+          await createHdRow('hd_users', payload);
+        }
+        await reloadPeople();
+        openEmployeeModal(emp.id);
+        showNotice('บันทึกข้อมูล user เรียบร้อย', 'success');
+      } catch (err) {
+        showNotice(err.message || 'บันทึกข้อมูลไม่สำเร็จ', 'danger');
+      }
+    }
+
+    function bindEmployeeModalControls() {
+      const searchInput = document.getElementById('employeeProjectSearch');
+      const select = document.getElementById('employeeProjectSelect');
+      const roleSelect = document.getElementById('employeeProjectRoleSelect');
+      const addBtn = document.getElementById('employeeProjectAddBtn');
+      const saveBtn = document.getElementById('saveEmployeeBtn');
+      const body = document.getElementById('employeeModalBody');
+      const getEmp = () => state.people.find((item) => String(item.id) === String(state.currentEmployeeId));
+
+      if (searchInput) {
+        searchInput.oninput = () => {
+          renderEmployeeProjectRoleSelectOptions(searchInput.value, select?.value || '');
+        };
+      }
+      renderEmployeeProjectRoleSelectOptions(searchInput?.value || '', select?.value || '');
+
+      if (addBtn) {
+        addBtn.onclick = async () => {
+        const emp = getEmp();
+        if (!emp) return;
+        const projectId = select?.value || '';
+        const role = roleSelect?.value || '';
+        if (!projectId) {
+          showNotice('กรุณาเลือกโครงการก่อน', 'warning');
+          return;
+        }
+        if (!role) {
+          showNotice('กรุณาเลือกบทบาทก่อน', 'warning');
+          return;
+        }
+        const project = findProjectByValue(projectId);
+        if (!project) {
+          showNotice('ไม่พบข้อมูลโครงการที่เลือก', 'warning');
+          return;
+        }
+        try {
+          await saveEmployeeProjectMembership(emp, project, role);
+          openEmployeeModal(emp.id);
+          if (state.currentProjectId) {
+            state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(state.projects.find((item) => String(item.id) === String(state.currentProjectId))));
+            renderProjectModalSummary();
+            renderProjectRoleSections();
+          }
+          showNotice('บันทึกความสัมพันธ์พนักงาน-โครงการเรียบร้อย', 'success');
+        } catch (err) {
+          showNotice(err.message || 'บันทึกไม่สำเร็จ', 'danger');
+        }
+        };
+      }
+
+      if (saveBtn) {
+        saveBtn.onclick = saveEmployeeProfile;
+      }
+
+      body && (body.onclick = async (event) => {
+        const openRoleBtn = event.target.closest('[data-open-employee-project-role]');
+        if (openRoleBtn) {
+          const emp = getEmp();
+          if (emp) openEmployeeProjectRoleModal(emp.id);
+          return;
+        }
+        const btn = event.target.closest('[data-remove-project-role]');
+        if (!btn) return;
+        const emp = getEmp();
+        if (!emp) return;
+        const projectId = String(btn.dataset.projectId || '');
+        const role = String(btn.dataset.role || '');
+        if (!projectId || !role) return;
+        const project = findProjectByValue(projectId);
+        if (!project) return;
+        try {
+          await saveEmployeeProjectMembership(emp, project, role, String(btn.dataset.rowId || ''));
+          openEmployeeModal(emp.id);
+          if (state.currentProjectId) {
+            state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(state.projects.find((item) => String(item.id) === String(state.currentProjectId))));
+            renderProjectModalSummary();
+            renderProjectRoleSections();
+          }
+          showNotice('ลบความสัมพันธ์ออกจากโครงการแล้ว', 'success');
+        } catch (err) {
+          showNotice(err.message || 'ลบไม่สำเร็จ', 'danger');
+        }
+      });
+    }
+
+    function openEmployeeModal(employeeId) {
+      const emp = state.people.find((item) => String(item.id) === String(employeeId));
+      if (!emp) return;
+      state.currentEmployeeId = String(emp.id);
+      document.getElementById('employeeModalTitle').textContent = `ข้อมูลพนักงาน: ${displayEmployeeName(emp)}`;
+      document.getElementById('employeeModalSub').textContent = `${displayEmployeeCode(emp)}${emp.email ? ` ? ${emp.email}` : ''}`;
+
+      const extraRows = Object.entries(emp.extra || {})
+        .filter(([key, value]) => key && value != null && String(value).trim() !== '')
+        .slice(0, 10)
+        .map(([key, value]) => `<div class="kv"><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(String(value))}</dd></div>`)
+        .join('');
+
+      const links = getEmployeeMainTeamLinks(emp.id);
+      const projectBlock = (title, items, tone) => `
+        <div class="section-block">
+          <div class="section-head">
+            <div>
+              <h4>${escapeHtml(title)}</h4>
+              <p>${items.length ? 'กดดูโครงการแต่ละรายการได้จากหน้าโครงการ' : 'ยังไม่มีโครงการในกลุ่มนี้'}</p>
+            </div>
+          </div>
+          <div class="chip-row">
+            ${items.length ? items.map((project) => `<span class="pill ${tone}">${escapeHtml(displayProjectName(project))}</span>`).join('') : '<span class="muted">-</span>'}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('employeeModalBody').innerHTML = `
+        ${renderEmployeeEditableSection(emp)}
+        <div class="detail-grid">
+          <div class="detail-card">
+            <h4>ข้อมูลจาก hd_users</h4>
+            <dl class="kv-list">
+              <div class="kv"><dt>ชื่อ</dt><dd>${escapeHtml(displayEmployeeName(emp))}</dd></div>
+              <div class="kv"><dt>Code</dt><dd>${escapeHtml(emp.code || '-')}</dd></div>
+              <div class="kv"><dt>Email</dt><dd>${escapeHtml(emp.email || '-')}</dd></div>
+              <div class="kv"><dt>ตำแหน่ง</dt><dd>${escapeHtml(emp.positionName || emp.jobTitle || '-')}</dd></div>
+              <div class="kv"><dt>แผนก</dt><dd>${escapeHtml(emp.department || '-')}</dd></div>
+              <div class="kv"><dt>ที่ตั้ง</dt><dd>${escapeHtml(emp.location || '-')}</dd></div>
+              <div class="kv"><dt>สถานะ</dt><dd><span class="pill ${emp.active ? 'green' : 'red'}">${emp.active ? 'Active' : 'Inactive'}</span></dd></div>
+              <div class="kv"><dt>ชนิดข้อมูล</dt><dd><span class="pill ${employeeSourceTone(emp)}">${escapeHtml(employeeSourceLabel(emp))}</span></dd></div>
+            </dl>
+          </div>
+          <div class="detail-card">
+            <div class="section-title-row">
+              <h4>สิ่งที่เกี่ยวข้องกับพนักงานคนนี้จาก hd_main_team_project</h4>
+              <button class="round-add-btn" type="button" data-open-employee-project-role="1" title="เพิ่มโครงการ / ตำแหน่ง">+</button>
+            </div>
+            ${employeeProjectGroups(emp)}
+          </div>
+        </div>
+
+        ${renderEmployeeProjectManagementSection(emp)}
+
+        <div class="section-block" style="margin-top:14px">
+          <div class="section-head">
+            <div>
+              <h4>ข้อมูลเสริม</h4>
+              <p>แสดงค่าจาก extra ที่ถูกส่งมาจากระบบต้นทาง</p>
+            </div>
+          </div>
+          <div class="detail-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+            ${extraRows || '<div class="muted">ไม่มีข้อมูลเสริม</div>'}
+          </div>
+        </div>
+      `;
+
+      bindEmployeeModalControls();
+      openModal('employeeModal');
+    }
+
+    function roleSectionHtml(role, title, note, buttonLabel) {
+      return `
+        <div class="section-block" data-role-section="${role}">
+          <div class="section-head">
+            <div>
+              <h4>${escapeHtml(title)}</h4>
+              <p>${escapeHtml(note)}</p>
+            </div>
+          </div>
+          <div class="picker-grid">
+            <div class="field">
+              <label for="${role}Search">ค้นหา</label>
+              <input id="${role}Search" placeholder="พิมพ์ชื่อ / code / email">
+            </div>
+            <div class="field">
+              <label for="${role}Select">รายชื่อ</label>
+              <select id="${role}Select"></select>
+            </div>
+            <button class="bt-btn bt-btn-primary" type="button" id="${role}AddBtn">${escapeHtml(buttonLabel)}</button>
+          </div>
+          <div class="chip-row" id="${role}ChipRow"></div>
+        </div>
+      `;
+    }
+
+    function renderSelectOptions(role, term, selectedId, sourcePeople = state.people) {
+      const select = document.getElementById(`${role}Select`);
+      if (!select) return;
+      const source = Array.isArray(sourcePeople) ? sourcePeople : state.people;
+      const filtered = source.filter((emp) => matchesEmployeeSearch(emp, term));
+      const selected = selectedId ? source.find((emp) => String(emp.id) === String(selectedId)) || state.people.find((emp) => String(emp.id) === String(selectedId)) : null;
+      if (selected && !filtered.some((emp) => String(emp.id) === String(selected.id))) {
+        filtered.unshift(selected);
+      }
+      const options = [
+        `<option value="">${filtered.length ? 'เลือกจากรายชื่อ' : 'ไม่พบรายชื่อ'}</option>`,
+        ...filtered.map((emp) => `<option value="${escapeHtml(emp.id)}"${String(emp.id) === String(selectedId) ? ' selected' : ''}>${escapeHtml(displayEmployeeLabel(emp))}</option>`),
+      ];
+      select.innerHTML = options.join('');
+    }
+
+    function renderRoleChips(role, draft) {
+      const chipRow = document.getElementById(`${role}ChipRow`);
+      if (!chipRow) return;
+      if (role === 'pm') {
+        const emp = draft.pmId ? findEmployeeByValue(draft.pmId) : null;
+        chipRow.innerHTML = emp
+          ? `<span class="chip blue">PM: ${escapeHtml(displayEmployeeName(emp))}<button type="button" data-remove-role="pm" data-employee-id="${escapeHtml(emp.id)}">ลบ</button></span>`
+          : '<span class="muted">ยังไม่มี PM ที่ผูกไว้</span>';
+        return;
+      }
+      const ids = role === 'support' ? draft.supportIds : draft.devIds;
+      if (!ids.length) {
+        chipRow.innerHTML = '<span class="muted">ยังไม่พบรายการที่ผูกไว้</span>';
+        return;
+      }
+      chipRow.innerHTML = ids.map((id) => {
+        const emp = findEmployeeByValue(id);
+        if (!emp) return '';
+        const tone = role === 'support' ? 'green' : 'orange';
+        return `<span class="chip ${tone}">${escapeHtml(displayEmployeeName(emp))}<button type="button" data-remove-role="${role}" data-employee-id="${escapeHtml(emp.id)}">ลบ</button></span>`;
+      }).join('');
+    }
+
+    function openProjectModal(projectId) {
+      const project = state.projects.find((item) => String(item.id) === String(projectId));
+      if (!project) return;
+      state.currentProjectId = String(project.id);
+      state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(project));
+
+      document.getElementById('projectModalTitle').textContent = `แก้ไขสิทธิในโปรเจกต์: ${displayProjectName(project)}`;
+      document.getElementById('projectModalSub').textContent = `${project.code || '-'}${project.description ? ` / ${project.description}` : ''}`;
+      document.getElementById('projectModalBody').innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-card">
+            <h4>ข้อมูลโปรเจกต์</h4>
+            <dl class="kv-list">
+               <div class="kv"><dt>ชื่อโปรเจกต์</dt><dd>${escapeHtml(displayProjectName(project))}</dd></div>
+              <div class="kv"><dt>Code</dt><dd>${escapeHtml(project.code || '-')}</dd></div>
+               <div class="kv"><dt>PM ที่เกี่ยวข้อง</dt><dd>${escapeHtml(project.pmName || '-')}</dd></div>
+               <div class="kv"><dt>รายละเอียด</dt><dd>${escapeHtml(project.description || '-')}</dd></div>
+               <div class="kv"><dt>สถานะ</dt><dd><span class="pill ${project.active ? 'green' : 'red'}">${project.active ? 'Active' : 'Inactive'}</span></dd></div>
+               <div class="kv"><dt>ประเภทข้อมูล</dt><dd><span class="pill ${project.kind === 'manual' ? 'orange' : 'blue'}">${project.kind === 'manual' ? 'Manual' : 'System'}</span></dd></div>
+            </dl>
+          </div>
+          <div class="detail-card">
+            <h4>สิทธิในโปรเจกต์</h4>
+            <div class="summary-grid" style="grid-template-columns:1fr">
+              <div class="summary-card">
+                <div class="label">PM</div>
+                <div class="value" id="projectSummaryPm"></div>
+              </div>
+              <div class="summary-card">
+                <div class="label">IT Support</div>
+                <div class="value" id="projectSummarySupport"></div>
+              </div>
+              <div class="summary-card">
+                <div class="label">Dev</div>
+                <div class="value" id="projectSummaryDev"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${roleSectionHtml('pm', 'PM', 'เลือกพนักงานที่ผูกกับค่า hd_projects.project_pm ของโปรเจกต์นี้', '+ เพิ่มพนักงาน')}
+        ${roleSectionHtml('support', 'IT Support', 'เลือกพนักงานจาก hd_teams ที่เป็น IT Support ของโปรเจกต์นี้', '+ เพิ่มพนักงาน')}
+        ${roleSectionHtml('dev', 'Dev', 'เลือกพนักงานจาก hd_project_member_roles ของโปรเจกต์นี้', '+ เพิ่มพนักงาน')}
+      `;
+
+      renderProjectModalSummary();
+      renderProjectRoleSections();
+      bindProjectModalControls();
+      openModal('projectModal');
+    }
+
+    function renderProjectModalSummary() {
+      const project = state.projects.find((item) => String(item.id) === String(state.currentProjectId));
+      if (!project) return;
+      const draft = state.currentProjectDraft || normalizeProjectConfig(getProjectConfig(project));
+      const summary = renderProjectSummaryNames(draft, project);
+      const pm = draft.pmId ? findEmployeeByValue(draft.pmId) : null;
+
+      const pmBox = document.getElementById('projectSummaryPm');
+      const supportBox = document.getElementById('projectSummarySupport');
+      const devBox = document.getElementById('projectSummaryDev');
+
+      if (pmBox) {
+        pmBox.innerHTML = pm
+          ? `<span class="pill blue">${escapeHtml(displayEmployeeName(pm))}</span>`
+          : '<span class="muted">ยังไม่พบ PM ที่ผูกไว้</span>';
+      }
+      if (supportBox) {
+        supportBox.innerHTML = summary.supportNames.length
+          ? summary.supportNames.map((name) => `<span class="pill green">${escapeHtml(name)}</span>`).join(' ')
+          : '<span class="muted">ยังไม่พบ IT Support ที่ผูกไว้</span>';
+      }
+      if (devBox) {
+        devBox.innerHTML = summary.devIds.length
+          ? renderListPreview(summary.devIds, 4, 'orange')
+          : '<span class="muted">ยังไม่พบ Dev ที่ผูกไว้</span>';
+      }
+    }
+
+    function renderProjectRoleSections() {
+      const draft = state.currentProjectDraft;
+      if (!draft) return;
+      renderSelectOptions('pm', document.getElementById('pmSearch')?.value || '', draft.pmId);
+      renderSelectOptions('support', document.getElementById('supportSearch')?.value || '', '');
+      const currentProject = state.projects.find((item) => String(item.id) === String(state.currentProjectId));
+      const devSource = getProjectMemberRoleSnapshot(currentProject).dev;
+      renderSelectOptions('dev', document.getElementById('devSearch')?.value || '', '', devSource);
+      renderRoleChips('pm', draft);
+      renderRoleChips('support', draft);
+      renderRoleChips('dev', draft);
+    }
+
+    async function saveProjectConfigToDb() {
+      const project = state.projects.find((item) => String(item.id) === String(state.currentProjectId));
+      if (!project) return;
+      const draft = normalizeProjectConfig(state.currentProjectDraft || getProjectConfig(project));
+      const extra = parseExtra(project.extra);
+      extra.project_pm = draft.pmId || '';
+      extra.project_support_ids = draft.supportIds || [];
+      extra.project_dev_ids = draft.devIds || [];
+      extra.source = extra.source || 'manual-config';
+      await updateHdRow(project.id, {
+        code: project.code || '',
+        name: project.name || '',
+        extra: JSON.stringify(extra),
+        active: project.active !== false,
+        sort_order: Number(project.sortOrder || 0),
+      });
+      await syncProjectMemberRolesForProject(project, draft);
+      await Promise.all([reloadProjects(), reloadProjectMemberRoles()]);
+      state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(state.projects.find((item) => String(item.id) === String(state.currentProjectId))));
+    }
+
+    async function resetProjectConfigInDb() {
+      const project = state.projects.find((item) => String(item.id) === String(state.currentProjectId));
+      if (!project) return;
+      const extra = parseExtra(project.extra);
+      delete extra.project_pm;
+      delete extra.project_support_ids;
+      delete extra.project_dev_ids;
+      await updateHdRow(project.id, {
+        code: project.code || '',
+        name: project.name || '',
+        extra: JSON.stringify(extra),
+        active: project.active !== false,
+        sort_order: Number(project.sortOrder || 0),
+      });
+      await syncProjectMemberRolesForProject(project, normalizeProjectConfig({ pmId: '', supportIds: [], devIds: [] }));
+      await Promise.all([reloadProjects(), reloadProjectMemberRoles()]);
+      state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(state.projects.find((item) => String(item.id) === String(state.currentProjectId))));
+    }
+
+    function bindProjectModalControls() {
+      const getDraft = () => state.currentProjectDraft;
+      if (!getDraft()) return;
+
+      const pmSearch = document.getElementById('pmSearch');
+      const supportSearch = document.getElementById('supportSearch');
+      const devSearch = document.getElementById('devSearch');
+
+      pmSearch?.addEventListener('input', () => renderSelectOptions('pm', pmSearch.value, getDraft()?.pmId || ''));
+      supportSearch?.addEventListener('input', () => renderSelectOptions('support', supportSearch.value, ''));
+      devSearch?.addEventListener('input', () => {
+        const currentProject = state.projects.find((item) => String(item.id) === String(state.currentProjectId));
+        renderSelectOptions('dev', devSearch.value, '', getProjectMemberRoleSnapshot(currentProject).dev);
+      });
+
+      document.getElementById('pmAddBtn')?.addEventListener('click', () => {
+        const draft = getDraft();
+        if (!draft) return;
+        const select = document.getElementById('pmSelect');
+        if (!select || !select.value) {
+          showNotice('เลือก PM ก่อน', 'warning');
+          return;
+        }
+        draft.pmId = String(select.value);
+        state.currentProjectDraft = normalizeProjectConfig(draft);
+        renderProjectModalSummary();
+        renderProjectRoleSections();
+      });
+
+      document.getElementById('supportAddBtn')?.addEventListener('click', () => {
+        const draft = getDraft();
+        if (!draft) return;
+        const select = document.getElementById('supportSelect');
+        if (!select || !select.value) {
+          showNotice('เลือก IT Support ก่อน', 'warning');
+          return;
+        }
+        draft.supportIds = uniq([...(draft.supportIds || []), String(select.value)]);
+        state.currentProjectDraft = normalizeProjectConfig(draft);
+        renderProjectModalSummary();
+        renderProjectRoleSections();
+      });
+
+      document.getElementById('devAddBtn')?.addEventListener('click', () => {
+        const draft = getDraft();
+        if (!draft) return;
+        const select = document.getElementById('devSelect');
+        if (!select || !select.value) {
+          showNotice('เลือก Dev ก่อน', 'warning');
+          return;
+        }
+        draft.devIds = uniq([...(draft.devIds || []), String(select.value)]);
+        state.currentProjectDraft = normalizeProjectConfig(draft);
+        renderProjectModalSummary();
+        renderProjectRoleSections();
+      });
+
+      const body = document.getElementById('projectModalBody');
+      body.onclick = (event) => {
+        const removeBtn = event.target.closest('[data-remove-role]');
+        if (!removeBtn) return;
+        const role = removeBtn.dataset.removeRole;
+        const empId = String(removeBtn.dataset.employeeId || '');
+        if (!empId) return;
+        const draft = getDraft();
+        if (!draft) return;
+
+        if (role === 'pm') {
+          draft.pmId = '';
+        } else if (role === 'support') {
+          draft.supportIds = (draft.supportIds || []).filter((id) => String(id) !== empId);
+        } else if (role === 'dev') {
+          draft.devIds = (draft.devIds || []).filter((id) => String(id) !== empId);
+        }
+        state.currentProjectDraft = normalizeProjectConfig(draft);
+        renderProjectModalSummary();
+        renderProjectRoleSections();
+      };
+
+      document.getElementById('saveProjectConfigBtn')?.addEventListener('click', async () => {
+        try {
+          await saveProjectConfigToDb();
+          renderAll();
+          showNotice('บันทึกการตั้งค่าโปรเจกต์เรียบร้อย', 'success');
+          closeModal('projectModal');
+        } catch (err) {
+          showNotice(err.message || 'บันทึกการตั้งค่าโปรเจกต์ไม่สำเร็จ', 'danger');
+        }
+      });
+
+      document.getElementById('resetProjectConfigBtn')?.addEventListener('click', async () => {
+        try {
+          await resetProjectConfigInDb();
+          renderAll();
+          showNotice('ล้างค่าการตั้งค่าเรียบร้อย', 'success');
+        } catch (err) {
+          showNotice(err.message || 'ล้างค่าการตั้งค่าไม่สำเร็จ', 'danger');
+        }
+      });
+    }
+
+    function openAddPersonModal() {
+      document.getElementById('newPersonName').value = '';
+      document.getElementById('newPersonCode').value = '';
+      document.getElementById('newPersonPosition').value = '';
+      document.getElementById('newPersonJob').value = '';
+      document.getElementById('newPersonDept').value = '';
+      openModal('personModal');
+    }
+
+    function openAddProjectModal() {
+      document.getElementById('newProjectCode').value = '';
+      document.getElementById('newProjectName').value = '';
+      document.getElementById('newProjectPm').value = '';
+      openModal('projectAddModal');
+    }
+
+    async function saveNewPerson() {
+      const name = cleanText(document.getElementById('newPersonName').value);
+      const code = cleanText(document.getElementById('newPersonCode').value);
+      const positionName = cleanText(document.getElementById('newPersonPosition').value);
+      const jobTitle = cleanText(document.getElementById('newPersonJob').value);
+      const department = cleanText(document.getElementById('newPersonDept').value);
+      if (!name) {
+        showNotice('กรุณาระบุชื่อผู้ใช้', 'warning');
+        return;
+      }
+
+      const isEmail = code.includes('@');
+      const person = normalizeEmployeeRecord({
+        id: uid('manual-person'),
+        code: isEmail ? '' : code,
+        name,
+        email: isEmail ? code : '',
+        positionName,
+        position: positionName,
+        jobTitle,
+        department,
+        active: true,
+        kind: 'manual',
+        extra: {
+          email: isEmail ? code : '',
+          position: positionName,
+          position_name: positionName,
+          job_title: jobTitle,
+          department_name: department,
+          source: 'manual',
+        },
+      }, 'manual');
+
+      try {
+        await createHdRow('hd_users', {
+          code: person.code || '',
+          name: person.name || '',
+          extra: JSON.stringify(person.extra || {}),
+          active: true,
+          sort_order: 0,
+        });
+        await reloadPeople();
+        closeModal('personModal');
+        showNotice('บันทึกผู้ใช้ลง DB เรียบร้อย', 'success');
+      } catch (err) {
+        showNotice(err.message || 'บันทึกผู้ใช้ไม่สำเร็จ', 'danger');
+      }
+    }
+
+    async function saveNewProject() {
+      const code = cleanText(document.getElementById('newProjectCode').value);
+      const name = cleanText(document.getElementById('newProjectName').value);
+      const pmText = cleanText(document.getElementById('newProjectPm').value);
+      if (!name && !code) {
+        showNotice('กรุณากรอกชื่อหรือ code อย่างน้อย 1 ช่อง', 'warning');
+        return;
+      }
+
+      const project = normalizeProjectRecord({
+        id: uid('manual-project'),
+        code,
+        name,
+        pmName: pmText,
+        description: '',
+        active: true,
+        kind: 'manual',
+        extra: {
+          project_pm: pmText,
+          project_support_ids: [],
+          project_dev_ids: [],
+          source: 'manual',
+        },
+      }, 'manual');
+
+      try {
+        const result = await createHdRow('hd_projects', {
+          code: project.code || '',
+          name: project.name || '',
+          extra: JSON.stringify(project.extra || {}),
+          active: true,
+          sort_order: 0,
+        });
+        await syncProjectMemberRolesForProject({
+          id: result.id || project.id,
+          code: project.code || '',
+          name: project.name || '',
+          extra: JSON.stringify(project.extra || {}),
+          active: true,
+          sortOrder: 0,
+        }, normalizeProjectConfig({
+          pmId: project.pmName ? (findEmployeeByValue(project.pmName)?.id || project.pmName) : '',
+          supportIds: [],
+          devIds: [],
+        }));
+        closeModal('projectAddModal');
+        await Promise.all([reloadProjects(), reloadProjectMemberRoles()]);
+        showNotice('บันทึกโปรเจกต์ลง DB เรียบร้อย', 'success');
+        openProjectModal(result.id || project.id);
+      } catch (err) {
+        showNotice(err.message || 'บันทึกโปรเจกต์ไม่สำเร็จ', 'danger');
+      }
+    }
+
+    async function deletePerson(personId) {
+      const person = state.people.find((item) => String(item.id) === String(personId));
+      if (!person || person.kind !== 'manual') return;
+      if (!confirm(`ลบ "${displayEmployeeName(person)}" ใช่ไหมไ?`)) return;
+
+      try {
+        const affectedProjects = state.projects.filter((project) => {
+          const cfg = getProjectConfig(project);
+          return String(cfg.pmId) === String(personId)
+            || (cfg.supportIds || []).some((id) => String(id) === String(personId))
+            || (cfg.devIds || []).some((id) => String(id) === String(personId));
+        });
+        for (const project of affectedProjects) {
+          const cfg = normalizeProjectConfig(getProjectConfig(project));
+          const nextConfig = {
+            pmId: String(cfg.pmId) === String(personId) ? '' : cfg.pmId,
+            supportIds: (cfg.supportIds || []).filter((id) => String(id) !== String(personId)),
+            devIds: (cfg.devIds || []).filter((id) => String(id) !== String(personId)),
+          };
+          const extra = parseExtra(project.extra);
+          extra.project_pm = nextConfig.pmId || '';
+          extra.project_support_ids = nextConfig.supportIds || [];
+          extra.project_dev_ids = nextConfig.devIds || [];
+          await updateHdRow(project.id, {
+            code: project.code || '',
+            name: project.name || '',
+            extra: JSON.stringify(extra),
+            active: project.active !== false,
+            sort_order: Number(project.sortOrder || 0),
+          });
+        }
+        await deleteHdRow(personId);
+        await Promise.all([reloadPeople(), reloadProjects()]);
+        showNotice('ลบผู้ใช้ออกจาก DB เรียบร้อย', 'success');
+      } catch (err) {
+        showNotice(err.message || 'ลบผู้ใช้ไม่สำเร็จ', 'danger');
+      }
+    }
+
+    async function deleteProject(projectId) {
+      const project = state.projects.find((item) => String(item.id) === String(projectId));
+      if (!project || project.kind !== 'manual') return;
+      if (!confirm(`ลบ "${displayProjectName(project)}" ใช่ไหมไ?`)) return;
+
+      try {
+        await deleteHdRow(projectId);
+        await Promise.all([reloadProjects(), reloadProjectMemberRoles()]);
+        showNotice('ลบโปรเจกต์ออกจาก DB เรียบร้อย', 'success');
+      } catch (err) {
+        showNotice(err.message || 'ลบโปรเจกต์ไม่สำเร็จ', 'danger');
+      }
+    }
+
+    function bindStaticEvents() {
+      document.querySelectorAll('.file-tab').forEach((btn) => {
+        btn.addEventListener('click', () => setTab(btn.dataset.tab));
+      });
+
+      const peopleSearch = document.getElementById('peopleSearch');
+      if (peopleSearch) {
+        peopleSearch.addEventListener('input', (event) => {
+          state.peopleSearch = cleanText(event.target.value);
+          renderPeopleTable();
+        });
+      }
+
+      const teamSearch = document.getElementById('teamSearch');
+      if (teamSearch) {
+        teamSearch.addEventListener('input', (event) => {
+          state.teamSearch = cleanText(event.target.value);
+          renderTeamsTable();
+        });
+      }
+
+      const addPersonBtn = document.getElementById('addPersonBtn');
+      if (addPersonBtn) addPersonBtn.addEventListener('click', openAddPersonModal);
+      const savePersonBtn = document.getElementById('savePersonBtn');
+      if (savePersonBtn) savePersonBtn.addEventListener('click', saveNewPerson);
+      const saveProjectBtn = document.getElementById('saveProjectBtn');
+      if (saveProjectBtn) saveProjectBtn.addEventListener('click', saveNewProject);
+      const rolePopupSearch = document.getElementById('employeeProjectRoleSearch');
+      if (rolePopupSearch) {
+        rolePopupSearch.addEventListener('input', () => {
+          document.getElementById('employeeProjectRoleProjectSelect').value = '';
+          renderEmployeeProjectRolePopupOptions(rolePopupSearch.value, '');
+        });
+        rolePopupSearch.addEventListener('focus', () => {
+          renderEmployeeProjectRolePopupOptions(rolePopupSearch.value, document.getElementById('employeeProjectRoleProjectSelect')?.value || '');
+        });
+      }
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#employeeProjectRoleDropdown') && !e.target.closest('#employeeProjectRoleSearch')) {
+          document.getElementById('employeeProjectRoleDropdown')?.classList.remove('open');
+        }
+      });
+      const rolePopupSave = document.getElementById('employeeProjectRoleSaveBtn');
+      if (rolePopupSave) {
+        rolePopupSave.addEventListener('click', async () => {
+          const emp = state.people.find((item) => String(item.id) === String(state.currentEmployeeProjectRoleEmpId || state.currentEmployeeId));
+          const projectId = String(document.getElementById('employeeProjectRoleProjectSelect')?.value || '').trim();
+          const role = String(document.getElementById('employeeProjectRoleRoleSelect')?.value || '').trim();
+          if (!emp) return;
+          if (!projectId) {
+            showNotice('เลือกโปรเจกต์ก่อน', 'warning');
+            return;
+          }
+          if (!role) {
+            showNotice('เลือกรายการ role ก่อน', 'warning');
+            return;
+          }
+          const project = findProjectByValue(projectId);
+          if (!project) {
+            showNotice('ไม่พบโปรเจกต์ที่เลือก', 'warning');
+            return;
+          }
+          try {
+            await saveEmployeeProjectMembership(emp, project, role);
+            closeModal('employeeProjectRoleModal');
+            openEmployeeModal(emp.id);
+            if (state.currentProjectId) {
+              state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(state.projects.find((item) => String(item.id) === String(state.currentProjectId))));
+              renderProjectModalSummary();
+              renderProjectRoleSections();
+            }
+            showNotice('บันทึก role เรียบร้อย', 'success');
+          } catch (err) {
+            showNotice(err.message || 'บันทึก role ไม่สำเร็จ', 'danger');
+          }
+        });
+      }
+
+      const peopleTbody = document.getElementById('peopleTbody');
+      if (peopleTbody) {
+        peopleTbody.addEventListener('click', (event) => {
+          const row = event.target.closest('tr[data-employee-id]');
+          if (!row) return;
+          const action = event.target.closest('[data-action]');
+          const employeeId = row.dataset.employeeId;
+          if (!action) {
+            openEmployeeModal(employeeId);
+            return;
+          }
+          if (action.dataset.action === 'open-person') {
+            openEmployeeModal(employeeId);
+          }
+          if (action.dataset.action === 'delete-person') {
+            deletePerson(employeeId);
+          }
+        });
+      }
+
+      const teamsTbody = document.getElementById('teamsTbody');
+      if (teamsTbody) {
+        teamsTbody.addEventListener('click', (event) => {
+          const row = event.target.closest('tr[data-team-id]');
+          if (!row) return;
+          openTeamModal(row.dataset.teamId);
+        });
+      }
+
+      document.querySelectorAll('[data-close-modal]').forEach((button) => {
+        button.addEventListener('click', () => closeModal(button.dataset.closeModal));
+      });
+
+      ['employeeModal', 'employeeProjectRoleModal', 'projectModal', 'teamModal', 'personModal', 'projectAddModal'].forEach((modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.addEventListener('click', (event) => {
+            if (event.target === modal) closeModal(modalId);
+          });
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeAllModals();
+      });
+    }
+
+    async function initPage() {
+      bindStaticEvents();
+      startThaiDomObserver();
+      normalizeThaiDom(document.body);
+      setTab('people');
+      try {
+        await loadAllData();
+        normalizeThaiDom(document.body);
+      } catch (err) {
+        console.error(err);
+        showNotice(err.message || 'โหลดหน้าจัดการ role ไม่สำเร็จ', 'danger');
+        safeRenderAll();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPage);
+    } else {
+      initPage();
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT Asset Management — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .asset-filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .filter-chip { padding:5px 14px; border-radius:999px; border:1px solid var(--bt-border); background:#fff; font-size:0.82rem; cursor:pointer; font-family:inherit; font-weight:600; color:var(--bt-muted); transition:all 0.15s; }
+    .filter-chip.active, .filter-chip:hover { background:var(--bt-primary); color:#fff; border-color:var(--bt-primary); }
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:500; display:none; align-items:center; justify-content:center; }
+    .modal-backdrop.open { display:flex; }
+    .modal-box { background:#fff; border-radius:var(--bt-radius); padding:28px; width:480px; max-width:92vw; max-height:90vh; overflow-y:auto; }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .modal-header h3 { margin:0; font-size:1.05rem; }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-pc"></i> Asset Management</h2>
+      <button class="bt-btn bt-btn-primary bt-btn-sm" onclick="openModal()"><i class="bi bi-plus-lg"></i> เพิ่ม Asset</button>
+    </div>
+
+    <!-- KPI -->
+    <div class="bt-kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
+      <div class="bt-card"><div class="bt-card-title">ทั้งหมด</div><div class="bt-card-value" id="k-total" style="color:var(--bt-accent)">-</div><div class="bt-card-sub">Total assets</div></div>
+      <div class="bt-card"><div class="bt-card-title">ใช้งานอยู่</div><div class="bt-card-value" id="k-active" style="color:var(--bt-success)">-</div><div class="bt-card-sub">Active</div></div>
+      <div class="bt-card"><div class="bt-card-title">ซ่อมแซม</div><div class="bt-card-value" id="k-repair" style="color:var(--bt-warning)">-</div><div class="bt-card-sub">In repair</div></div>
+      <div class="bt-card"><div class="bt-card-title">เลิกใช้</div><div class="bt-card-value" id="k-retired" style="color:var(--bt-muted)">-</div><div class="bt-card-sub">Retired</div></div>
+    </div>
+
+    <!-- Filter + Search -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+      <div class="asset-filter-bar" style="margin-bottom:0">
+        <button class="filter-chip active" onclick="setFilter('all',this)">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setFilter('active',this)">ใช้งาน</button>
+        <button class="filter-chip" onclick="setFilter('repair',this)">ซ่อม</button>
+        <button class="filter-chip" onclick="setFilter('retired',this)">เลิกใช้</button>
+      </div>
+      <input type="text" class="bt-input" style="max-width:240px;padding:6px 12px;font-size:0.85rem" placeholder="ค้นหา Asset..." id="search-input" oninput="renderTable()">
+    </div>
+
+    <!-- Table -->
+    <div class="bt-card" style="padding:0;overflow:hidden">
+      <table class="bt-table" id="asset-table">
+        <thead>
+          <tr>
+            <th>Asset ID</th>
+            <th>ชื่ออุปกรณ์</th>
+            <th>ประเภท</th>
+            <th>ผู้ใช้งาน</th>
+            <th>แผนก</th>
+            <th>วันรับ</th>
+            <th>สถานะ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="asset-tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="asset-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">เพิ่ม Asset ใหม่</h3>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--bt-muted)">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="bt-form-group" style="grid-column:1/-1">
+        <label class="bt-label">ชื่ออุปกรณ์ <span class="reqd">*</span></label>
+        <input class="bt-input" id="f-name" placeholder="เช่น Dell Laptop i7">
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">Asset ID <span class="reqd">*</span></label>
+        <input class="bt-input" id="f-id" placeholder="เช่น A010">
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">ประเภท</label>
+        <select class="bt-select" id="f-type">
+          <option>Laptop</option><option>Desktop</option><option>Monitor</option>
+          <option>Printer</option><option>Network</option><option>Server</option><option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">ผู้ใช้งาน</label>
+        <input class="bt-input" id="f-user" placeholder="ชื่อพนักงาน">
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">แผนก</label>
+        <select class="bt-select" id="f-dept">
+          <option>IT</option><option>HR</option><option>Finance</option><option>Operations</option><option>Management</option><option>ส่วนกลาง</option>
+        </select>
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">Serial No.</label>
+        <input class="bt-input" id="f-serial" placeholder="S/N">
+      </div>
+      <div class="bt-form-group">
+        <label class="bt-label">วันรับ</label>
+        <input class="bt-input" type="date" id="f-date">
+      </div>
+      <div class="bt-form-group" style="grid-column:1/-1">
+        <label class="bt-label">สถานะ</label>
+        <select class="bt-select" id="f-status">
+          <option value="active">ใช้งาน</option>
+          <option value="repair">ซ่อมแซม</option>
+          <option value="retired">เลิกใช้</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="bt-btn bt-btn-outline" onclick="closeModal()">ยกเลิก</button>
+      <button class="bt-btn bt-btn-primary" onclick="saveAsset()"><i class="bi bi-save"></i> บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script src="/config.js">
+</script><script src="/shared.js"></script><script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('it-assets.html', 'IT Support');
+
+  const token = () => localStorage.getItem('bt_token');
+  const api = (path, opts={}) => fetch('/api'+path, { headers:{'Authorization':'Bearer '+token(),'Content-Type':'application/json'}, ...opts });
+
+  let allData = [];
+  let filterStatus = 'all';
+  let editId = null;
+
+  const statusLabel = { active:'ใช้งาน', repair:'ซ่อมแซม', retired:'เลิกใช้' };
+  const statusBadge = { active:'bt-badge-green', repair:'bt-badge-orange', retired:'bt-badge-grey' };
+
+  function setFilter(s, el) {
+    filterStatus = s;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTable();
+  }
+
+  function renderTable() {
+    const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+    document.getElementById('k-total').textContent   = allData.length;
+    document.getElementById('k-active').textContent  = allData.filter(a=>a.status==='active').length;
+    document.getElementById('k-repair').textContent  = allData.filter(a=>a.status==='repair').length;
+    document.getElementById('k-retired').textContent = allData.filter(a=>a.status==='retired').length;
+    const filtered = allData.filter(a =>
+      (filterStatus === 'all' || a.status === filterStatus) &&
+      (!q || [a.asset_code,a.asset_name,a.assigned_to,a.department,a.asset_type].join(' ').toLowerCase().includes(q))
+    );
+    document.getElementById('asset-tbody').innerHTML = filtered.map(a => `
+      <tr>
+        <td><strong>${a.asset_code}</strong></td>
+        <td>${a.asset_name}</td>
+        <td><span class="bt-badge bt-badge-blue">${a.asset_type||'-'}</span></td>
+        <td>${a.assigned_to||'-'}</td>
+        <td>${a.department||'-'}</td>
+        <td style="color:var(--bt-muted)">${a.purchase_date||'-'}</td>
+        <td><span class="bt-badge ${statusBadge[a.status]||'bt-badge-grey'}">${statusLabel[a.status]||a.status}</span></td>
+        <td>
+          <button class="bt-btn bt-btn-outline bt-btn-sm" onclick="editAsset('${a.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="bt-btn bt-btn-sm" style="background:#fee2e2;color:var(--bt-danger);border:none" onclick="deleteAsset('${a.id}')"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--bt-muted);padding:24px">ไม่พบ Asset</td></tr>';
+  }
+
+  function openModal(asset=null) {
+    editId = asset?.id || null;
+    document.getElementById('modal-title').textContent = asset ? 'แก้ไข Asset' : 'เพิ่ม Asset ใหม่';
+    document.getElementById('f-id').value     = asset?.asset_code || '';
+    document.getElementById('f-name').value   = asset?.asset_name || '';
+    document.getElementById('f-type').value   = asset?.asset_type || 'Laptop';
+    document.getElementById('f-user').value   = asset?.assigned_to || '';
+    document.getElementById('f-dept').value   = asset?.department || 'IT';
+    document.getElementById('f-serial').value = asset?.serial_no || '';
+    document.getElementById('f-date').value   = asset?.purchase_date || new Date().toISOString().split('T')[0];
+    document.getElementById('f-status').value = asset?.status || 'active';
+    document.getElementById('asset-modal').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('asset-modal').classList.remove('open'); }
+
+  async function saveAsset() {
+    const asset_code = document.getElementById('f-id').value.trim();
+    const asset_name = document.getElementById('f-name').value.trim();
+    if (!asset_code || !asset_name) { BT.notify('กรุณากรอก Asset ID และชื่ออุปกรณ์', 'warning'); return; }
+    const body = JSON.stringify({
+      asset_code, asset_name,
+      asset_type:   document.getElementById('f-type').value,
+      assigned_to:  document.getElementById('f-user').value,
+      department:   document.getElementById('f-dept').value,
+      serial_no:    document.getElementById('f-serial').value,
+      purchase_date: document.getElementById('f-date').value,
+      status:       document.getElementById('f-status').value,
+    });
+    try {
+      let res;
+      if (editId) {
+        res = await api('/it/assets/'+editId, { method:'PUT', body });
+      } else {
+        res = await api('/it/assets', { method:'POST', body });
+      }
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      BT.notify(editId ? 'อัปเดต Asset แล้ว' : 'เพิ่ม Asset แล้ว', 'success');
+      closeModal();
+      loadAssets();
+    } catch(e) {
+      BT.notify('เกิดข้อผิดพลาด: ' + e.message, 'danger');
+    }
+  }
+
+  function editAsset(id) { openModal(allData.find(a=>a.id===id)); }
+
+  async function deleteAsset(id) {
+    if (!confirm('ลบ Asset นี้?')) return;
+    try {
+      const res = await api('/it/assets/'+id, { method:'DELETE' });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      BT.notify('ลบ Asset แล้ว', 'success');
+      loadAssets();
+    } catch(e) {
+      BT.notify('ไม่สามารถลบได้', 'danger');
+    }
+  }
+
+  async function loadAssets() {
+    try {
+      const res = await api('/it/assets');
+      const d = await res.json();
+      allData = d.ok && Array.isArray(d.data) ? d.data : [];
+    } catch(e) {
+      allData = [];
+    }
+    renderTable();
+  }
+
+  document.getElementById('asset-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('DOMContentLoaded', loadAssets);
+
+  document.addEventListener('DOMContentLoaded', renderTable);
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knowledge Center — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .hk-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .hk-table-wrap { overflow-x:auto; }
+    .hk-input, .hk-textarea {
+      width: 100%;
+      border: 1px solid #DDE2EC;
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .hk-textarea { min-height: 76px; resize: vertical; }
+    .hk-meta { font-size: 0.75rem; color:#64748b; }
+    .hk-actions { display:flex; gap:6px; flex-wrap:wrap; }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2 id="kb-title"><i class="bi bi-book"></i> Knowledge Center</h2></div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <input type="text" id="kb-search" class="bt-input" style="max-width:400px" placeholder="ค้นหา..." onkeydown="if(event.key==='Enter')searchKB()">
+      <button class="bt-btn bt-btn-primary" onclick="searchKB()">ค้นหา</button>
+      <button class="bt-btn bt-btn-outline" onclick="loadKB()">ดูทั้งหมด</button>
+    </div>
+
+    <div class="bt-card"><div id="kb-list"><p style="color:#888;text-align:center;padding:40px">ตั้งค่า Backend เพื่อโหลดข้อมูล</p></div></div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('knowledge.html', 'AI Knowledge Base');
+
+  function authHeaders() {
+    const token = localStorage.getItem('bt_token') || '';
+    return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+  }
+
+  function esc(s) {
+    return String(s || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+  }
+
+  async function loadKB() {
+      if (!BT.hasBackend()) return;
+      try {
+        const rows=await BT.listDocs('AI Knowledge Base',['name','title','category','embedding_status','chunk_count'],{},30);
+        const sC={Indexed:'success',Failed:'danger',Pending:'warning'};
+        const tbody=rows.map(r=>`<tr><td><strong>${r.title||r.name}</strong></td><td>${r.category||'-'}</td><td><span class="bt-badge bt-badge-${sC[r.embedding_status]||'grey'}">${r.embedding_status||'Pending'}</span></td><td>${r.chunk_count||0}</td></tr>`).join('');
+        document.getElementById('kb-list').innerHTML=`<table class="bt-table"><thead><tr><th>หัวข้อ</th><th>หมวด</th><th>Embedding</th><th>Chunks</th></tr></thead><tbody>${tbody||'<tr><td colspan=4 style=text-align:center;color:#888>ไม่มีข้อมูล</td></tr>'}</tbody></table>`;
+      } catch(e) {}
+  }
+
+  async function searchKB() {
+      const q=document.getElementById('kb-search').value.trim();
+      if (!q||!BT.hasBackend()) { loadKB(); return; }
+      try {
+        const r=await BT.call('betime_solution.api.portal.help_desk_chat',{message:q,history:[],category:''});
+        document.getElementById('kb-list').innerHTML=`<div style="padding:16px;background:var(--bt-light);border-radius:8px;line-height:1.8;font-size:0.9rem">${r.answer||'ไม่พบข้อมูล'}</div>`;
+      } catch(e) { BT.notify(e.message,'error'); }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadKB);
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Sarabun', 'TH Sarabun New', Arial, sans-serif; font-size: 13px; color: #212121; margin: 0; padding: 24px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 3px solid #1565C0; margin-bottom: 24px; }
+  .company-info h1 { font-size: 18px; color: #1565C0; margin: 0 0 4px; }
+  .company-info p { margin: 0; color: #616161; font-size: 12px; }
+  .inv-meta { text-align: right; }
+  .inv-meta .inv-no { font-size: 22px; font-weight: 700; color: #1565C0; }
+  .badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; }
+  .badge-green  { background: #E8F5E9; color: #2E7D32; }
+  .badge-orange { background: #FFF3E0; color: #E65100; }
+  .badge-red    { background: #FFEBEE; color: #C62828; }
+  .badge-grey   { background: #F5F5F5; color: #616161; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 20px; }
+  .info-item label { font-weight: 700; font-size: 11px; color: #757575; text-transform: uppercase; }
+  .info-item .val { font-size: 13px; }
+  .amount-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  .amount-table th { background: #E3F2FD; padding: 10px; text-align: left; font-weight: 700; color: #1565C0; }
+  .amount-table td { padding: 10px; border-bottom: 1px solid #F0F0F0; }
+  .amount-table .total-row { font-size: 16px; font-weight: 700; color: #1565C0; background: #F5F9FF; }
+  .footer { text-align: center; color: #9E9E9E; font-size: 10px; margin-top: 32px; border-top: 1px solid #E0E0E0; padding-top: 10px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="company-info">
+    <h1>Betime Solution Co., Ltd.</h1>
+    <p>ใบแจ้งหนี้ / Invoice</p>
+  </div>
+  <div class="inv-meta">
+    <div class="inv-no">{{ doc.invoice_no }}</div>
+    <div style="margin-top:4px;">
+      <span class="badge {{ 'badge-green' if doc.status=='Paid' else 'badge-red' if doc.status=='Overdue' else 'badge-orange' }}">{{ doc.status }}</span>
+    </div>
+    <div style="font-size:12px; color:#616161; margin-top:4px;">วันที่ออก: {{ doc.invoice_date }}</div>
+  </div>
+</div>
+
+<div class="info-grid">
+  <div class="info-item"><label>โครงการ</label><div class="val">{{ doc.project or '-' }}</div></div>
+  <div class="info-item"><label>Milestone</label><div class="val">{{ doc.milestone or '-' }}</div></div>
+  <div class="info-item"><label>วันครบกำหนด</label><div class="val" style="{{ 'color:#C62828;font-weight:700;' if doc.status=='Overdue' else '' }}">{{ doc.due_date or '-' }}</div></div>
+  <div class="info-item"><label>วันที่ได้รับชำระ</label><div class="val">{{ doc.payment_date or 'ยังไม่ชำระ' }}</div></div>
+</div>
+
+<table class="amount-table">
+  <thead><tr><th>รายการ</th><th style="text-align:right;">จำนวนเงิน (บาท)</th></tr></thead>
+  <tbody>
+    <tr><td>ค่าบริการตาม Milestone: {{ doc.milestone or '-' }}</td>
+        <td style="text-align:right;">{{ frappe.utils.fmt_money(doc.amount or 0, currency='THB') }}</td></tr>
+    {% if doc.vat_amount %}
+    <tr><td>ภาษีมูลค่าเพิ่ม (VAT 7%)</td>
+        <td style="text-align:right;">{{ frappe.utils.fmt_money(doc.vat_amount, currency='THB') }}</td></tr>
+    {% endif %}
+    <tr class="total-row"><td><strong>รวมทั้งสิ้น</strong></td>
+        <td style="text-align:right;"><strong>{{ frappe.utils.fmt_money(doc.total_amount or 0, currency='THB') }}</strong></td></tr>
+    {% if doc.paid_amount %}
+    <tr><td style="color:#2E7D32;">ยอดที่รับชำระแล้ว</td>
+        <td style="text-align:right;color:#2E7D32;">{{ frappe.utils.fmt_money(doc.paid_amount, currency='THB') }}</td></tr>
+    {% endif %}
+  </tbody>
+</table>
+
+{% if doc.notes %}
+<p style="margin-top:16px;"><strong>หมายเหตุ:</strong> {{ doc.notes }}</p>
+{% endif %}
+
+<div class="footer">Betime Solution System | {{ doc.name }} | พิมพ์เมื่อ {{ frappe.utils.format_datetime(frappe.utils.now()) }}</div>
+</body>
+</html>

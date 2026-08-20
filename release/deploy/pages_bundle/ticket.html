@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ticket Management — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+  <style>
+    .tk-kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+    .tk-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+    .tk-search {
+      flex:1; min-width:180px; padding:9px 14px 9px 36px;
+      border:1px solid var(--bt-border); border-radius:10px;
+      font-size:0.88rem; font-family:inherit; outline:none;
+    }
+    .tk-search:focus { border-color:var(--bt-primary); }
+    .tk-search-wrap { position:relative; flex:1; min-width:180px; }
+    .tk-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.9rem; pointer-events:none; }
+    .tk-filter-select {
+      padding:9px 14px; border:1px solid var(--bt-border); border-radius:10px;
+      font-size:0.85rem; font-family:inherit; outline:none; background:#fff; cursor:pointer;
+    }
+    .tk-filter-select:focus { border-color:var(--bt-primary); }
+    .tk-table-wrap { overflow-x:auto; }
+    table.tk-table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    .tk-table th {
+      background:#f8fafc; color:#64748b; font-weight:700; font-size:0.75rem;
+      text-transform:uppercase; letter-spacing:0.04em;
+      padding:10px 14px; text-align:left; border-bottom:2px solid var(--bt-border);
+      white-space:nowrap;
+    }
+    .tk-table td { padding:12px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .tk-table tr:last-child td { border-bottom:none; }
+    .tk-table tbody tr:hover { background:#f8fafc; cursor:pointer; }
+    .tk-id { font-weight:800; color:var(--bt-primary); font-size:0.82rem; white-space:nowrap; }
+    .tk-avatar {
+      width:32px; height:32px; border-radius:50%;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:0.75rem; font-weight:800; color:#fff; flex-shrink:0;
+    }
+    .tk-name-cell { display:flex; align-items:center; gap:8px; }
+    .tk-name-text { font-weight:700; font-size:0.88rem; }
+    .tk-preview { font-size:0.8rem; color:#64748b; max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tk-project { font-size:0.8rem; color:#475569; font-weight:600; }
+    .badge-open     { background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; }
+    .badge-resolved { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+    .badge-pending  { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
+    .badge-closed   { background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; }
+    .tk-badge {
+      display:inline-block; padding:3px 10px; border-radius:20px;
+      font-size:0.72rem; font-weight:800; white-space:nowrap;
+    }
+    .tk-time { font-size:0.78rem; color:#94a3b8; white-space:nowrap; }
+    .tk-empty { text-align:center; padding:48px 16px; color:#94a3b8; font-size:0.9rem; }
+    .tk-count { font-size:0.8rem; color:#64748b; white-space:nowrap; }
+    /* ─── Modal overlay ─── */
+    .tk-modal { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.35); z-index:1000; align-items:flex-start; justify-content:center; padding:24px 12px; overflow-y:auto; }
+    .tk-modal.open { display:flex; }
+    .tk-modal-card {
+      background:#fff; border-radius:12px; width:100%; max-width:1060px;
+      box-shadow:0 14px 40px rgba(15,23,42,0.18); margin:auto; overflow:hidden;
+      border:1px solid #e5e7eb;
+    }
+    /* ─── Header ─── */
+    .tk-modal-head {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 14px;
+      background:#fff;
+      border-bottom:1px solid #e5e7eb;
+    }
+    .tk-modal-title { font-size:0.95rem; font-weight:800; color:#1e293b; letter-spacing:0.01em; }
+    .tk-modal-close {
+      background:#f8fafc; border:none; font-size:1rem; cursor:pointer;
+      color:#94a3b8; line-height:1; width:28px; height:28px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; transition:background 0.15s;
+    }
+    .tk-modal-close:hover { background:#f1f5f9; color:#64748b; }
+    /* ─── Form table ─── */
+    .tk-form-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+    .tk-form-table td { padding:9px 12px; border:1px solid #e6ebf1; vertical-align:top; min-width:80px; }
+    .tk-form-table .tk-fl {
+      font-weight:700; color:#475569; background:#f8fafc;
+      white-space:nowrap; width:165px; font-size:0.78rem; line-height:1.5;
+    }
+    .tk-form-table .tk-fv { color:#1e293b; background:#fff; line-height:1.55; }
+    .tk-form-table .tk-sec-head {
+      background:#fff7ed;
+      font-weight:800; font-size:0.75rem; padding:7px 10px;
+      color:#c2410c; letter-spacing:0.04em; text-transform:uppercase;
+    }
+    .tk-form-table textarea.tk-fv {
+      width:100%; border:none; resize:vertical; min-height:72px;
+      font-family:inherit; font-size:0.815rem; padding:8px 0;
+      background:transparent; outline:none; color:#1e293b; line-height:1.55;
+    }
+    .tk-form-table input.tk-fv-check { width:15px; height:15px; cursor:default; pointer-events:none; accent-color:var(--bt-primary); }
+    /* ─── Tabs ─── */
+    .tk-tabs {
+      display:flex; gap:0; padding:0 10px;
+      background:#fff; border-bottom:1px solid #e5e7eb;
+    }
+    .tk-tab {
+      padding:10px 12px; font-size:0.79rem; font-weight:700; cursor:pointer;
+      border:none; border-bottom:2px solid transparent; background:none;
+      color:#64748b; border-radius:0; font-family:inherit;
+      transition:all 0.15s; position:relative;
+    }
+    .tk-tab:hover { color:#c2410c; background:#fff; }
+    .tk-tab.active {
+      color:#ea580c; background:#fff;
+      border-bottom-color:#ea580c;
+    }
+    .tk-tab-body { display:none; padding:12px 10px; background:#fff; }
+    .tk-tab-body.active { display:block; }
+    /* ─── Inner table (image/assign) ─── */
+    .tk-img-table { width:100%; border-collapse:collapse; font-size:0.79rem; }
+    .tk-img-table thead tr { background:#fff7ed; }
+    .tk-img-table th { padding:8px 12px; text-align:left; font-weight:800; color:#c2410c; border-bottom:1px solid #fed7aa; }
+    .tk-img-table td { border:1px solid #eef2f7; padding:8px 12px; }
+    .tk-img-table tbody tr:hover { background:#f8fafc; }
+    /* ─── Section divider between tables ─── */
+    .tk-modal-divider { height:3px; background:#334155; margin:14px 0 10px; }
+    .tk-block-head {
+      padding:8px 10px;
+      background:#fff;
+      border-top:1px solid #e5e7eb;
+      border-bottom:1px solid #e5e7eb;
+      color:#64748b;
+      font-size:0.76rem;
+      font-weight:800;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+    }
+    .tk-modal-content {
+      overflow-y:auto;
+      max-height:calc(90vh - 120px);
+      padding:12px;
+      background:#fff;
+    }
+    .tk-modal-content .tk-form-table { margin-bottom:12px; }
+    .tk-modal-content .tk-block-head { margin-top:6px; }
+    .tk-modal-content .tk-tabs { margin-top:0; margin-bottom:10px; }
+    .tk-modal-content .tk-tab-body { margin-bottom:12px; }
+    /* ─── Footer actions ─── */
+    .tk-modal-actions { display:flex; gap:10px; justify-content:flex-end; padding:10px 14px; background:#f8fafc; border-top:1px solid #dbe1e8; }
+    @media(max-width:700px){ .tk-fl { width:100px !important; } .tk-form-table td { padding:7px 8px; } .tk-tabs { padding:6px 8px 0; } .tk-modal-content { padding:8px; } }
+  </style>
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header">
+      <h2><i class="bi bi-ticket-detailed"></i> Ticket Management</h2>
+      <a href="/help-desk.html" class="bt-btn bt-btn-primary bt-btn-sm"><i class="bi bi-plus-lg"></i> เปิด Ticket ใหม่</a>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="tk-kpi-grid" id="tk-kpi-grid">
+      <div class="bt-card">
+        <div class="bt-card-title">Ticket ทั้งหมด</div>
+        <div class="bt-card-value" id="kpi-total" style="color:var(--bt-primary)">-</div>
+        <div class="bt-card-sub">Total tickets</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">เปิดอยู่</div>
+        <div class="bt-card-value" id="kpi-open" style="color:var(--bt-warning)">-</div>
+        <div class="bt-card-sub">Open tickets</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">แก้ไขแล้ว</div>
+        <div class="bt-card-value" id="kpi-resolved" style="color:var(--bt-success)">-</div>
+        <div class="bt-card-sub">Resolved</div>
+      </div>
+      <div class="bt-card">
+        <div class="bt-card-title">รอดำเนินการ</div>
+        <div class="bt-card-value" id="kpi-pending" style="color:#2563eb">-</div>
+        <div class="bt-card-sub">Pending</div>
+      </div>
+    </div>
+
+    <!-- Ticket Table -->
+    <div class="bt-card">
+      <div class="bt-section-header">
+        <h2><i class="bi bi-list-ul" style="color:var(--bt-primary)"></i> รายการ Ticket ทั้งหมด</h2>
+        <span class="tk-count" id="tk-count"></span>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="tk-toolbar">
+        <div class="tk-search-wrap">
+          <i class="bi bi-search tk-search-icon"></i>
+          <input type="text" class="tk-search" id="tk-search" placeholder="ค้นหา Ticket ID, ปัญหา, โครงการ..." oninput="renderTable()">
+        </div>
+        <select class="tk-filter-select" id="tk-filter-status" onchange="renderTable()">
+          <option value="">สถานะทั้งหมด</option>
+          <option value="open">เปิดอยู่</option>
+          <option value="pending">รอดำเนินการ</option>
+          <option value="resolved">แก้ไขแล้ว</option>
+          <option value="closed">ปิดแล้ว</option>
+        </select>
+        <select class="tk-filter-select" id="tk-filter-project" onchange="renderTable()">
+          <option value="">โครงการทั้งหมด</option>
+        </select>
+      </div>
+
+      <div class="tk-table-wrap">
+        <table class="tk-table">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>ผู้แจ้ง / ปัญหา</th>
+              <th>โครงการ</th>
+              <th>ประเภท</th>
+              <th>สถานะ</th>
+              <th>ผู้รับผิดชอบ</th>
+              <th>วันที่</th>
+            </tr>
+          </thead>
+          <tbody id="tk-tbody"></tbody>
+        </table>
+      </div>
+      <div class="tk-empty hidden" id="tk-empty"><i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:8px"></i>ไม่พบ Ticket</div>
+    </div>
+  </main>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="tk-modal" id="tkModal" onclick="if(event.target===this)closeTkModal()">
+  <div class="tk-modal-card">
+    <div class="tk-modal-head">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <i class="bi bi-ticket-detailed" style="color:rgba(255,255,255,0.7);font-size:1.1rem"></i>
+        <div class="tk-modal-title" id="modal-title">-</div>
+        <div id="modal-badges"></div>
+      </div>
+      <button class="tk-modal-close" onclick="closeTkModal()">✕</button>
+    </div>
+    <div id="modal-grid"></div>
+    <div class="tk-modal-actions">
+      <a id="modal-open-chat" href="#" class="bt-btn bt-btn-primary bt-btn-sm">
+        <i class="bi bi-chat-dots"></i> เปิดใน Help Desk Chat
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('ticket.html', 'IT Support');
+
+  const TICKET_KEY = 'bt_helpdesk_tickets';
+  const AVATAR_COLORS = ['#10b981','#ea580c','#3b82f6','#7c3aed','#f59e0b','#0d9488','#e11d48','#2563eb'];
+
+  const STATUS_LABEL = { open:'เปิดอยู่', resolved:'แก้ไขแล้ว', pending:'รอดำเนินการ', closed:'ปิดแล้ว' };
+  const STATUS_CLASS = { open:'badge-open', resolved:'badge-resolved', pending:'badge-pending', closed:'badge-closed' };
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getTickets() {
+    try { return JSON.parse(localStorage.getItem(TICKET_KEY) || '[]'); } catch { return []; }
+  }
+
+  function avatarColor(str) {
+    let h = 0; for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+  }
+  function initials(str) { return String(str || '?').slice(0,2).toUpperCase(); }
+
+  let currentTicket = null;
+
+  function renderKPIs(tickets) {
+    document.getElementById('kpi-total').textContent    = tickets.length;
+    document.getElementById('kpi-open').textContent     = tickets.filter(t => t.status === 'open' || !t.status).length;
+    document.getElementById('kpi-resolved').textContent = tickets.filter(t => t.status === 'resolved').length;
+    document.getElementById('kpi-pending').textContent  = tickets.filter(t => t.status === 'pending').length;
+  }
+
+  function populateProjectFilter(tickets) {
+    const sel = document.getElementById('tk-filter-project');
+    const current = sel.value;
+    const projects = [...new Set(tickets.map(t => t.projectCode || t.name || '').filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">โครงการทั้งหมด</option>' +
+      projects.map(p => `<option value="${esc(p)}" ${p===current?'selected':''}>${esc(p)}</option>`).join('');
+  }
+
+  function renderTable() {
+    const q      = (document.getElementById('tk-search').value || '').toLowerCase();
+    const status = document.getElementById('tk-filter-status').value;
+    const proj   = document.getElementById('tk-filter-project').value;
+    const tickets = getTickets();
+
+    let rows = tickets.filter(t => {
+      const matchQ   = !q || (t.id||'').toLowerCase().includes(q) ||
+                       (t.preview||'').toLowerCase().includes(q) ||
+                       (t.issue||'').toLowerCase().includes(q) ||
+                       (t.projectCode||'').toLowerCase().includes(q) ||
+                       (t.projectName||'').toLowerCase().includes(q) ||
+                       (t.name||'').toLowerCase().includes(q);
+      const matchSt  = !status || t.status === status || (!t.status && status === 'open');
+      const matchPr  = !proj   || (t.projectCode || t.name || '') === proj;
+      return matchQ && matchSt && matchPr;
+    });
+
+    const tbody  = document.getElementById('tk-tbody');
+    const empty  = document.getElementById('tk-empty');
+    document.getElementById('tk-count').textContent = rows.length + ' รายการ';
+
+    if (!rows.length) {
+      tbody.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    const statusOf = t => t.status || 'open';
+
+    tbody.innerHTML = rows.map(t => {
+      const st    = statusOf(t);
+      const color = avatarColor(t.name || t.id);
+      const date  = t.reportDate || t.time || '';
+      return `<tr onclick="openModal('${esc(t.id)}', true)">
+        <td><span class="tk-id">${esc(t.id)}</span></td>
+        <td>
+          <div class="tk-name-cell">
+            <span class="tk-avatar" style="background:${color}">${initials(t.name)}</span>
+            <div>
+              <div class="tk-name-text">${esc(t.name || '-')}</div>
+              <div class="tk-preview">${esc(t.preview || t.issue || '-')}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="tk-project">${esc(t.projectCode || '-')}</span></td>
+        <td><span style="font-size:0.82rem">${esc(t.bugType || '-')}</span></td>
+        <td><span class="tk-badge ${STATUS_CLASS[st] || 'badge-open'}">${STATUS_LABEL[st] || st}</span></td>
+        <td><span style="font-size:0.82rem;color:#475569">${esc(t.assignee || '-')}</span></td>
+        <td><span class="tk-time">${esc(date)}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openModal(id, syncHash) {
+    const tickets = getTickets();
+    const t = tickets.find(x => x.id === id);
+    if (!t) return;
+    currentTicket = t;
+
+    if (syncHash) {
+      const nextHash = '#' + encodeURIComponent(t.id);
+      if (location.hash !== nextHash) history.replaceState(null, '', nextHash);
+    }
+
+    document.getElementById('modal-title').textContent = t.id + ' — ' + (t.name || '-');
+    const st = t.status || 'open';
+    document.getElementById('modal-badges').innerHTML =
+      `<span class="tk-badge ${STATUS_CLASS[st] || 'badge-open'}" style="font-size:0.72rem;padding:3px 10px;border-radius:20px">${STATUS_LABEL[st] || st}</span>
+       ${t.assignee ? `<span style="font-size:0.76rem;color:#64748b;margin-left:6px"><i class="bi bi-person-fill" style="margin-right:3px"></i>${esc(t.assignee)}</span>` : ''}`;
+
+    const extra = t.extra || {};
+    const pick = (...vals) => {
+      for (const v of vals) {
+        if (v === 0 || v === false) return String(v);
+        if (String(v || '').trim()) return String(v);
+      }
+      return '-';
+    };
+    const pickRaw = (...vals) => {
+      for (const v of vals) {
+        if (v === 0 || v === false) return String(v);
+        if (String(v || '').trim()) return String(v).trim();
+      }
+      return '';
+    };
+    const loc = Array.isArray(t.locations) ? t.locations.join(', ') : pick(t.locations, extra.locations, extra.location);
+    const caseDate = pick(t.reportDate, extra.case_date, extra.caseDate, t.time);
+    const caseTime = pick(t.reportTime, extra.case_time, extra.caseTime);
+    const delegateTeamText = pick(
+      extra.delegate_team,
+      t.delegateTeam,
+      t.delegate_team,
+      extra.delegate_team_name
+    );
+    const delegateOfficerText = pick(
+      extra.delegate_officer,
+      t.delegateOfficer,
+      t.delegate_officer,
+      t.routeTargetLabel,
+      t.routeTarget,
+      t.assignedDev
+    );
+    const assignDevSeedRows = Array.isArray(extra.assign_dev_rows)
+      ? extra.assign_dev_rows
+      : Array.isArray(t.assignDevRows)
+        ? t.assignDevRows
+        : [];
+    const assignDevRows = assignDevSeedRows.length
+      ? assignDevSeedRows
+      : (() => {
+          const officer = pickRaw(
+            extra.delegate_officer,
+            t.delegateOfficer,
+            t.delegate_officer,
+            t.routeTargetLabel,
+            t.routeTarget,
+            t.assignedDev
+          );
+          if (!officer) return [];
+          const assignDate = pickRaw(extra.case_date_process, extra.active_date, extra.case_date, caseDate + (caseTime !== '-' ? ' ' + caseTime : ''));
+          const assignDueDate = pickRaw(extra.case_date_finish, extra.finish_date, extra.priority_finish_date, extra.sla_due_at, assignDate);
+          const assignSlaDate = pickRaw(extra.priority_finish_date, extra.finish_date, extra.case_date_finish, extra.sla_due_at, assignDueDate);
+          return [{
+            assign_emp_name: officer,
+            assign_date: assignDate,
+            assign_due_date: assignDueDate,
+            assign_sla_date: assignSlaDate,
+            assign_status: pickRaw(extra.assign_status, extra.route_mode) || 'assign',
+          }];
+        })();
+    const assignStatusLabel = (value) => {
+      const key = String(value || '').trim().toLowerCase();
+      if (key === 'assign') return 'Assign';
+      if (key === 'progress') return 'Progress';
+      if (key === 'finish') return 'Finish';
+      if (key === 'cancel') return 'Cancel';
+      return pick(value);
+    };
+    const assignDevRowsHtml = assignDevRows.length
+      ? assignDevRows.map((row) => `
+        <tr>
+          <td>${esc(pick(row.assign_emp_name, row.assign_emp_id_name, row.employee_name, row.delegate_officer, delegateOfficerText))}</td>
+          <td>${esc(pick(row.assign_date, row.assign_at, row.created_at))}</td>
+          <td>${esc(pick(row.assign_due_date, row.due_date, row.finish_date))}</td>
+          <td>${esc(pick(row.assign_sla_date, row.sla_date, row.priority_finish_date))}</td>
+          <td>${esc(assignStatusLabel(row.assign_status))}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:8px">ไม่มีข้อมูล</td></tr>';
+
+    const chk = (val) => val ? 'checked' : '';
+    const ta  = (val) => `<textarea class="tk-fv" readonly>${esc(val)}</textarea>`;
+
+    document.getElementById('modal-grid').innerHTML = `
+<div class="tk-modal-content">
+<table class="tk-form-table">
+  <tr>
+    <td class="tk-fl">Ticket</td><td class="tk-fv">${esc(pick(t.id))}</td>
+    <td class="tk-fl">Priority</td><td class="tk-fv">${esc(pick(extra.priority, t.priority))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">ประเภทเคสตาม SLA</td><td class="tk-fv">${esc(pick(extra.case_sla_type))}</td>
+    <td class="tk-fl">วันเวลาที่ต้องตาม SLA</td><td class="tk-fv">${esc(pick(extra.sla_due_at))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">วันเวลาที่เสร็จสิ้นตาม SLA</td>
+    <td class="tk-fv" colspan="3">${esc(pick(extra.sla_finish_at))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Response Time</td>
+    <td class="tk-fv">${esc(caseDate + (caseTime !== '-' ? ' ' + caseTime : ''))}</td>
+    <td class="tk-fl">วันเวลาที่เสร็จสิ้นตามจริง</td>
+    <td class="tk-fv">${esc(pick(extra.actual_finish_at))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Channel</td><td class="tk-fv">${esc(pick(extra.channel, 'Call Center'))}</td>
+    <td class="tk-fl">Project / Service</td><td class="tk-fv">${esc(pick(t.projectCode, extra.project_service))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Project / Service Sub</td><td class="tk-fv">${esc(pick(extra.project_service_sub, t.projectName))}</td>
+    <td class="tk-fl">Area</td><td class="tk-fv">${esc(pick(t.area, extra.area))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Case Type</td><td class="tk-fv">${esc(pick(t.bugType, extra.case_type))}</td>
+    <td class="tk-fl">Criteria</td><td class="tk-fv">${esc(pick(extra.criteria))}</td>
+  </tr>
+  <tr><td colspan="4" class="tk-sec-head">Case Subject</td></tr>
+  <tr>
+    <td class="tk-fl">Case Subject</td>
+    <td class="tk-fv" colspan="3">${esc(pick(extra.case_subject, t.preview))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Case Date</td><td class="tk-fv">${esc(caseDate + (caseTime !== '-' ? ' ' + caseTime : ''))}</td>
+    <td class="tk-fl">Case Date Finish</td><td class="tk-fv">${esc(pick(extra.case_date_finish))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Case Date Process</td>
+    <td class="tk-fv" colspan="3">${esc(pick(extra.case_date_process))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Case Private</td>
+    <td class="tk-fv"><input type="checkbox" class="tk-fv-check" ${chk(extra.case_private)} disabled></td>
+    <td class="tk-fl">Closed in TM</td>
+    <td class="tk-fv"><input type="checkbox" class="tk-fv-check" ${chk(extra.closed_in_tm)} disabled></td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Customer Name</td>
+    <td class="tk-fv" colspan="3">${esc(pick(t.name, extra.customer_name))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Case Description</td>
+    <td class="tk-fv" colspan="3">${ta(pick(t.issue, extra.case_description))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">สาเหตุของการเกิดปัญหา</td>
+    <td class="tk-fv" colspan="3">${ta(pick(extra.cause, extra.root_cause))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">วิธีการแก้ไขปัญหา</td>
+    <td class="tk-fv" colspan="3">${ta(pick(extra.solution, extra.fix_method))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">ระดับผลกระทบ</td>
+    <td class="tk-fv" colspan="3">
+      <label style="margin-right:14px"><input type="radio" ${extra.impact_level==='กระทบ'?'checked':''} disabled> กระทบ</label>
+      <label><input type="radio" ${extra.impact_level==='ไม่กระทบ'?'checked':''} disabled> ไม่กระทบ</label>
+    </td>
+  </tr>
+  <tr>
+    <td class="tk-fl">รายละเอียดการเปลี่ยนแปลง</td>
+    <td class="tk-fv" colspan="3">${ta(pick(extra.change_summary))}</td>
+  </tr>
+</table>
+
+<div class="tk-block-head">Case Image / Attachment</div>
+<div class="tk-tabs" id="modal-tabs1">
+  <button class="tk-tab active" data-target="tab-img">Case Image</button>
+  <button class="tk-tab" data-target="tab-attach">Attachment</button>
+</div>
+<div id="tab-img" class="tk-tab-body active">
+  <table class="tk-img-table">
+    <thead><tr><th>ภาพ</th><th>วันที่นำภาพเข้า</th></tr></thead>
+    <tbody><tr><td colspan="2" style="color:#94a3b8;text-align:center;padding:8px">ไม่มีภาพ</td></tr></tbody>
+  </table>
+</div>
+<div id="tab-attach" class="tk-tab-body">
+  <table class="tk-img-table">
+    <thead><tr><th>ไฟล์</th><th>วันที่แนบ</th></tr></thead>
+    <tbody><tr><td colspan="2" style="color:#94a3b8;text-align:center;padding:8px">ไม่มีไฟล์</td></tr></tbody>
+  </table>
+</div>
+
+<div class="tk-modal-divider"></div>
+
+<div class="tk-block-head">Owner / Delegate</div>
+<table class="tk-form-table">
+  <tr>
+    <td class="tk-fl">Owner Team</td><td class="tk-fv">${esc(pick(extra.owner_team))}</td>
+    <td class="tk-fl">Owner Officer</td><td class="tk-fv">${esc(pick(extra.owner_officer, t.assignee))}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">Delegate Team</td><td class="tk-fv">${esc(delegateTeamText)}</td>
+    <td class="tk-fl">Delegate Officer</td><td class="tk-fv">${esc(delegateOfficerText)}</td>
+  </tr>
+  <tr>
+    <td class="tk-fl">กรณี Assign Out Source</td>
+    <td class="tk-fv" colspan="3"><input type="checkbox" class="tk-fv-check" ${chk(extra.assign_outsource)} disabled></td>
+  </tr>
+</table>
+
+<div class="tk-block-head">Assign Information</div>
+<div class="tk-tabs" id="modal-tabs2">
+  <button class="tk-tab active" data-target="tab-assign-dev">Assign Dev Information</button>
+  <button class="tk-tab" data-target="tab-assign-info">Assign Information</button>
+  <button class="tk-tab" data-target="tab-task">ติดตาม Task</button>
+  <button class="tk-tab" data-target="tab-note">Note</button>
+  <button class="tk-tab" data-target="tab-chat">Chat</button>
+</div>
+<div id="tab-assign-dev" class="tk-tab-body active">
+  <table class="tk-img-table">
+    <thead><tr><th>ชื่อผู้รับมอบหมาย</th><th>วันเวลาที่มอบหมาย</th><th>วันที่กำหนดเสร็จ</th><th>SLA ตาม TOR</th><th>Status</th></tr></thead>
+    <tbody><tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:8px">ไม่มีข้อมูล</td></tr></tbody>
+  </table>
+</div>
+<div id="tab-assign-info" class="tk-tab-body" style="padding:10px 12px;color:#94a3b8;font-size:0.82rem">ไม่มีข้อมูล</div>
+<div id="tab-task" class="tk-tab-body" style="padding:10px 12px;color:#94a3b8;font-size:0.82rem">ไม่มีข้อมูล</div>
+<div id="tab-note" class="tk-tab-body" style="padding:10px 12px;color:#94a3b8;font-size:0.82rem">ไม่มีข้อมูล</div>
+<div id="tab-chat" class="tk-tab-body" style="padding:10px 12px;color:#94a3b8;font-size:0.82rem">ไม่มีข้อมูล</div>
+
+</div>`;
+
+    const assignDevTbody = document.querySelector('#tab-assign-dev tbody');
+    if (assignDevTbody) assignDevTbody.innerHTML = assignDevRowsHtml;
+
+    // Tab switching for all tab groups in modal
+    document.getElementById('modal-grid').querySelectorAll('.tk-tabs').forEach(tabsEl => {
+      tabsEl.addEventListener('click', e => {
+        const btn = e.target.closest('.tk-tab');
+        if (!btn) return;
+        const target = btn.dataset.target;
+        tabsEl.querySelectorAll('.tk-tab').forEach(b => b.classList.toggle('active', b === btn));
+        let el = tabsEl.nextElementSibling;
+        while (el && el.classList.contains('tk-tab-body')) {
+          el.classList.toggle('active', el.id === target);
+          el = el.nextElementSibling;
+        }
+      });
+    });
+
+    document.getElementById('modal-open-chat').href = '/help-desk.html#' + encodeURIComponent(t.id);
+    document.getElementById('tkModal').classList.add('open');
+  }
+
+  function closeTkModal() {
+    document.getElementById('tkModal').classList.remove('open');
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  }
+
+  function openFromRoute() {
+    const tickets = getTickets();
+    if (!tickets.length) return;
+
+    const hashId = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim();
+    const queryId = new URLSearchParams(location.search).get('ticket');
+    const targetId = (hashId || queryId || '').trim();
+
+    if (!targetId) {
+      closeTkModal();
+      return;
+    }
+
+    const found = tickets.find(t => String(t.id) === targetId);
+    if (found) openModal(found.id, false);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const tickets = getTickets();
+    renderKPIs(tickets);
+    populateProjectFilter(tickets);
+    renderTable();
+    openFromRoute();
+  });
+
+  window.addEventListener('hashchange', openFromRoute);
+</script>
+</body>
+</html>

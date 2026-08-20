@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "autoname": "format:BT-CAL-{YYYY}-{#####}",
+ "doctype": "DocType",
+ "module": "Smart Secretary",
+ "name": "Smart Calendar",
+ "naming_rule": "Expression",
+ "title_field": "event_name",
+ "search_fields": "event_name,event_type,status",
+ "track_changes": 1,
+ "fields": [
+  {
+   "fieldname": "event_name",
+   "fieldtype": "Data",
+   "label": "ชื่อกิจกรรม (Event Name)",
+   "reqd": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "event_type",
+   "fieldtype": "Select",
+   "label": "ประเภท",
+   "options": "ประชุม\nอบรม\nเยี่ยมสถานที่\nภายใน\nอื่นๆ",
+   "default": "ประชุม",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "สถานะ",
+   "options": "Scheduled\nConfirmed\nCancelled\nRescheduled\nCompleted",
+   "default": "Scheduled",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "โครงการที่เกี่ยวข้อง",
+   "options": "Project Master",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sec_time",
+   "fieldtype": "Section Break",
+   "label": "วันเวลา"
+  },
+  {
+   "fieldname": "start_datetime",
+   "fieldtype": "Datetime",
+   "label": "เริ่มต้น",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "end_datetime",
+   "fieldtype": "Datetime",
+   "label": "สิ้นสุด",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "สถานที่"
+  },
+  {
+   "fieldname": "conflict_detected",
+   "fieldtype": "Check",
+   "label": "⚠ พบ Conflict",
+   "default": 0,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sec_resources",
+   "fieldtype": "Section Break",
+   "label": "ทรัพยากร (Resources)"
+  },
+  {
+   "fieldname": "room",
+   "fieldtype": "Data",
+   "label": "ห้องประชุม"
+  },
+  {
+   "fieldname": "vehicle",
+   "fieldtype": "Data",
+   "label": "ยานพาหนะ"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "food_required",
+   "fieldtype": "Check",
+   "label": "ต้องการอาหาร",
+   "default": 0
+  },
+  {
+   "fieldname": "food_sets",
+   "fieldtype": "Int",
+   "label": "จำนวนชุดอาหาร",
+   "default": 0,
+   "depends_on": "food_required"
+  },
+  {
+   "fieldname": "attendee_count",
+   "fieldtype": "Int",
+   "label": "จำนวนผู้เข้าร่วม",
+   "default": 0
+  },
+  {
+   "fieldname": "sec_attendees",
+   "fieldtype": "Section Break",
+   "label": "ผู้เข้าร่วม"
+  },
+  {
+   "fieldname": "attendees",
+   "fieldtype": "Text",
+   "label": "รายชื่อผู้เข้าร่วม (คั่นด้วย comma)"
+  },
+  {
+   "fieldname": "sec_notes",
+   "fieldtype": "Section Break",
+   "label": "หมายเหตุ"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "หมายเหตุเพิ่มเติม"
+  },
+  {
+   "fieldname": "ai_suggestions",
+   "fieldtype": "Small Text",
+   "label": "คำแนะนำจาก AI Secretary",
+   "read_only": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT CEO",
+   "read": 1, "write": 0, "create": 0, "delete": 0,
+   "report": 1, "export": 1, "share": 0, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Manager",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 1, "export": 1, "share": 1, "print": 1, "email": 1
+  },
+  {
+   "role": "BT Staff",
+   "read": 1, "write": 1, "create": 1, "delete": 0,
+   "report": 0, "export": 0, "share": 0, "print": 1, "email": 0
+  },
+  {
+   "role": "BT Admin",
+   "read": 1, "write": 1, "create": 1, "delete": 1,
+   "report": 1, "export": 1, "import": 1, "share": 1, "print": 1, "email": 1
+  }
+ ],
+ "sort_field": "start_datetime",
+ "sort_order": "ASC",
+ "links": [],
+ "states": []
+}

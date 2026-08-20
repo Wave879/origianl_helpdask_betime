@@ -1,0 +1,127 @@
+{% extends "templates/web.html" %}
+{% block title %}My Workspace — Betime{% endblock %}
+{% block head_include %}
+<link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
+<div class="betime-portal">
+
+  <nav class="bt-topbar">
+    <a href="/betime" class="bt-logo">🏢 Betime Solution</a>
+    <div class="bt-nav">
+      <a href="/betime">หน้าหลัก</a>
+      <a href="/betime/my-tasks" class="active">✅ My Workspace</a>
+      <a href="/betime/submit-ot">⏱ Submit OT</a>
+      <span class="bt-user-badge">👤 {{ user_name }}</span>
+    </div>
+  </nav>
+
+  <div class="bt-container" style="padding-top:28px; padding-bottom:40px;">
+
+    <h1 style="font-size:1.5rem;font-weight:700;color:var(--bt-primary);margin:0 0 24px;">
+      👤 My Workspace — {{ user_name }}
+    </h1>
+
+    <!-- My Tasks -->
+    <div class="bt-section-header">
+      <h2>✅ งานของฉัน ({{ my_tasks|length }})</h2>
+      <a href="/app/smart-task/new-smart-task-1" class="bt-btn bt-btn-outline bt-btn-sm">+ เพิ่ม Task</a>
+    </div>
+
+    {% if my_tasks %}
+    <div class="bt-card" style="padding:0;overflow:hidden;margin-bottom:24px;">
+      <table class="bt-table">
+        <thead>
+          <tr><th>ชื่องาน</th><th>โครงการ</th><th>กำหนดส่ง</th><th>Priority</th><th>สถานะ</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for t in my_tasks %}
+          <tr>
+            <td>
+              <a href="/app/smart-task/{{ t.name }}" style="font-weight:600;color:var(--bt-primary);">
+                {{ t.task_name }}
+              </a>
+              {% if t.linked_phase %}<br><small style="color:var(--bt-muted)">{{ t.linked_phase }}</small>{% endif %}
+            </td>
+            <td><small>{{ t.project or '-' }}</small></td>
+            <td>
+              {% if t.deadline %}
+                <span style="color:{% if t.deadline < frappe.utils.today() %}var(--bt-danger){% else %}var(--bt-text){% endif %}">
+                  {{ t.deadline }}
+                </span>
+              {% else %}-{% endif %}
+            </td>
+            <td><span class="bt-badge bt-badge-{{ priority_color.get(t.priority, 'grey') }}">{{ t.priority or '-' }}</span></td>
+            <td><span class="bt-badge bt-badge-{{ status_color.get(t.status, 'grey') }}">{{ t.status }}</span></td>
+            <td>
+              <a href="/app/smart-task/{{ t.name }}" class="bt-btn bt-btn-outline bt-btn-sm">แก้ไข</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="bt-alert bt-alert-success" style="margin-bottom:24px;">
+      <span>✅</span> <span>ไม่มีงานค้างอยู่ เยี่ยมมาก!</span>
+    </div>
+    {% endif %}
+
+    <!-- Today's Calendar -->
+    <div class="bt-section-header">
+      <h2>🗓 กิจกรรมวันนี้ ({{ today_events|length }})</h2>
+      <a href="/app/smart-calendar/new-smart-calendar-1" class="bt-btn bt-btn-outline bt-btn-sm">+ นัดประชุม</a>
+    </div>
+
+    {% if today_events %}
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:24px;">
+      {% for e in today_events %}
+      <div class="bt-card" style="padding:16px 20px; display:flex; align-items:center; gap:16px;">
+        <div style="font-size:1.5rem;">🗓</div>
+        <div style="flex:1;">
+          <a href="/app/smart-calendar/{{ e.name }}" style="font-weight:700;color:var(--bt-primary);">{{ e.event_name }}</a>
+          <div style="font-size:0.85rem; color:var(--bt-muted); margin-top:2px;">
+            🕐 {{ e.start_datetime | string | truncate(16, True, '') }}
+            {% if e.location %} | 📍 {{ e.location }}{% endif %}
+            {% if e.room %} | 🚪 {{ e.room }}{% endif %}
+          </div>
+        </div>
+        <a href="/app/meeting-mom/new-meeting-mom-1" class="bt-btn bt-btn-outline bt-btn-sm">📝 สร้าง MOM</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bt-alert bt-alert-info" style="margin-bottom:24px;">
+      <span>📅</span> <span>ไม่มีกิจกรรมวันนี้</span>
+    </div>
+    {% endif %}
+
+    <!-- OT Claims -->
+    {% if my_ot %}
+    <div class="bt-section-header">
+      <h2>⏱ OT Claims ของฉัน</h2>
+      <a href="/betime/submit-ot" class="bt-btn bt-btn-outline bt-btn-sm">+ ยื่น OT ใหม่</a>
+    </div>
+    <div class="bt-card" style="padding:0;overflow:hidden;">
+      <table class="bt-table">
+        <thead><tr><th>วันที่</th><th>เหตุผล</th><th>ชั่วโมง</th><th>สถานะ</th></tr></thead>
+        <tbody>
+          {% for ot in my_ot %}
+          <tr>
+            <td>{{ ot.date }}</td>
+            <td>{{ ot.reason or '-' }}</td>
+            <td>{{ ot.ot_hours }} ชม.</td>
+            <td><span class="bt-badge bt-badge-{{ 'orange' if ot.status == 'Submitted' else 'grey' }}">{{ ot.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+<script src="/assets/betime_solution/js/betime.js"></script>
+{% endblock %}

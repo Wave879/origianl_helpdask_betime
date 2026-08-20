@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HR Module — Betime Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/betime_solution/css/betime.css">
+</head>
+<body class="betime-portal bt-shell-body">
+<div id="bt-appbar-holder"></div>
+<div class="bt-layout" id="bt-layout-holder">
+  <main class="bt-main-content">
+    <div class="bt-page-header"><h2><i class="bi bi-person"></i> HR Module</h2></div>
+    <div class="bt-tabs">
+      <button class="bt-tab active" onclick="showTab('profiles',this)">👤 Profiles</button>
+      <button class="bt-tab" onclick="showTab('skills',this)">🎓 Skills</button>
+      <button class="bt-tab" onclick="showTab('certs',this)">🏅 Certs</button>
+      <button class="bt-tab" onclick="showTab('workload',this)">📊 Workload</button>
+    </div>
+    <div id="tab-profiles"><div class="bt-card"><div id="emp-list"><p style="color:#888;text-align:center;padding:40px">กำลังโหลด...</p></div></div></div>
+    <div id="tab-skills" style="display:none"><div class="bt-card"><div id="skills-content"><p style="color:#888;text-align:center;padding:40px">กำลังโหลด...</p></div></div></div>
+    <div id="tab-certs" style="display:none"><div class="bt-card"><p style="color:#888;text-align:center;padding:40px">กำลังโหลด...</p></div></div>
+    <div id="tab-workload" style="display:none"><div class="bt-card"><div id="workload-content"><p style="color:#888;text-align:center;padding:40px">กำลังโหลด...</p></div></div></div>  </main>
+</div>
+<script src="/config.js"></script>
+<script src="/shared.js"></script>
+<script src="/assets/betime_solution/js/betime.js"></script>
+<script>
+  BT.initApp('hr.html', 'Human Resources');
+      function showTab(id,btn){['profiles','skills','certs','workload'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===id?'block':'none';});document.querySelectorAll('.bt-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(id==='profiles')loadEmp();if(id==='workload')loadWorkload();}
+    async function loadEmp(){
+      if(!BT.hasBackend()){document.getElementById('emp-list').innerHTML='<p style="color:#888;text-align:center">ตั้งค่า Backend ก่อน</p>';return;}
+      try{const rows=await BT.listDocs('Employee Profile',['name','full_name','department','position','role_level'],{is_active:1},50);const tbody=rows.map(r=>`<tr><td><strong>${r.full_name||r.name}</strong></td><td>${r.department||'-'}</td><td>${r.position||'-'}</td><td><span class="bt-badge bt-badge-info">${r.role_level||'-'}</span></td></tr>`).join('');document.getElementById('emp-list').innerHTML=`<table class="bt-table"><thead><tr><th>ชื่อ</th><th>แผนก</th><th>ตำแหน่ง</th><th>ระดับ</th></tr></thead><tbody>${tbody||'<tr><td colspan=4 style=text-align:center;color:#888>ไม่มีข้อมูล</td></tr>'}</tbody></table>`;}catch(e){}
+    }
+    async function loadWorkload(){
+      if(!BT.hasBackend()) return;
+      try{const emps=await BT.listDocs('Employee Profile',['name','full_name'],{is_active:1},10);const rows=await Promise.all(emps.map(async e=>{try{const s=await BT.call('betime_solution.hr.doctype.employee_profile.employee_profile.get_workload_summary',{employee:e.name});return{...e,...s};}catch{return{...e,open_tasks:0};}}));document.getElementById('workload-content').innerHTML=`<table class="bt-table"><thead><tr><th>พนักงาน</th><th>งานเปิด</th><th>งานเสร็จ</th><th>OT ชม.</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.full_name}</td><td>${r.open_tasks||0}</td><td>${r.done_tasks||0}</td><td>${r.ot_hours||0}</td></tr>`).join('')}</tbody></table>`;}catch(e){}
+    }
+    document.addEventListener('DOMContentLoaded', loadEmp);
+</script>
+</body>
+</html>
