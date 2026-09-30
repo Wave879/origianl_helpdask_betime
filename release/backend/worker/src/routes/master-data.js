@@ -7,6 +7,7 @@ import { pgQuery, pgFirst, pgTransaction, backendMode, usePgProxyBackend, useHyp
 import { json, err, uid } from '../utils.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireRoleAdmin, canManageRoles } from './role-management.js';
+import { getRoleCatalogue, roleList } from './role-catalogue.js';
 
 const HD_VALID_TABLES = new Set([
   'hd_users','hd_teams','hd_projects','hd_sub_projects','hd_questions',
@@ -1290,11 +1291,20 @@ export async function handleMasterData(path, method, request, env) {
     }
   }
 
-  if (path === '/hd-role-context' && method === 'GET') {
+  if (['/hd-role-context', '/hd-role-list'].includes(path) && method === 'GET') {
     const session = await requireAuth(request, env);
     try {
-      const context = await loadRoleContext(env);
-      return json({ ok: true, data: { ...context, can_manage_roles: canManageRoles(session) } });
+      const context = await getRoleCatalogue(env, ROLE_CONTEXT_TABLES, loadRoleContext);
+      if (path === '/hd-role-list') {
+        if (!['people', 'projects'].includes(url.searchParams.get('kind') || 'people')) return err('Invalid list', 400);
+        return json({ ok: true, data: roleList(context, url) });
+      }
+      const etag = `"${context.version}-${canManageRoles(session) ? 'admin' : 'read'}"`;
+      const headers = { ETag: etag, 'Cache-Control': 'private, no-cache', Vary: 'Authorization' };
+      if (request.headers.get('If-None-Match') === etag) return new Response(null, { status: 304, headers });
+      const response = json({ ok: true, data: { ...context, can_manage_roles: canManageRoles(session) } });
+      Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value));
+      return response;
     } catch (error) {
       console.error('Role context load failed', error);
       return err('โหลดข้อมูลจัดการสิทธิ์ไม่ครบ กรุณาลองใหม่ ข้อมูลเดิมยังไม่ถูกเปลี่ยน', 503);

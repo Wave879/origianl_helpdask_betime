@@ -1,4 +1,4 @@
-import { pgTransaction } from '../db.js';
+import { pgTransaction, pgQuery } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { json, err, uid } from '../utils.js';
 
@@ -70,6 +70,18 @@ export async function saveProjectRoles(env, session, projectId, method, body) {
         throw err('สิทธิ์เดิมมีข้อมูลผู้ใช้หรือบทบาทไม่ครบ กรุณาตรวจรายการเดิมก่อนบันทึก', 409);
       }
     }
+    const beforeConfig = { pmId: projectExtra.project_pm || '', supportIds: projectExtra.project_support_ids || [],
+      devIds: projectExtra.project_dev_ids || [], requesterIds: projectExtra.project_requester_ids || [] };
+    if (existing.length) {
+      Object.assign(beforeConfig, { pmId: '', supportIds: [], devIds: [], requesterIds: [] });
+      for (const row of existing.filter(row => row.active !== false)) {
+        const extra = parse(row.extra);
+        const role = roleOf(extra.role_type || extra.position_name);
+        const person = resolve(text(extra.person_id));
+        if (role === 'pm') beforeConfig.pmId = person.id;
+        else beforeConfig[role === 'support' ? 'supportIds' : role === 'dev' ? 'devIds' : 'requesterIds'].push(person.id);
+      }
+    }
     let config;
     if (method === 'PUT') {
       config = validateRoleConfig(body);
@@ -122,13 +134,50 @@ export async function saveProjectRoles(env, session, projectId, method, body) {
     Object.assign(projectExtra, { project_pm: config.pmId, project_support_ids: config.supportIds,
       project_dev_ids: config.devIds, project_requester_ids: config.requesterIds });
     const [savedProject] = await query('UPDATE hd_master SET extra=$1, updated_at=now() WHERE id=$2 RETURNING *', [JSON.stringify(projectExtra), project.id]);
+    const changedPeople = new Set([beforeConfig.pmId, config.pmId,
+      ...beforeConfig.supportIds, ...beforeConfig.devIds, ...beforeConfig.requesterIds,
+      ...config.supportIds, ...config.devIds, ...config.requesterIds].filter(Boolean));
     await query(`INSERT INTO audit_logs (id,actor_user_id,actor_email,action,details) VALUES ($1,$2,$3,$4,$5)`,
-      ['aud_' + uid(), session.user_id, session.email, 'project_roles_saved', JSON.stringify({ project_id: project.id, method, before: beforeExtra, config })]);
+      ['aud_' + uid(), session.user_id, session.email, 'project_roles_saved', JSON.stringify({ project_id: project.id,
+        project_name: project.name, method, before: beforeExtra, before_config: beforeConfig, config,
+        people: Object.fromEntries([...changedPeople].map(id => [id, identities.get(id)?.name || id])) })]);
     return { ...config, project: savedProject, project_member_roles: savedMembers };
   });
 }
 
 export async function handleRoleManagement(path, method, request, env) {
+  if (path === '/hd-role-history' && method === 'GET') {
+    await requireRoleAdmin(request, env);
+    const url = new URL(request.url);
+    const projectId = text(url.searchParams.get('project_id'));
+    const page = Math.max(1, Math.min(100000, Number.parseInt(url.searchParams.get('page'), 10) || 1));
+    const size = 20;
+    const rows = await pgQuery(env, `SELECT a.id,a.created_at,a.actor_email,a.details,
+      COALESCE(u.full_name,a.actor_email) AS actor_name, p.name AS project_name
+      FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_user_id
+      LEFT JOIN hd_master p ON p.id=a.details::jsonb->>'project_id' AND p.table_name='hd_projects'
+      WHERE a.action='project_roles_saved' AND ($1='' OR a.details::jsonb->>'project_id'=$1)
+      ORDER BY a.created_at DESC,a.id DESC LIMIT $2 OFFSET $3`, [projectId, size + 1, (page - 1) * size]);
+    const people = await pgQuery(env, `SELECT id,full_name AS name FROM users UNION ALL
+      SELECT id,name FROM hd_master WHERE table_name='hd_users'`);
+    const names = Object.fromEntries(people.map(person => [person.id, person.name]));
+    const entries = rows.slice(0, size).map(row => {
+      const details = parse(row.details);
+      const old = details.before_config || { pmId: details.before?.project_pm || '',
+        supportIds: details.before?.project_support_ids || [], devIds: details.before?.project_dev_ids || [],
+        requesterIds: details.before?.project_requester_ids || [] };
+      const next = details.config || {};
+      const label = id => ({ id, name: details.people?.[id] || names[id] || id });
+      const changes = Object.entries({ pmId: 'PM', supportIds: 'IT Support', devIds: 'Dev', requesterIds: 'Requester' }).map(([field, role]) => {
+        const before = new Set(field === 'pmId' ? [old[field]].filter(Boolean) : old[field] || []);
+        const after = new Set(field === 'pmId' ? [next[field]].filter(Boolean) : next[field] || []);
+        return { role, added: [...after].filter(id => !before.has(id)).map(label), removed: [...before].filter(id => !after.has(id)).map(label) };
+      }).filter(change => change.added.length || change.removed.length);
+      return { id: row.id, createdAt: row.created_at, actor: row.actor_name, email: row.actor_email,
+        projectName: details.project_name || row.project_name || details.project_id, changes };
+    });
+    return json({ ok: true, data: { entries, page, hasMore: rows.length > size } });
+  }
   if (!path.startsWith('/hd-project-roles/')) return null;
   const session = await requireRoleAdmin(request, env);
   if (!['PUT', 'PATCH'].includes(method)) return err('Method not allowed', 405);

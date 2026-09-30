@@ -6,6 +6,7 @@ import pg from 'pg';
 import { fileURLToPath } from 'node:url';
 import { saveProjectRoles, handleRoleManagement, canManageRoles } from '../src/routes/role-management.js';
 import { handleMasterData, loadRoleContext, ROLE_CONTEXT_TABLES } from '../src/routes/master-data.js';
+import { roleList } from '../src/routes/role-catalogue.js';
 
 const database = process.env.ROLE_TEST_DATABASE;
 assert.match(database || '', /^betime_role_test_[a-z0-9_]+$/);
@@ -114,6 +115,39 @@ try {
   assert.deepEqual(result.project_requester_ids,['account']);
   await expectStatus(()=>saveProjectRoles(env,actor,'project','PUT',{...cfg,expectedUpdatedAt:'2000-01-01'}),409);
   console.log('PASS atomic rollback, concurrency, preserved roles and stale-save rejection');
+
+  const getRequest = (path, token = 'admin-session', headers = {}) => new Request('http://test/api' + path,
+    { headers: { Authorization: 'Bearer ' + token, ...headers } });
+  const initialContext = await handleMasterData('/hd-role-context', 'GET', getRequest('/hd-role-context'), env);
+  const etag = initialContext.headers.get('ETag');
+  assert.ok(etag);
+  const unchanged = await handleMasterData('/hd-role-context', 'GET', getRequest('/hd-role-context', 'admin-session', { 'If-None-Match': etag }), env);
+  assert.equal(unchanged.status, 304);
+  await query("UPDATE users SET job_title='IT Support' WHERE id='account'");
+  const changed = await handleMasterData('/hd-role-context', 'GET', getRequest('/hd-role-context', 'admin-session', { 'If-None-Match': etag }), env);
+  assert.equal(changed.status, 200);
+  assert.notEqual(changed.headers.get('ETag'), etag);
+  const staffView = await handleMasterData('/hd-role-context', 'GET', getRequest('/hd-role-context', 'staff-session', { 'If-None-Match': changed.headers.get('ETag') }), env);
+  assert.equal(staffView.status, 200);
+  assert.equal((await staffView.json()).data.can_manage_roles, false);
+  const listResponse = await handleMasterData('/hd-role-list', 'GET', getRequest('/hd-role-list?kind=people&q=PERSON%40example.test'), env);
+  assert.deepEqual((await listResponse.json()).data.ids, ['account']);
+  const many = { tables: { hd_users: [], hd_projects: [] }, system_users: Array.from({ length: 63 }, (_, n) =>
+    ({ id: 'p' + n, full_name: 'Person ' + String(n).padStart(2, '0'), email: `p${n}@test`, job_title: 'IT Support' })) };
+  assert.equal(roleList(many, new URL('http://test?size=25&page=3')).ids.length, 13);
+  assert.equal(roleList(many, new URL('http://test?q=Person%2062')).ids[0], 'p62');
+  console.log('PASS cache 304, immediate invalidation, capability isolation and search across pages');
+
+  await query('ALTER TABLE audit_logs ADD COLUMN created_at TIMESTAMPTZ DEFAULT now()');
+  const history = await handleRoleManagement('/hd-role-history', 'GET', getRequest('/hd-role-history?project_id=project'), env);
+  assert.equal(history.status, 200);
+  const entries = (await history.json()).data.entries;
+  assert.ok(entries.length >= 4);
+  assert.ok(entries.some(entry => entry.changes.some(change => change.role === 'IT Support' && change.removed.some(person => person.name === 'Support person'))));
+  await expectStatus(() => handleRoleManagement('/hd-role-history', 'GET', getRequest('/hd-role-history', 'staff-session'), env), 403);
+  const missing = await handleRoleManagement('/hd-role-history', 'GET', getRequest('/hd-role-history?project_id=missing'), env);
+  assert.equal((await missing.json()).data.entries.length, 0);
+  console.log('PASS admin-only history, project filter and named role changes');
 
   const html=fs.readFileSync(process.env.ROLE_TEST_HTML || fileURLToPath(new URL('../../../frontend/pages/role-helpdesk.html',import.meta.url)),'utf8');
   for(const m of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)) new vm.Script(m[1]);

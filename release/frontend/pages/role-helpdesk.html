@@ -1069,6 +1069,24 @@
         <span id="roleLoadMessage">กำลังโหลดข้อมูลสิทธิ์ กรุณารอสักครู่</span>
         <button id="retryRoleLoadBtn" class="bt-btn bt-btn-soft" type="button" hidden>ลองใหม่</button>
       </div>
+      <div class="panel-toolbar" style="flex-wrap:wrap">
+        <span id="roleCheckedAt" class="muted">ยังไม่ได้ตรวจข้อมูลล่าสุด</span>
+        <button id="refreshRoleBtn" class="bt-btn bt-btn-soft" type="button">ตรวจข้อมูลล่าสุด</button>
+        <button id="roleHistoryBtn" class="bt-btn bt-btn-soft" type="button" hidden>ประวัติการเปลี่ยนสิทธิ์</button>
+      </div>
+      <section id="roleHistoryPanel" hidden style="background:white;padding:16px;border-radius:12px;margin-bottom:16px">
+        <div class="panel-toolbar" style="flex-wrap:wrap">
+          <strong>ประวัติการเปลี่ยนสิทธิ์</strong>
+          <select id="roleHistoryProject" class="search-input" aria-label="กรองประวัติตามโครงการ"><option value="">ทุกโครงการ</option></select>
+          <button id="closeRoleHistoryBtn" class="bt-btn bt-btn-soft" type="button">ปิดประวัติ</button>
+        </div>
+        <div id="roleHistoryEntries" aria-live="polite"></div>
+        <div class="panel-toolbar">
+          <button id="historyPrevious" class="bt-btn bt-btn-soft" type="button">ก่อนหน้า</button>
+          <span id="historyPageLabel"></span>
+          <button id="historyNext" class="bt-btn bt-btn-soft" type="button">ถัดไป</button>
+        </div>
+      </section>
       <div class="role-shell" id="roleContent" hidden>
         <div class="file-tabs">
           <button class="file-tab active" type="button" data-tab="people">
@@ -1318,6 +1336,9 @@
       canManageRoles: false,
       loadStatus: 'loading',
       hasLoaded: false,
+      contextVersion: '',
+      listPages: { people: { page: 1, ids: [], total: 0, pages: 1, status: 'loading' }, projects: { page: 1, ids: [], total: 0, pages: 1, status: 'loading' } },
+      historyPage: 1,
       people: [],
       systemUsers: [],
       positions: [],
@@ -2012,20 +2033,39 @@
     }
 
     const roleTables = ['hd_users', 'hd_positions', 'hd_projects', 'hd_teams', 'hd_projects_dev', 'hd_project_member_roles', 'hd_main_team_project'];
+    let roleCacheKey = '';
+    async function getRoleCacheKey() {
+      const token = localStorage.getItem('bt_token') || '';
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+      roleCacheKey = 'bt-role-v2-' + Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      return roleCacheKey;
+    }
+    function invalidateRoleCache() {
+      try { if (roleCacheKey) sessionStorage.removeItem(roleCacheKey); } catch {}
+    }
     async function getHelpdeskMasterContext() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 45000);
       try {
+        let cached = null;
+        try { cached = JSON.parse(sessionStorage.getItem(await getRoleCacheKey()) || 'null'); } catch {}
+        const headers = authHeadersSafe();
+        if (cached?.etag && cached?.data?.complete) headers['If-None-Match'] = cached.etag;
         const response = await fetch(apiPath('/api/hd-role-context'), {
-          headers: authHeadersSafe(), cache: 'no-store', signal: controller.signal,
+          headers, cache: 'no-store', signal: controller.signal,
         });
-        const result = await response.json();
+        const result = response.status === 304 && cached ? { ok: true, data: cached.data } : await response.json();
         const context = result.data;
-        if (!response.ok || !result.ok) throw new Error(result.error || 'โหลดข้อมูลสิทธิ์ไม่สำเร็จ');
+        if ((!response.ok && response.status !== 304) || !result.ok) throw new Error(result.error || 'โหลดข้อมูลสิทธิ์ไม่สำเร็จ');
         if (!context?.complete || !Array.isArray(context.system_users)
           || roleTables.some(table => !Array.isArray(context.tables?.[table]))) {
           throw new Error('โหลดข้อมูลสิทธิ์ไม่ครบ กรุณาลองใหม่');
         }
+        try {
+          const etag = response.headers.get('ETag') || cached?.etag;
+          if (etag && roleCacheKey) sessionStorage.setItem(roleCacheKey, JSON.stringify({ etag, data: context }));
+        } catch {}
+        document.getElementById('roleCheckedAt').textContent = `ตรวจข้อมูลล่าสุด ${new Date().toLocaleTimeString('th-TH')} · ข้อมูล Odoo อาจช้าไม่เกิน 10 วินาที`;
         return context;
       } finally { clearTimeout(timeout); }
     }
@@ -2045,6 +2085,7 @@
 
     async function createHdRow(table, body) {
       requireRoleDataReady();
+      invalidateRoleCache();
       const res = await fetch(apiPath(`/api/hd-master?table=${encodeURIComponent(table)}`), {
         method: 'POST',
         headers: authHeadersSafe(),
@@ -2057,6 +2098,7 @@
 
     async function updateHdRow(id, body) {
       requireRoleDataReady();
+      invalidateRoleCache();
       const res = await fetch(apiPath(`/api/hd-master/${encodeURIComponent(id)}`), {
         method: 'PUT',
         headers: authHeadersSafe(),
@@ -2069,6 +2111,7 @@
 
     async function deleteHdRow(id) {
       requireRoleDataReady();
+      invalidateRoleCache();
       const res = await fetch(apiPath(`/api/hd-master/${encodeURIComponent(id)}`), {
         method: 'DELETE',
         headers: authHeadersSafe(),
@@ -2097,6 +2140,7 @@
       setRoleLoadStatus('loading');
       try {
         const context = await getHelpdeskMasterContext();
+        state.contextVersion = context.version || '';
         state.canManageRoles = context.can_manage_roles === true;
         const tables = context.tables || {};
         const apiPeopleRaw = (Array.isArray(context.users) ? context.users : tables.hd_users || []).map((row) => normalizeEmployeeRecord(row, 'system'));
@@ -2130,6 +2174,7 @@
         });
 
         state.hasLoaded = true;
+        await Promise.all([loadRoleList('people'), loadRoleList('projects')]);
         setRoleLoadStatus('ready');
         renderPositionOptions();
         renderAll();
@@ -2681,6 +2726,7 @@
 
     async function saveProjectRolesRequest(project, method, body) {
       requireRoleDataReady();
+      invalidateRoleCache();
       const response = await fetch(apiPath(`/api/hd-project-roles/${encodeURIComponent(project.id)}`), {
         method, headers: authHeadersSafe(), body: JSON.stringify(body),
       });
@@ -2951,11 +2997,60 @@
       ['employeeModal', 'employeeProjectRoleModal', 'projectModal', 'teamModal', 'personModal', 'projectAddModal'].forEach(closeModal);
     }
 
+    const roleListControllers = {};
+    async function loadRoleList(kind) {
+      roleListControllers[kind]?.abort();
+      const controller = new AbortController();
+      roleListControllers[kind] = controller;
+      const pager = state.listPages[kind];
+      pager.status = 'loading';
+      const render = kind === 'people' ? renderPeopleTable : renderUserProjectAccessTable;
+      render();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      try {
+        const q = kind === 'people' ? state.peopleSearch : state.projectSearch;
+        const response = await fetch(apiPath(`/api/hd-role-list?kind=${kind}&q=${encodeURIComponent(q)}&page=${pager.page}&size=25`), {
+          headers: authHeadersSafe(), signal: controller.signal, cache: 'no-store',
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || 'ค้นหาข้อมูลไม่สำเร็จ');
+        if (roleListControllers[kind] !== controller) return;
+        const source = kind === 'people' ? state.people : state.projects;
+        if (!Array.isArray(result.data?.ids) || result.data.ids.some(id => !source.some(row => row.id === id))) {
+          throw new Error('รายชื่อมีการเปลี่ยนแปลง กรุณากดตรวจข้อมูลล่าสุด');
+        }
+        Object.assign(pager, result.data, { status: 'ready' });
+        render();
+        applyRolePermissions();
+      } catch (error) {
+        if (roleListControllers[kind] !== controller) return;
+        pager.status = 'error';
+        render();
+        throw error;
+      } finally { clearTimeout(timeout); }
+    }
+
+    function renderRolePager(kind) {
+      const pager = state.listPages[kind];
+      const container = document.getElementById(`${kind}Pager`);
+      if (!container) return;
+      container.innerHTML = `<button class="bt-btn bt-btn-soft" type="button" data-page-step="-1" ${pager.page <= 1 || pager.status !== 'ready' ? 'disabled' : ''}>ก่อนหน้า</button>
+        <span>หน้า ${pager.page} / ${pager.pages} · ${pager.total} รายการ</span>
+        <button class="bt-btn bt-btn-soft" type="button" data-page-step="1" ${pager.page >= pager.pages || pager.status !== 'ready' ? 'disabled' : ''}>ถัดไป</button>
+        ${pager.status === 'error' ? '<button class="bt-btn bt-btn-soft" type="button" data-page-step="0">ลองใหม่</button>' : ''}`;
+    }
+
     function renderPeopleTable() {
       const tbody = document.getElementById('peopleTbody');
       const eligiblePeople = getHelpdeskEligiblePeople();
-      const filtered = eligiblePeople.filter((emp) => matchesEmployeeSearch(emp, state.peopleSearch));
-      document.getElementById('peopleCount').textContent = `${filtered.length} รายการ`;
+      const pager = state.listPages.people;
+      renderRolePager('people');
+      if (pager.status !== 'ready') {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-row">${pager.status === 'loading' ? 'กำลังค้นหา…' : 'ค้นหาไม่สำเร็จ กรุณาลองใหม่หรือตรวจข้อมูลล่าสุด'}</td></tr>`;
+        return;
+      }
+      const filtered = pager.ids.map(id => eligiblePeople.find(emp => emp.id === id)).filter(Boolean);
+      document.getElementById('peopleCount').textContent = `${pager.total} รายการ`;
       document.getElementById('peopleTabCount').textContent = String(eligiblePeople.length);
       if (!filtered.length) {
         tbody.innerHTML = `<tr><td class="empty-row" colspan="4">ยังไม่พบผู้ใช้ที่มีตำแหน่งงาน IT Support</td></tr>`;
@@ -3011,9 +3106,15 @@
       });
       if (headers[4]) headers[4].style.display = 'none';
 
-      const filtered = state.projects.filter((project) => matchesProjectSearch(project, state.projectSearch));
+      const pager = state.listPages.projects;
+      renderRolePager('projects');
+      if (pager.status !== 'ready') {
+        tbody.innerHTML = `<tr><td colspan="4" class="ownership-empty">${pager.status === 'loading' ? 'กำลังค้นหา…' : 'ค้นหาไม่สำเร็จ กรุณาลองใหม่หรือตรวจข้อมูลล่าสุด'}</td></tr>`;
+        return;
+      }
+      const filtered = pager.ids.map(id => state.projects.find(project => project.id === id)).filter(Boolean);
       const count = document.getElementById('teamCount');
-      if (count) count.textContent = `${filtered.length} รายการ`;
+      if (count) count.textContent = `${pager.total} รายการ`;
       const tabCount = document.getElementById('projectTabCount');
       if (tabCount) tabCount.textContent = String(state.projects.length);
 
@@ -3323,6 +3424,8 @@
 
     function applyRolePermissions() {
       const canEdit = state.canManageRoles && state.loadStatus === 'ready';
+      document.getElementById('roleHistoryBtn').hidden = !state.canManageRoles;
+      if (!state.canManageRoles) document.getElementById('roleHistoryPanel').hidden = true;
       const selectors = '#addPersonBtn,#addOdooProjectBtn,#savePersonBtn,#saveProjectBtn,#saveEmployeeBtn,#employeeProjectAddBtn,#employeeProjectRoleSaveBtn,#editProjectConfigBtn,#saveProjectConfigBtn,#resetProjectConfigBtn,[data-action="delete-person"],[data-remove-role],.round-add-btn,.bt-btn-danger';
       document.querySelectorAll(selectors).forEach(button => {
         button.hidden = !canEdit;
@@ -4419,6 +4522,7 @@
         if (saveButton) saveButton.disabled = true;
         const requestImport = async (updateDevOnly = false) => {
           requireRoleDataReady();
+          invalidateRoleCache();
           const response = await fetch(apiPath('/api/hd-project-import'), {
             method: 'POST',
             headers: authHeadersSafe(),
@@ -4482,7 +4586,65 @@
       }
     }
 
+    let historyRequest = 0;
+    async function loadRoleHistory() {
+      const requestId = ++historyRequest;
+      const container = document.getElementById('roleHistoryEntries');
+      container.textContent = 'กำลังโหลดประวัติ…';
+      document.getElementById('historyPrevious').disabled = true;
+      document.getElementById('historyNext').disabled = true;
+      try {
+        const project = document.getElementById('roleHistoryProject').value;
+        const response = await fetch(apiPath(`/api/hd-role-history?page=${state.historyPage}&project_id=${encodeURIComponent(project)}`), { headers: authHeadersSafe() });
+        const result = await response.json();
+        if (requestId !== historyRequest) return;
+        if (!response.ok || !result.ok) throw new Error(result.error || 'โหลดประวัติไม่สำเร็จ');
+        container.innerHTML = result.data.entries.length ? result.data.entries.map(entry => `<article style="border-top:1px solid #e2e8f0;padding:12px 0;overflow-wrap:anywhere">
+          <strong>${escapeHtml(entry.projectName)}</strong>
+          <div class="muted">${escapeHtml(new Date(entry.createdAt).toLocaleString('th-TH'))} · ${escapeHtml(entry.actor || entry.email)}</div>
+          ${entry.changes.length ? entry.changes.map(change => `<div>${escapeHtml(change.role)}:
+            ${change.added.length ? `เพิ่ม ${change.added.map(person => escapeHtml(person.name)).join(', ')}` : ''}
+            ${change.removed.length ? `นำออก ${change.removed.map(person => escapeHtml(person.name)).join(', ')}` : ''}</div>`).join('') : '<div>บันทึกโดยไม่มีการเปลี่ยนสิทธิ์</div>'}
+        </article>`).join('') : '<p>ยังไม่มีประวัติการเปลี่ยนสิทธิ์ในช่วงที่ระบบเริ่มเก็บข้อมูล</p>';
+        document.getElementById('historyPageLabel').textContent = `หน้า ${result.data.page}`;
+        document.getElementById('historyPrevious').disabled = state.historyPage <= 1;
+        document.getElementById('historyNext').disabled = !result.data.hasMore;
+      } catch (error) {
+        if (requestId !== historyRequest) return;
+        container.innerHTML = `<p>${escapeHtml(error.message)}</p><button type="button" class="bt-btn bt-btn-soft" id="retryRoleHistory">ลองใหม่</button>`;
+        document.getElementById('retryRoleHistory').onclick = loadRoleHistory;
+      }
+    }
+
     function bindStaticEvents() {
+      ['people', 'projects'].forEach(kind => {
+        const container = document.createElement('div');
+        container.id = `${kind}Pager`;
+        container.className = 'panel-toolbar';
+        container.style.flexWrap = 'wrap';
+        document.getElementById(kind === 'people' ? 'peoplePanel' : 'projectsPanel').appendChild(container);
+        container.addEventListener('click', async event => {
+          const button = event.target.closest('[data-page-step]');
+          if (!button) return;
+          state.listPages[kind].page += Number(button.dataset.pageStep);
+          try { await loadRoleList(kind); } catch (error) { showNotice(error.message, 'danger'); }
+        });
+      });
+      document.getElementById('refreshRoleBtn').onclick = async () => {
+        if (state.loadStatus === 'loading') return;
+        closeAllModals();
+        try { await loadAllData(); } catch (error) { showNotice(error.message, 'danger'); }
+      };
+      document.getElementById('roleHistoryBtn').onclick = () => {
+        document.getElementById('roleHistoryPanel').hidden = false;
+        document.getElementById('roleHistoryProject').innerHTML = '<option value="">ทุกโครงการ</option>' + state.projects.map(project => `<option value="${escapeHtml(project.id)}">${escapeHtml(displayProjectName(project))}</option>`).join('');
+        state.historyPage = 1;
+        loadRoleHistory();
+      };
+      document.getElementById('closeRoleHistoryBtn').onclick = () => { document.getElementById('roleHistoryPanel').hidden = true; };
+      document.getElementById('roleHistoryProject').onchange = () => { state.historyPage = 1; loadRoleHistory(); };
+      document.getElementById('historyPrevious').onclick = () => { state.historyPage = Math.max(1, state.historyPage - 1); loadRoleHistory(); };
+      document.getElementById('historyNext').onclick = () => { state.historyPage++; loadRoleHistory(); };
       document.getElementById('retryRoleLoadBtn').addEventListener('click', async () => {
         try { await loadAllData(); } catch (error) { showNotice(error.message, 'danger'); }
       });
@@ -4492,17 +4654,23 @@
 
       const peopleSearch = document.getElementById('peopleSearch');
       if (peopleSearch) {
+        let timer;
         peopleSearch.addEventListener('input', (event) => {
           state.peopleSearch = cleanText(event.target.value);
-          renderPeopleTable();
+          state.listPages.people.page = 1;
+          clearTimeout(timer);
+          timer = setTimeout(() => loadRoleList('people').catch(error => showNotice(error.message, 'danger')), 250);
         });
       }
 
       const teamSearch = document.getElementById('teamSearch');
       if (teamSearch) {
+        let timer;
         teamSearch.addEventListener('input', (event) => {
           state.projectSearch = cleanText(event.target.value);
-          renderUserProjectAccessTable();
+          state.listPages.projects.page = 1;
+          clearTimeout(timer);
+          timer = setTimeout(() => loadRoleList('projects').catch(error => showNotice(error.message, 'danger')), 250);
         });
       }
 
