@@ -10,6 +10,9 @@ __pycache__/
 .pytest_cache/
 test-results/
 temp-stt-test/
+release/data/d1/*.sqlite
+release/data/postgres/*.sql
+!backend/worker/migrations/sql/014_role_user_identity.sql
 
 # Logs and runtime outputs
 *.log
@@ -25,3 +28,5 @@ _backups/
 Thumbs.db
 *.swp
 *.swo
+
+
