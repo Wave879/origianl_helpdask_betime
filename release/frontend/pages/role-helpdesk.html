@@ -686,7 +686,7 @@
       z-index: 9999;
     }
     .modal-overlay.open { display: flex; }
-    button[hidden] { display: none !important; }
+    #roleContent[hidden], #roleLoadStatus[hidden], button[hidden] { display: none !important; }
     .modal-card {
       box-sizing: border-box;
       display: flex;
@@ -1065,7 +1065,11 @@
         </div>
       </section>
 
-      <div class="role-shell">
+      <div id="roleLoadStatus" role="status" aria-live="polite" style="padding:16px;margin-bottom:12px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;">
+        <span id="roleLoadMessage">กำลังโหลดข้อมูลสิทธิ์ กรุณารอสักครู่</span>
+        <button id="retryRoleLoadBtn" class="bt-btn bt-btn-soft" type="button" hidden>ลองใหม่</button>
+      </div>
+      <div class="role-shell" id="roleContent" hidden>
         <div class="file-tabs">
           <button class="file-tab active" type="button" data-tab="people">
             รายชื่อพนักงาน <span class="tab-count" id="peopleTabCount">0</span>
@@ -1312,6 +1316,8 @@
 
     const state = {
       canManageRoles: false,
+      loadStatus: 'loading',
+      hasLoaded: false,
       people: [],
       systemUsers: [],
       positions: [],
@@ -2005,26 +2011,40 @@
       return Array.isArray(data.data) ? data.data : [];
     }
 
-    async function loadSystemUsers() {
-      const res = await fetch(apiPath('/api/users'), { headers: authHeadersSafe() });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'โหลดข้อมูล users ไม่สำเร็จ');
-      return Array.isArray(data.data) ? data.data : [];
-    }
+    const roleTables = ['hd_users', 'hd_positions', 'hd_projects', 'hd_teams', 'hd_projects_dev', 'hd_project_member_roles', 'hd_main_team_project'];
     async function getHelpdeskMasterContext() {
-      if (window.BT && typeof BT.loadHdContext === 'function') {
-        try {
-          // Project visibility depends on the user's current job titles.
-          // Do not reuse a sessionStorage snapshot after an admin changes them.
-          return await BT.loadHdContext({ scope: 'admin', force: true });
-        } catch (error) {
-          console.warn('Failed to load master context', error);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000);
+      try {
+        const response = await fetch(apiPath('/api/hd-role-context'), {
+          headers: authHeadersSafe(), cache: 'no-store', signal: controller.signal,
+        });
+        const result = await response.json();
+        const context = result.data;
+        if (!response.ok || !result.ok) throw new Error(result.error || 'โหลดข้อมูลสิทธิ์ไม่สำเร็จ');
+        if (!context?.complete || !Array.isArray(context.system_users)
+          || roleTables.some(table => !Array.isArray(context.tables?.[table]))) {
+          throw new Error('โหลดข้อมูลสิทธิ์ไม่ครบ กรุณาลองใหม่');
         }
-      }
-      return window.BT && BT.masterContext ? BT.masterContext : null;
+        return context;
+      } finally { clearTimeout(timeout); }
+    }
+
+    function setRoleLoadStatus(status) {
+      state.loadStatus = status;
+      const banner = document.getElementById('roleLoadStatus');
+      banner.hidden = status === 'ready';
+      document.getElementById('roleLoadMessage').textContent = status === 'loading'
+        ? 'กำลังโหลดข้อมูลสิทธิ์ กรุณารอสักครู่'
+        : 'โหลดข้อมูลไม่ครบ ข้อมูลที่แสดงอาจเป็นข้อมูลเดิม กรุณาลองใหม่ก่อนแก้ไขสิทธิ์';
+      document.getElementById('retryRoleLoadBtn').hidden = status !== 'error';
+      document.getElementById('roleContent').hidden = status !== 'ready' && !state.hasLoaded;
+      document.getElementById('roleContent').setAttribute('aria-busy', String(status === 'loading'));
+      applyRolePermissions();
     }
 
     async function createHdRow(table, body) {
+      requireRoleDataReady();
       const res = await fetch(apiPath(`/api/hd-master?table=${encodeURIComponent(table)}`), {
         method: 'POST',
         headers: authHeadersSafe(),
@@ -2036,6 +2056,7 @@
     }
 
     async function updateHdRow(id, body) {
+      requireRoleDataReady();
       const res = await fetch(apiPath(`/api/hd-master/${encodeURIComponent(id)}`), {
         method: 'PUT',
         headers: authHeadersSafe(),
@@ -2047,6 +2068,7 @@
     }
 
     async function deleteHdRow(id) {
+      requireRoleDataReady();
       const res = await fetch(apiPath(`/api/hd-master/${encodeURIComponent(id)}`), {
         method: 'DELETE',
         headers: authHeadersSafe(),
@@ -2069,39 +2091,12 @@
       state.projectConfigCache.clear();
     }
     async function reloadPeople() {
-      const context = await getHelpdeskMasterContext();
-      if (context) {
-        const helpdeskRows = Array.isArray(context.users) ? context.users : Array.isArray(context.tables?.hd_users) ? context.tables.hd_users : [];
-        const systemRows = Array.isArray(context.system_users) ? context.system_users : [];
-        const helpdeskPeople = helpdeskRows.map((row) => normalizeEmployeeRecord(row, 'system'));
-        const systemPeople = systemRows.map(normalizeSystemUserRecord);
-        state.systemUsers = systemRows;
-        state.people = mergePeopleSources(systemPeople, helpdeskPeople);
-        state.employeeLinkCache.clear();
-        return;
-      }
-
-      const [helpdeskRaw, usersRaw] = await Promise.allSettled([
-        loadTable('hd_users'),
-        loadSystemUsers(),
-      ]);
-      const readSettled = (result, fallback = []) => (result.status === 'fulfilled' ? result.value : fallback);
-      const helpdeskPeople = readSettled(helpdeskRaw).map((row) => normalizeEmployeeRecord(row, 'system'));
-      const systemRows = readSettled(usersRaw);
-      const systemPeople = systemRows.map(normalizeSystemUserRecord);
-      state.systemUsers = systemRows;
-      state.people = mergePeopleSources(systemPeople, helpdeskPeople);
-      state.employeeLinkCache.clear();
-      if (helpdeskRaw.status === 'rejected' || usersRaw.status === 'rejected') {
-        const failed = [];
-        if (helpdeskRaw.status === 'rejected') failed.push(`hd_users: ${helpdeskRaw.reason?.message || 'error'}`);
-        if (usersRaw.status === 'rejected') failed.push(`users: ${usersRaw.reason?.message || 'error'}`);
-        showNotice(`โหลดรายชื่อบางแหล่งไม่ครบ: ${failed.join(' | ')}`, 'warning');
-      }
+      await loadAllData();
     }
     async function loadAllData() {
-      const context = await getHelpdeskMasterContext();
-      if (context) {
+      setRoleLoadStatus('loading');
+      try {
+        const context = await getHelpdeskMasterContext();
         state.canManageRoles = context.can_manage_roles === true;
         const tables = context.tables || {};
         const apiPeopleRaw = (Array.isArray(context.users) ? context.users : tables.hd_users || []).map((row) => normalizeEmployeeRecord(row, 'system'));
@@ -2134,65 +2129,14 @@
           state.projectConfigCache.set(String(project.id), cfg);
         });
 
+        state.hasLoaded = true;
+        setRoleLoadStatus('ready');
         renderPositionOptions();
         renderAll();
-        return;
+      } catch (error) {
+        setRoleLoadStatus('error');
+        throw error;
       }
-
-      const [peopleRaw, usersRaw, positionsRaw, projectsRaw, teamsRaw, devRaw, memberRoleRaw, mainTeamRaw] = await Promise.allSettled([
-        loadTable('hd_users'),
-        loadSystemUsers(),
-        loadTable('hd_positions'),
-        loadTable('hd_projects'),
-        loadTable('hd_teams'),
-        loadTable('hd_projects_dev'),
-        loadTable('hd_project_member_roles'),
-        loadTable('hd_main_team_project'),
-      ]);
-
-      const readSettled = (result, fallback = []) => (result.status === 'fulfilled' ? result.value : fallback);
-      const failedTables = [];
-      [['hd_users', peopleRaw], ['users', usersRaw], ['hd_positions', positionsRaw], ['hd_projects', projectsRaw], ['hd_teams', teamsRaw], ['hd_projects_dev', devRaw], ['hd_project_member_roles', memberRoleRaw], ['hd_main_team_project', mainTeamRaw]]
-        .forEach(([table, result]) => {
-          if (result.status === 'rejected') failedTables.push(`${table}: ${result.reason?.message || result.reason || 'error'}`);
-        });
-
-      const apiPeopleRaw = readSettled(peopleRaw).map((row) => normalizeEmployeeRecord(row, 'system'));
-      const systemUserRows = readSettled(usersRaw);
-      const apiSystemPeople = systemUserRows.map(normalizeSystemUserRecord);
-      const apiPositions = readSettled(positionsRaw).map((row) => normalizePositionRecord(row, 'system'));
-      const apiProjects = readSettled(projectsRaw).map((row) => normalizeProjectRecord(row, 'system'));
-      const apiTeams = readSettled(teamsRaw).map(normalizeTeamRecord).filter((team) => !isPlaceholderTeam(team));
-      const apiDevRows = readSettled(devRaw).map(normalizeProjectDevRecord);
-      const apiProjectMemberRoles = readSettled(memberRoleRaw).map(normalizeProjectMemberRoleRecord);
-      const apiMainTeamRows = readSettled(mainTeamRaw).map((row) => normalizeMainTeamProjectRecord(row, 'system'));
-      const fallbackPeople = apiSystemPeople.length || apiPeopleRaw.length ? [] : buildFallbackPeopleRecords(apiProjects, apiTeams, apiDevRows, apiMainTeamRows);
-      const peopleSource = mergePeopleSources(apiSystemPeople, apiPeopleRaw, fallbackPeople);
-
-      state.people = sortPeople(peopleSource);
-      state.systemUsers = systemUserRows;
-      state.positions = sortProjects(apiPositions);
-      state.projects = sortProjects(apiProjects);
-      state.teams = apiTeams;
-      state.projectDevs = apiDevRows;
-      state.projectMemberRoles = apiProjectMemberRoles;
-      state.mainTeamProjects = sortMainTeamProjects(apiMainTeamRows);
-      state.projectConfigCache = new Map();
-      state.projectRoleSnapshotCache = new Map();
-      state.employeeLinkCache = new Map();
-      state.employeeMainTeamLinkCache = new Map();
-
-      state.projects.forEach((project) => {
-        const cfg = getProjectConfig(project);
-        state.projectConfigCache.set(String(project.id), cfg);
-      });
-
-      if (failedTables.length) {
-        showNotice(`โหลดข้อมูลบางตารางไม่ครบ: ${failedTables.join(' | ')}`, 'warning');
-      }
-
-      renderPositionOptions();
-      renderAll();
     }
     function displayEmployeeName(emp) {
       if (!emp) return '-';
@@ -2719,12 +2663,30 @@
       return result;
     }
 
+    function requireRoleDataReady() {
+      if (state.loadStatus !== 'ready') throw new Error('กรุณาโหลดข้อมูลให้ครบก่อนบันทึก');
+      if (!state.canManageRoles) throw new Error('เฉพาะผู้ดูแลระบบที่แก้ไขสิทธิ์ได้');
+    }
+
+    function applySavedProject(result) {
+      const project = normalizeProjectRecord(result.project, 'system');
+      const roles = result.project_member_roles.map(normalizeProjectMemberRoleRecord);
+      state.projects = state.projects.map(item => String(item.id) === String(project.id) ? project : item);
+      state.projectMemberRoles = state.projectMemberRoles.filter(row => !roleRowMatchesProject(row, project)).concat(roles);
+      state.projectConfigCache.delete(String(project.id));
+      state.projectRoleSnapshotCache.clear();
+      state.employeeLinkCache.clear();
+      state.employeeMainTeamLinkCache.clear();
+    }
+
     async function saveProjectRolesRequest(project, method, body) {
+      requireRoleDataReady();
       const response = await fetch(apiPath(`/api/hd-project-roles/${encodeURIComponent(project.id)}`), {
         method, headers: authHeadersSafe(), body: JSON.stringify(body),
       });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || 'Unable to save project roles');
+      applySavedProject(data.data);
       return data.data;
     }
 
@@ -3360,10 +3322,11 @@
     }
 
     function applyRolePermissions() {
+      const canEdit = state.canManageRoles && state.loadStatus === 'ready';
       const selectors = '#addPersonBtn,#addOdooProjectBtn,#savePersonBtn,#saveProjectBtn,#saveEmployeeBtn,#employeeProjectAddBtn,#employeeProjectRoleSaveBtn,#editProjectConfigBtn,#saveProjectConfigBtn,#resetProjectConfigBtn,[data-action="delete-person"],[data-remove-role],.round-add-btn,.bt-btn-danger';
       document.querySelectorAll(selectors).forEach(button => {
-        button.hidden = !state.canManageRoles;
-        if (!state.canManageRoles) {
+        button.hidden = !canEdit;
+        if (!canEdit) {
           if (!('roleDisabled' in button.dataset)) button.dataset.roleDisabled = String(button.disabled);
           button.disabled = true;
         } else if ('roleDisabled' in button.dataset) {
@@ -3371,7 +3334,7 @@
           delete button.dataset.roleDisabled;
         }
       });
-      if (!state.canManageRoles) {
+      if (!canEdit) {
         document.querySelectorAll('#projectModal .project-editor button, #employeeModal input, #employeeModal select').forEach(el => { el.disabled = true; });
       }
       const employee = state.people.find(emp => String(emp.id) === String(state.currentEmployeeId));
@@ -3749,7 +3712,6 @@
       await saveProjectRolesRequest(project, 'PATCH', {
         personId: String(emp.id), role: roleType, action: removeRowId ? 'remove' : 'add',
       });
-      await Promise.all([reloadProjects(), reloadProjectMemberRoles()]);
       renderAll();
     }
 
@@ -4179,7 +4141,6 @@
         ...normalizeProjectConfig(state.currentProjectDraft || getProjectConfig(project)),
         expectedUpdatedAt: project.updatedAt,
       });
-      await Promise.all([reloadProjects(), reloadProjectMemberRoles()]);
       state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(state.projects.find(item => String(item.id) === String(project.id))));
     }
 
@@ -4189,7 +4150,6 @@
       await saveProjectRolesRequest(project, 'PUT', {
         pmId: '', supportIds: [], devIds: [], requesterIds: [], expectedUpdatedAt: project.updatedAt,
       });
-      await Promise.all([reloadProjects(), reloadProjectMemberRoles()]);
       state.currentProjectDraft = normalizeProjectConfig(getProjectConfig(state.projects.find(item => String(item.id) === String(project.id))));
     }
 
@@ -4458,6 +4418,7 @@
         const saveButton = document.getElementById('saveProjectBtn');
         if (saveButton) saveButton.disabled = true;
         const requestImport = async (updateDevOnly = false) => {
+          requireRoleDataReady();
           const response = await fetch(apiPath('/api/hd-project-import'), {
             method: 'POST',
             headers: authHeadersSafe(),
@@ -4522,6 +4483,9 @@
     }
 
     function bindStaticEvents() {
+      document.getElementById('retryRoleLoadBtn').addEventListener('click', async () => {
+        try { await loadAllData(); } catch (error) { showNotice(error.message, 'danger'); }
+      });
       document.querySelectorAll('.file-tab').forEach((btn) => {
         btn.addEventListener('click', () => setTab(btn.dataset.tab));
       });

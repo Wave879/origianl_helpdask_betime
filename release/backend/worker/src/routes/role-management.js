@@ -108,21 +108,23 @@ export async function saveProjectRoles(env, session, projectId, method, body) {
     const members = [ ...(config.pmId ? [[config.pmId, 'pm']] : []),
       ...config.supportIds.map(id => [id, 'support']), ...config.devIds.map(id => [id, 'dev']),
       ...config.requesterIds.map(id => [id, 'requester']) ];
+    const savedMembers = [];
     for (const [id, role] of members) {
       const person = resolve(id);
       const extra = { source: 'ui-role-editor', project_id: project.id, project_code: project.code,
         project_name: project.name, person_id: person.id, person_code: person.code, person_name: person.name,
         role_type: labels[role], position_name: labels[role], source_table: 'ui', source_row_id: '' };
-      await query(`INSERT INTO hd_master (id,table_name,code,name,extra,active,sort_order)
-        VALUES ($1,'hd_project_member_roles',$2,$3,$4,true,0)`,
+      const [savedMember] = await query(`INSERT INTO hd_master (id,table_name,code,name,extra,active,sort_order)
+        VALUES ($1,'hd_project_member_roles',$2,$3,$4,true,0) RETURNING *`,
       ['hd_project_member_roles_' + uid(), `${project.code}|${id}|${labels[role]}`, `${project.name} - ${person.name}`, JSON.stringify(extra)]);
+      savedMembers.push(savedMember);
     }
     Object.assign(projectExtra, { project_pm: config.pmId, project_support_ids: config.supportIds,
       project_dev_ids: config.devIds, project_requester_ids: config.requesterIds });
-    await query('UPDATE hd_master SET extra=$1, updated_at=now() WHERE id=$2', [JSON.stringify(projectExtra), project.id]);
+    const [savedProject] = await query('UPDATE hd_master SET extra=$1, updated_at=now() WHERE id=$2 RETURNING *', [JSON.stringify(projectExtra), project.id]);
     await query(`INSERT INTO audit_logs (id,actor_user_id,actor_email,action,details) VALUES ($1,$2,$3,$4,$5)`,
       ['aud_' + uid(), session.user_id, session.email, 'project_roles_saved', JSON.stringify({ project_id: project.id, method, before: beforeExtra, config })]);
-    return config;
+    return { ...config, project: savedProject, project_member_roles: savedMembers };
   });
 }
 

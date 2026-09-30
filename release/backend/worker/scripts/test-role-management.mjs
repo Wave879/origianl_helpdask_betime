@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import pg from 'pg';
 import { fileURLToPath } from 'node:url';
 import { saveProjectRoles, handleRoleManagement, canManageRoles } from '../src/routes/role-management.js';
-import { handleMasterData } from '../src/routes/master-data.js';
+import { handleMasterData, loadRoleContext, ROLE_CONTEXT_TABLES } from '../src/routes/master-data.js';
 
 const database = process.env.ROLE_TEST_DATABASE;
 assert.match(database || '', /^betime_role_test_[a-z0-9_]+$/);
@@ -53,9 +53,40 @@ try {
   assert.equal(new Set(simultaneous.map(r=>r.id)).size,1);
   console.log('PASS API authorization and concurrent duplicate prevention');
 
+  await query('ALTER TABLE users ADD COLUMN job_title TEXT, ADD COLUMN must_change_password INTEGER DEFAULT 0');
+  await query("INSERT INTO hd_master (id,table_name,name) VALUES ('unused-sla','hd_sla','Not used on Role')");
+  const roleContext = await loadRoleContext(env);
+  assert.equal(roleContext.complete, true);
+  assert.deepEqual(Object.keys(roleContext.tables), ROLE_CONTEXT_TABLES);
+  assert.equal(roleContext.tables.hd_sla, undefined);
+  assert.equal(roleContext.tables.hd_users.filter(row => row.id.startsWith('dup')).length, 1);
+  assert.equal(roleContext.system_users.length, 2);
+  await query('ALTER TABLE users RENAME COLUMN job_title TO unavailable_job_title');
+  await assert.rejects(loadRoleContext(env));
+  const failedContext = await handleMasterData('/hd-role-context', 'GET',
+    new Request('http://test/api/hd-role-context', { headers: { Authorization: 'Bearer admin-session' } }), env);
+  assert.equal(failedContext.status, 503);
+  assert.equal((await failedContext.json()).ok, false);
+  await query('ALTER TABLE users RENAME COLUMN unavailable_job_title TO job_title');
+  assert.equal((await loadRoleContext(env)).complete, true);
+  const realFetch = globalThis.fetch;
+  await query(`UPDATE hd_master SET extra='{"source_service_id":123}' WHERE id='project'`);
+  try {
+    globalThis.fetch = async () => { throw new Error('Simulated Odoo outage'); };
+    await assert.rejects(loadRoleContext(env), /Odoo/);
+  } finally {
+    globalThis.fetch = realFetch;
+    await query("UPDATE hd_master SET extra='{}' WHERE id='project'");
+  }
+  console.log('PASS focused role context, explicit failure and recovery');
+
   const actor={user_id:'admin',email:'admin@example.test',role:'admin'};
   const cfg={pmId:'',supportIds:['account'],devIds:[],requesterIds:['account']};
-  await saveProjectRoles(env,actor,'project','PUT',cfg);
+  const saved = await saveProjectRoles(env,actor,'project','PUT',cfg);
+  assert.equal(saved.project.id, 'project');
+  assert.ok(saved.project.updated_at);
+  assert.equal(saved.project_member_roles.length, 2);
+  assert.deepEqual(saved.project_member_roles.map(row => JSON.parse(row.extra).role_type).sort(), ['IT Support', 'Requester']);
   const snapshot = async () => ({
     project:(await query("SELECT extra FROM hd_master WHERE id='project'")).rows[0].extra,
     roles:(await query("SELECT id,extra FROM hd_master WHERE table_name='hd_project_member_roles' ORDER BY id")).rows,

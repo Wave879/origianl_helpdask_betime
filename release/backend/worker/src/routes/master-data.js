@@ -329,9 +329,12 @@ function makeSyntheticProjectDevRow(projectRow, employee, index = 0) {
   };
 }
 
-async function augmentProjectAssignmentsFromOdoo(env, rowsByTable) {
+async function augmentProjectAssignmentsFromOdoo(env, rowsByTable, strict = false) {
   const projects = Array.isArray(rowsByTable.hd_projects) ? rowsByTable.hd_projects : [];
-  if (!projects.length) return;
+  if (!projects.some(row => {
+    const extra = parseJsonObject(row.extra);
+    return Number(extra.source_service_id || extra.source_id || 0);
+  })) return;
 
   const cfg = getOdooRuntimeConfig(env);
   if (!cfg.url || !cfg.db || !cfg.login || !cfg.password) return;
@@ -453,7 +456,9 @@ async function augmentProjectAssignmentsFromOdoo(env, rowsByTable) {
         }
       });
     }
-  } catch {}
+  } catch (error) {
+    if (strict) throw new Error('โหลดข้อมูลทีมโครงการจาก Odoo ไม่สำเร็จ');
+  }
 }
 
 function makeSyntheticProjectAreaRow(projectRow, area, index = 0) {
@@ -888,6 +893,28 @@ function buildMasterContextIndexes(rowsByTable, employeeMapRows = [], systemUser
   };
 }
 
+export const ROLE_CONTEXT_TABLES = ['hd_users', 'hd_positions', 'hd_projects', 'hd_teams',
+  'hd_projects_dev', 'hd_project_member_roles', 'hd_main_team_project'];
+
+export async function loadRoleContext(env) {
+  // Read the catalogues from one snapshot; never turn a query failure into an empty list.
+  const context = await pgTransaction(env, async query => {
+    await query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    const rows = await query(`SELECT id, table_name, code, name, extra, active, sort_order, created_at, updated_at
+      FROM hd_master WHERE table_name=ANY($1::text[]) ORDER BY sort_order, name`, [ROLE_CONTEXT_TABLES]);
+    const tables = Object.fromEntries(ROLE_CONTEXT_TABLES.map(table => [table, []]));
+    for (const row of rows) {
+      if (row.table_name === 'hd_users' && parseJsonObject(row.extra).merged_into) continue;
+      tables[row.table_name].push(row);
+    }
+    const system_users = await query(`SELECT id,email,username,full_name,job_title,role,department,is_active,
+      account_type,user_expires_at,must_change_password FROM users ORDER BY full_name`);
+    return { tables, system_users };
+  });
+  await augmentProjectAssignmentsFromOdoo(env, context.tables, true);
+  return { ...context, complete: true, generated_at: new Date().toISOString() };
+}
+
 async function loadMasterContext(env, scope = 'helpdesk') {
   const normalizedScope = String(scope || 'helpdesk').trim().toLowerCase();
   const scopeTables = {
@@ -1260,6 +1287,17 @@ export async function handleMasterData(path, method, request, env) {
     } catch (importErr) {
       const message = importErr?.message || String(importErr);
       return err(message, /already exists/i.test(message) ? 409 : 502);
+    }
+  }
+
+  if (path === '/hd-role-context' && method === 'GET') {
+    const session = await requireAuth(request, env);
+    try {
+      const context = await loadRoleContext(env);
+      return json({ ok: true, data: { ...context, can_manage_roles: canManageRoles(session) } });
+    } catch (error) {
+      console.error('Role context load failed', error);
+      return err('โหลดข้อมูลจัดการสิทธิ์ไม่ครบ กรุณาลองใหม่ ข้อมูลเดิมยังไม่ถูกเปลี่ยน', 503);
     }
   }
 
